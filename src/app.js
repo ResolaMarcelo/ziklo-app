@@ -15,6 +15,10 @@ const adminAuth = require('./middleware/adminAuth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Railway termina SSL en su proxy — necesario para que req.secure sea true
+// y para que las cookies con secure:true se setteen correctamente
+app.set('trust proxy', 1);
+
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
