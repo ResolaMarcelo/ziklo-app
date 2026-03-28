@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ziklo Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -366,6 +367,12 @@
 
     /* ── MONO ── */
     .mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted2); }
+
+    /* ── CHARTS ── */
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .chart-title { font-size: 12px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; font-family: 'JetBrains Mono', monospace; }
+    .chart-wrap { position: relative; height: 180px; }
   </style>
 </head>
 <body>
@@ -452,6 +459,21 @@
         <div class="stat">
           <div class="stat-value" id="stat-pendientes">—</div>
           <div class="stat-label">Pendientes</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Ingresos por mes</div>
+          <div class="chart-wrap"><canvas id="chart-ingresos"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Nuevas suscripciones</div>
+          <div class="chart-wrap"><canvas id="chart-nuevas"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Estado actual</div>
+          <div class="chart-wrap"><canvas id="chart-estado"></canvas></div>
         </div>
       </div>
 
@@ -656,6 +678,130 @@ function badge(status) {
   return `<span class="badge ${cls}">${lbl}</span>`;
 }
 
+// ===================== CHARTS =====================
+let _charts = {};
+
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+};
+
+function destroyChart(id) {
+  if (_charts[id]) { _charts[id].destroy(); delete _charts[id]; }
+}
+
+function buildCharts(subs) {
+  // ── últimos 6 meses ──
+  const meses = [];
+  const ingresosPorMes = [];
+  const nuevasPorMes = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - i);
+    const label = d.toLocaleDateString('es-AR', { month: 'short', year: '2-digit' });
+    meses.push(label);
+    const inicio = new Date(d.getFullYear(), d.getMonth(), 1);
+    const fin    = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+
+    const pagos = subs.flatMap(s => s.pagos || []).filter(p =>
+      p.status === 'approved' && new Date(p.createdAt) >= inicio && new Date(p.createdAt) < fin
+    );
+    ingresosPorMes.push(pagos.reduce((sum, p) => sum + (p.monto || 0), 0));
+
+    const nuevas = subs.filter(s => new Date(s.createdAt) >= inicio && new Date(s.createdAt) < fin);
+    nuevasPorMes.push(nuevas.length);
+  }
+
+  // ── estado ──
+  const estados = {
+    Activos:    subs.filter(s => s.status === 'authorized').length,
+    Pendientes: subs.filter(s => s.status === 'pending').length,
+    Pausados:   subs.filter(s => s.status === 'paused').length,
+    Cancelados: subs.filter(s => s.status === 'cancelled').length,
+  };
+
+  const gridColor = 'rgba(255,255,255,.05)';
+  const tickColor = '#4B5563';
+  const font = { family: 'Inter', size: 11 };
+
+  // Chart ingresos
+  destroyChart('ingresos');
+  _charts['ingresos'] = new Chart(document.getElementById('chart-ingresos'), {
+    type: 'bar',
+    data: {
+      labels: meses,
+      datasets: [{
+        data: ingresosPorMes,
+        backgroundColor: 'rgba(0,200,122,.25)',
+        borderColor: '#00C87A',
+        borderWidth: 2,
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, font } },
+        y: { grid: { color: gridColor }, ticks: { color: tickColor, font, callback: v => '$' + Number(v).toLocaleString('es-AR') } },
+      },
+    },
+  });
+
+  // Chart nuevas suscripciones
+  destroyChart('nuevas');
+  _charts['nuevas'] = new Chart(document.getElementById('chart-nuevas'), {
+    type: 'line',
+    data: {
+      labels: meses,
+      datasets: [{
+        data: nuevasPorMes,
+        borderColor: '#00C87A',
+        backgroundColor: 'rgba(0,200,122,.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#00C87A',
+        pointRadius: 4,
+        fill: true,
+        tension: 0.4,
+      }],
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, font } },
+        y: { grid: { color: gridColor }, ticks: { color: tickColor, font, stepSize: 1 }, min: 0 },
+      },
+    },
+  });
+
+  // Chart estado (donut)
+  destroyChart('estado');
+  _charts['estado'] = new Chart(document.getElementById('chart-estado'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(estados),
+      datasets: [{
+        data: Object.values(estados),
+        backgroundColor: ['rgba(0,200,122,.8)', 'rgba(245,158,11,.8)', 'rgba(107,114,128,.8)', 'rgba(239,68,68,.8)'],
+        borderColor: '#16161F',
+        borderWidth: 3,
+      }],
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      cutout: '68%',
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: { color: tickColor, font, boxWidth: 10, padding: 12 },
+        },
+      },
+    },
+  });
+}
+
 // ===================== DASHBOARD =====================
 async function cargarDashboard() {
   const subs = await fetch(API + '/api/subscripciones').then(r => r.json());
@@ -674,6 +820,8 @@ async function cargarDashboard() {
   const pagosMes = subs.flatMap(s => s.pagos || []).filter(p => p.status === 'approved' && new Date(p.createdAt) >= inicioMes);
   const ingresosMes = pagosMes.reduce((sum, p) => sum + (p.monto || 0), 0);
   document.getElementById('stat-ingresos-mes').textContent = ARS(ingresosMes);
+
+  buildCharts(subs);
 
   document.getElementById('tabla-recientes').innerHTML = subs.slice(0,10).map(s => {
     const envio = s.datosEnvio ? JSON.parse(s.datosEnvio) : null;
