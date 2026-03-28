@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¡Suscripción confirmada!</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f6f6f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      max-width: 460px;
+      width: 100%;
+      box-shadow: 0 2px 16px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 36px 40px 28px;
+      text-align: center;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .icon { font-size: 52px; margin-bottom: 14px; }
+    .card-header h1 { font-size: 22px; font-weight: 700; color: #202223; margin-bottom: 6px; }
+    .card-header p { font-size: 14px; color: #6d7175; line-height: 1.6; }
+
+    .card-body { padding: 28px 40px; }
+
+    .detail-box {
+      background: #f6f6f7;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    .detail-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8c9196;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 14px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #202223;
+      padding: 7px 0;
+      border-top: 1px solid #e1e3e5;
+    }
+    .detail-row:first-of-type { border-top: none; }
+    .detail-row strong { font-weight: 700; }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+    .chip {
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid #e1e3e5;
+      color: #6d7175;
+    }
+
+    .info-text {
+      font-size: 13px;
+      color: #8c9196;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      display: block;
+      text-align: center;
+      padding: 13px 24px;
+      background: #202223;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .btn:hover { background: #303030; }
+
+    /* Estados */
+    .estado-pending .card-header { background: #fffbe6; }
+    .estado-error .card-header { background: #fff4f4; }
+    .estado-ok .card-header { background: #f0faf5; }
+
+    /* Skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 4px;
+      height: 14px;
+      margin: 4px 0;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="card-header">
+      <div class="icon" id="icono">⏳</div>
+      <h1 id="titulo">Verificando tu suscripción...</h1>
+      <p id="subtitulo">Estamos confirmando tu autorización con Mercado Pago.</p>
+    </div>
+    <div class="card-body">
+      <div class="detail-box" id="detail-box">
+        <div class="detail-label">Detalle de tu suscripción</div>
+        <div class="skeleton" style="width:60%;margin-bottom:8px"></div>
+        <div class="skeleton" style="width:80%"></div>
+      </div>
+      <div class="chips" id="chips" style="display:none">
+        <span class="chip">📦 Entrega mensual</span>
+        <span class="chip">🚚 Envío incluido</span>
+        <span class="chip">✕ Cancelá cuando quieras</span>
+      </div>
+      <p class="info-text" id="info-text"></p>
+      <a href="#" class="btn" id="btn-volver" style="display:none">Volver a la tienda</a>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const preapprovalId = params.get('preapproval_id');
+    const status = params.get('status');
+    const storeUrl = params.get('store_url') || document.referrer || '#';
+
+    function formatPrecio(num) {
+      return '$' + Math.round(num).toLocaleString('es-AR');
+    }
+
+    function renderDetail(plan, sub) {
+      const box = document.getElementById('detail-box');
+      const nombre = sub && sub.datosEnvio ? JSON.parse(sub.datosEnvio).nombre : null;
+      box.innerHTML = `
+        <div class="detail-label">Detalle de tu suscripción</div>
+        ${nombre ? `<div class="detail-row"><span>Nombre</span><strong>${nombre}</strong></div>` : ''}
+        <div class="detail-row"><span>Plan</span><strong>${plan.nombre || 'Suscripción mensual'}</strong></div>
+        <div class="detail-row"><span>Monto mensual</span><strong>${formatPrecio(plan.monto)}/mes</strong></div>
+        <div class="detail-row"><span>Frecuencia</span><span>Mensual</span></div>
+        <div class="detail-row"><span>Email</span><span>${sub ? sub.shopifyCustomerEmail : '—'}</span></div>
+      `;
+    }
+
+    function setEstadoOk(plan, sub) {
+      document.getElementById('card').classList.add('estado-ok');
+      document.getElementById('icono').textContent = '✅';
+      document.getElementById('titulo').textContent = '¡Suscripción activada!';
+      document.getElementById('subtitulo').textContent = 'Tu pedido va a llegar todos los meses de forma automática.';
+      document.getElementById('chips').style.display = 'flex';
+      document.getElementById('info-text').textContent = 'Te enviamos un email de confirmación con los detalles. Mercado Pago realizará el cobro automáticamente cada mes.';
+      document.getElementById('btn-volver').style.display = 'block';
+      document.getElementById('btn-volver').href = storeUrl;
+      if (plan) renderDetail(plan, sub);
+    }
+
+    function setEstadoPending(plan, sub) {
+      document.getElementById('card').classList.add('estado-pending');
+      document.getElementById('icono').textContent = '🕐';
+      document.getElementById('titulo').textContent = 'Pendiente de confirmación';
+      document.getElementById('subtitulo').textContent = 'Mercado Pago está procesando tu autorización. Puede tardar unos minutos.';
+      document.getElementById('info-text').textContent = 'Una vez confirmada recibirás un email con los detalles de tu suscripción.';
+      document.getElementById('btn-volver').style.display = 'block';
+      document.getElementById('btn-volver').href = storeUrl;
+      if (plan) renderDetail(plan, sub);
+    }
+
+    function setEstadoError() {
+      document.getElementById('card').classList.add('estado-error');
+      document.getElementById('icono').textContent = '❌';
+      document.getElementById('titulo').textContent = 'No se pudo completar';
+      document.getElementById('subtitulo').textContent = 'Hubo un problema al procesar tu suscripción.';
+      document.getElementById('detail-box').style.display = 'none';
+      document.getElementById('info-text').textContent = 'Podés intentarlo nuevamente desde la tienda. Si el problema persiste, contactanos.';
+      document.getElementById('btn-volver').style.display = 'block';
+      document.getElementById('btn-volver').href = storeUrl;
+      document.getElementById('btn-volver').textContent = 'Volver e intentar de nuevo';
+    }
+
+    async function cargarDatos() {
+      if (preapprovalId) {
+        try {
+          const res = await fetch('/api/subscripciones/por-preapproval/' + encodeURIComponent(preapprovalId));
+          if (res.ok) {
+            const sub = await res.json();
+            const estadoFinal = status || sub.status;
+            if (estadoFinal === 'authorized' || estadoFinal === 'approved') {
+              setEstadoOk(sub.plan, sub);
+            } else if (estadoFinal === 'pending') {
+              setEstadoPending(sub.plan, sub);
+            } else {
+              setEstadoError();
+            }
+            return;
+          }
+        } catch (_) {}
+      }
+
+      // Fallback sin datos de BD
+      if (status === 'authorized' || status === 'approved') {
+        setEstadoOk(null, null);
+      } else if (status === 'pending') {
+        setEstadoPending(null, null);
+      } else {
+        setEstadoError();
+      }
+    }
+
+    cargarDatos();
+  </script>
+</body>
+</html>

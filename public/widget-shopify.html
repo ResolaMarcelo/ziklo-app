@@ -1,0 +1,355 @@
+<!-- Widget Suscripciones MP — Shrine Theme Pro -->
+<div id="subs-widget" style="margin:16px 0">
+  <style>
+    #subs-widget * { box-sizing: border-box; }
+
+    /* ── Tabs ── */
+    #subs-widget .subs-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid rgba(var(--color-foreground), .15);
+      border-radius: var(--buttons-radius, 4px);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    #subs-widget .subs-tab {
+      padding: 11px 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: inherit;
+      opacity: .45;
+      transition: background .2s, opacity .2s;
+      text-align: center;
+      line-height: 1.3;
+    }
+    #subs-widget .subs-tab:first-child {
+      border-right: 1px solid rgba(var(--color-foreground), .15);
+    }
+    #subs-widget .subs-tab.active {
+      background: rgba(var(--color-foreground), .06);
+      opacity: 1;
+    }
+    #subs-widget .subs-tab-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgb(var(--color-foreground));
+      color: rgb(var(--color-background));
+      padding: 1px 6px;
+      border-radius: 20px;
+      margin-left: 5px;
+      vertical-align: middle;
+      letter-spacing: .02em;
+    }
+
+    /* ── Panel suscripción ── */
+    #subs-widget .subs-panel {
+      display: none;
+    }
+    #subs-widget .subs-panel.visible {
+      display: block;
+    }
+
+    #subs-widget .subs-precio-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    #subs-widget .subs-precio-original {
+      font-size: 13px;
+      text-decoration: line-through;
+      opacity: .4;
+    }
+    #subs-widget .subs-precio-final {
+      font-size: 17px;
+      font-weight: 700;
+    }
+    #subs-widget .subs-ahorro-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    #subs-widget .subs-freq-title {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: .7;
+      margin-bottom: 8px;
+    }
+    #subs-widget .subs-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    #subs-widget .subs-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(var(--color-foreground), .15);
+      opacity: .75;
+    }
+
+    #subs-widget .subs-no-price {
+      font-size: 12px;
+      opacity: .45;
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+  </style>
+
+  <!-- Tabs -->
+  <div class="subs-tabs">
+    <button class="subs-tab active" id="subs-tab-unica" onclick="subsTab('unica')">
+      Compra única
+    </button>
+    <button class="subs-tab" id="subs-tab-sub" onclick="subsTab('sub')">
+      Suscribirse y ahorrar
+      <span class="subs-tab-badge" id="subs-badge-pct">10% OFF</span>
+    </button>
+  </div>
+
+  <!-- Panel suscripción -->
+  <div class="subs-panel" id="subs-panel">
+    <div class="subs-precio-row">
+      <span class="subs-precio-original" id="subs-p-original"></span>
+      <span class="subs-precio-final" id="subs-p-final"></span>
+      <span class="subs-ahorro-badge" id="subs-ahorro-badge"></span>
+    </div>
+    <div class="subs-freq-title">Tu pedido llega solo, cada mes.</div>
+    <div class="subs-chips">
+      <span class="subs-chip">📦 Entrega mensual</span>
+      <span class="subs-chip">🔒 Precio fijo</span>
+      <span class="subs-chip">🚚 Envío incluido</span>
+      <span class="subs-chip">✕ Cancelá cuando quieras</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var APP      = 'https://app-production-338a.up.railway.app';
+  var DESCUENTO = 0.10; // 10% de descuento en suscripción — cambiá este valor
+
+  var precioActual = 0;
+  var modoSub = false;
+
+  // ── Detectar precio del bundle ────────────────────────────────────────────
+  var PRICE_SELECTORS = [
+    '.price__sale .price-item--sale',
+    '.price--main .price-item--sale',
+    '.price-item--sale',
+    '.price__regular .price-item--regular',
+    '[data-product-price]',
+    '.price-item--regular',
+  ];
+
+  function parsePrecio(text) {
+    var limpio = text.replace(/[^0-9,\.]/g, '');
+    if (!limpio) return 0;
+    var lastComma = limpio.lastIndexOf(',');
+    var lastDot   = limpio.lastIndexOf('.');
+    if (lastComma > lastDot) {
+      limpio = limpio.replace(/\./g, '').replace(',', '.');
+    } else {
+      limpio = limpio.replace(/,/g, '');
+    }
+    return parseFloat(limpio) || 0;
+  }
+
+  function leerPrecioDelCardSeleccionado() {
+    var checked = document.querySelector('input[type="radio"]:checked');
+    if (checked) {
+      var node = checked.parentElement;
+      for (var i = 0; i < 4; i++) {
+        if (!node) break;
+        var priceEl = node.querySelector('[class*="price"]:not([class*="compare"]):not([class*="was"]):not(s):not(del)');
+        if (priceEl) {
+          var p = parsePrecio(priceEl.textContent);
+          if (p > 100) return p;
+        }
+        node = node.parentElement;
+      }
+    }
+    return 0;
+  }
+
+  function leerPrecio() {
+    var p = leerPrecioDelCardSeleccionado();
+    if (p > 0) return p;
+    for (var i = 0; i < PRICE_SELECTORS.length; i++) {
+      var el = document.querySelector(PRICE_SELECTORS[i]);
+      if (el && el.textContent.trim()) {
+        p = parsePrecio(el.textContent);
+        if (p > 100) return p;
+      }
+    }
+    return 0;
+  }
+
+  function formatPrecio(num) {
+    return '$' + Math.round(num).toLocaleString('es-AR');
+  }
+
+  function actualizarPrecioSub(precio) {
+    if (!precio) return;
+    var precioSub  = Math.round(precio * (1 - DESCUENTO));
+    var ahorro     = Math.round(precio * DESCUENTO);
+    var pct        = Math.round(DESCUENTO * 100);
+
+    document.getElementById('subs-p-original').textContent  = formatPrecio(precio);
+    document.getElementById('subs-p-final').textContent     = formatPrecio(precioSub) + '/mes';
+    document.getElementById('subs-ahorro-badge').textContent = 'Ahorrás ' + formatPrecio(ahorro);
+    document.getElementById('subs-badge-pct').textContent   = pct + '% OFF';
+  }
+
+  function actualizarWidget(precio) {
+    if (precio === precioActual) return;
+    precioActual = precio;
+    if (modoSub) actualizarPrecioSub(precio);
+  }
+
+  function intentarActualizar() {
+    actualizarWidget(leerPrecio());
+  }
+
+  // ── Tabs ─────────────────────────────────────────────────────────────────
+  window.subsTab = function(tab) {
+    modoSub = (tab === 'sub');
+    document.getElementById('subs-tab-unica').classList.toggle('active', !modoSub);
+    document.getElementById('subs-tab-sub').classList.toggle('active', modoSub);
+    document.getElementById('subs-panel').classList.toggle('visible', modoSub);
+
+    if (modoSub) {
+      actualizarPrecioSub(precioActual);
+      setAtcModeSuscripcion();
+    } else {
+      setAtcModeNormal();
+    }
+  };
+
+  // ── ATC hijack ────────────────────────────────────────────────────────────
+  var ATC_SELECTORS = [
+    '.product-form__submit',
+    'button[name="add"]',
+    'form[action="/cart/add"] button[type="submit"]',
+    'form[action*="/cart/add"] button[type="submit"]',
+  ];
+
+  function getAtcBtn() {
+    for (var i = 0; i < ATC_SELECTORS.length; i++) {
+      var el = document.querySelector(ATC_SELECTORS[i]);
+      if (el) return el;
+    }
+    return null;
+  }
+
+  var atcOriginalHTML = null;
+
+  function setAtcModeSuscripcion() {
+    var btn = getAtcBtn();
+    if (!btn) return;
+    if (!atcOriginalHTML) atcOriginalHTML = btn.innerHTML;
+    btn.innerHTML = '🔄 Confirmar suscripción mensual';
+  }
+
+  function setAtcModeNormal() {
+    var btn = getAtcBtn();
+    if (!btn || !atcOriginalHTML) return;
+    btn.innerHTML = atcOriginalHTML;
+  }
+
+  function hookProductForm() {
+    var form = document.querySelector('form[action*="/cart/add"], form[action="/cart/add"]');
+    if (!form) return;
+    form.addEventListener('submit', function(e) {
+      if (!modoSub) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      iniciarSub();
+    }, true);
+  }
+
+  function iniciarSub() {
+    if (!precioActual) { alert('Seleccioná una cantidad de productos primero'); return; }
+
+    var precioSub = Math.round(precioActual * (1 - DESCUENTO));
+
+    var form = document.querySelector('form[action*="/cart/add"]');
+    var variantId = form ? (form.querySelector('[name="id"]') || {}).value || '' : '';
+    var qty       = form ? (form.querySelector('[name="quantity"]') || {}).value || '1' : '1';
+
+    var checkedCard = document.querySelector('input[type="radio"]:checked');
+    var desc = 'Suscripción mensual';
+    if (checkedCard) {
+      var card = checkedCard.closest('li, [class*="bundle"], [class*="option"]');
+      if (card) {
+        var nameEl = card.querySelector('[class*="title"], [class*="name"], strong, b');
+        if (nameEl && nameEl.textContent.trim()) desc = nameEl.textContent.trim();
+      }
+    }
+
+    var btn = getAtcBtn();
+    if (btn) { btn.disabled = true; btn.innerHTML = 'Redirigiendo...'; }
+
+    var url = APP + '/subs-checkout/?'
+      + 'monto='     + encodeURIComponent(precioSub)
+      + '&desc='     + encodeURIComponent(desc)
+      + '&variantId='+ encodeURIComponent(variantId)
+      + '&qty='      + encodeURIComponent(qty)
+      + '&store='    + encodeURIComponent(document.title.replace(/ [-–|].*/, '').trim());
+
+    window.location.href = url;
+  }
+
+  // ── Observar cambios de bundle ────────────────────────────────────────────
+  document.addEventListener('change', function(e) {
+    if (e.target.closest && e.target.closest('#subs-widget')) return;
+    if (e.target.type === 'radio' || e.target.tagName === 'SELECT') {
+      setTimeout(intentarActualizar, 50);
+      setTimeout(intentarActualizar, 250);
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (e.target.closest && e.target.closest('#subs-widget')) return;
+    setTimeout(intentarActualizar, 100);
+    setTimeout(intentarActualizar, 350);
+  });
+
+  function observarPrecio() {
+    var container = document.querySelector('.product, .product-info, #product-info, [class*="product__info"], main, #MainContent');
+    if (!container) return;
+    new MutationObserver(intentarActualizar).observe(container, {
+      childList: true, subtree: true, characterData: true,
+      attributes: true, attributeFilter: ['class', 'data-price', 'value'],
+    });
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  function init() {
+    var p = leerPrecio();
+    if (p > 0) actualizarWidget(p);
+    observarPrecio();
+    hookProductForm();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

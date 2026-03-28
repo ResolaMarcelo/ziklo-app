@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suscripción mensual</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    .page-header {
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .page-header .store-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+    .page-header .sep { opacity: .3; }
+    .page-header .page-title {
+      font-size: 14px;
+      opacity: .55;
+    }
+
+    .layout {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ── Resumen del pedido ── */
+    .summary-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e5e5e5;
+      overflow: hidden;
+    }
+    .summary-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .summary-header h2 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #666;
+    }
+    .summary-body { padding: 20px 24px; }
+
+    .summary-product {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .summary-product-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .summary-product-price {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .summary-freq {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .summary-benefits {
+      list-style: none;
+      border-top: 1px solid #f0f0f0;
+      padding-top: 16px;
+    }
+    .summary-benefits li {
+      font-size: 13px;
+      color: #444;
+      padding: 5px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .summary-benefits li::before {
+      content: '✓';
+      color: #2ecc71;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .summary-secure {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+      font-size: 12px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── Formulario ── */
+    .form-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e5e5e5;
+      overflow: hidden;
+    }
+    .form-section {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .form-section:last-child { border-bottom: none; }
+    .form-section h3 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 14px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 5px;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1a1a1a;
+      background: #fff;
+      outline: none;
+      transition: border-color .15s;
+      font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: #1a1a1a;
+    }
+    .form-group input.error { border-color: #e74c3c; }
+
+    .btn-pagar {
+      width: 100%;
+      padding: 16px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-pagar:hover { opacity: .85; }
+    .btn-pagar:disabled { opacity: .5; cursor: default; }
+    .btn-pagar .mp-badge {
+      font-size: 12px;
+      font-weight: 400;
+      opacity: .7;
+    }
+
+    .error-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #c0392b;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    .error-msg.visible { display: block; }
+
+    @media (max-width: 700px) {
+      .layout {
+        grid-template-columns: 1fr;
+        margin: 16px auto;
+      }
+      .layout > .summary-card { order: 2; }
+      .layout > .form-card { order: 1; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="page-header">
+  <span class="store-name" id="hdr-store">Tu Tienda</span>
+  <span class="sep">›</span>
+  <span class="page-title">Checkout de suscripción</span>
+</header>
+
+<div class="layout">
+
+  <!-- Resumen -->
+  <div class="summary-card">
+    <div class="summary-header"><h2>Resumen del pedido</h2></div>
+    <div class="summary-body">
+      <div class="summary-product">
+        <span class="summary-product-name" id="sum-desc">Cargando...</span>
+        <span class="summary-product-price" id="sum-precio"></span>
+      </div>
+      <p class="summary-freq">Se te cobrará este importe <strong>cada mes</strong> automáticamente.</p>
+
+      <ul class="summary-benefits">
+        <li>Precio fijo, nunca aumenta</li>
+        <li>Envío gratis en cada entrega</li>
+        <li>Prioridad de stock garantizada</li>
+        <li>Cancelá cuando quieras, sin cargos</li>
+      </ul>
+
+      <div class="summary-secure">
+        🔒 Pago seguro procesado por Mercado Pago
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="form-card">
+
+    <div class="form-section">
+      <h3>Datos de contacto</h3>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="ejemplo@correo.com" />
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" id="f-tel" placeholder="+54 11 1234-5678" />
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Datos de envío</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" id="f-nombre" placeholder="Juan" />
+        </div>
+        <div class="form-group">
+          <label>Apellido</label>
+          <input type="text" id="f-apellido" placeholder="Pérez" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Dirección (calle y número)</label>
+        <input type="text" id="f-direccion" placeholder="Av. Corrientes 1234" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ciudad</label>
+          <input type="text" id="f-ciudad" placeholder="Buenos Aires" />
+        </div>
+        <div class="form-group">
+          <label>Código postal</label>
+          <input type="text" id="f-cp" placeholder="1414" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Provincia</label>
+        <select id="f-provincia">
+          <option value="">Seleccioná...</option>
+          <option>Buenos Aires</option>
+          <option>CABA</option>
+          <option>Catamarca</option>
+          <option>Chaco</option>
+          <option>Chubut</option>
+          <option>Córdoba</option>
+          <option>Corrientes</option>
+          <option>Entre Ríos</option>
+          <option>Formosa</option>
+          <option>Jujuy</option>
+          <option>La Pampa</option>
+          <option>La Rioja</option>
+          <option>Mendoza</option>
+          <option>Misiones</option>
+          <option>Neuquén</option>
+          <option>Río Negro</option>
+          <option>Salta</option>
+          <option>San Juan</option>
+          <option>San Luis</option>
+          <option>Santa Cruz</option>
+          <option>Santa Fe</option>
+          <option>Santiago del Estero</option>
+          <option>Tierra del Fuego</option>
+          <option>Tucumán</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <button class="btn-pagar" id="btn-pagar" onclick="confirmarCheckout()">
+        Continuar al pago
+        <span class="mp-badge">— Mercado Pago</span>
+      </button>
+      <div class="error-msg" id="err-msg"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var APP = 'https://app-production-338a.up.railway.app';
+
+  // Leer params de la URL
+  var params = new URLSearchParams(window.location.search);
+  var monto     = params.get('monto') || '';
+  var desc      = params.get('desc')  || 'Suscripción mensual';
+  var variantId = params.get('variantId') || '';
+  var productId = params.get('productId') || '';
+  var qty       = params.get('qty') || '1';
+  var store     = params.get('store') || '';
+
+  // Mostrar resumen
+  if (store) document.getElementById('hdr-store').textContent = store;
+  document.getElementById('sum-desc').textContent = desc;
+  if (monto) {
+    var num = parseFloat(monto);
+    document.getElementById('sum-precio').textContent =
+      '$' + Math.round(num).toLocaleString('es-AR') + '/mes';
+  }
+
+  function mostrarError(msg) {
+    var el = document.getElementById('err-msg');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function validar() {
+    var campos = [
+      { id: 'f-email',     label: 'email' },
+      { id: 'f-nombre',    label: 'nombre' },
+      { id: 'f-apellido',  label: 'apellido' },
+      { id: 'f-direccion', label: 'dirección' },
+      { id: 'f-ciudad',    label: 'ciudad' },
+      { id: 'f-cp',        label: 'código postal' },
+      { id: 'f-provincia', label: 'provincia' },
+    ];
+    for (var i = 0; i < campos.length; i++) {
+      var el = document.getElementById(campos[i].id);
+      if (!el.value.trim()) {
+        el.classList.add('error');
+        el.focus();
+        mostrarError('Por favor completá el campo: ' + campos[i].label);
+        return false;
+      }
+      el.classList.remove('error');
+    }
+    return true;
+  }
+
+  window.confirmarCheckout = function() {
+    document.getElementById('err-msg').classList.remove('visible');
+    if (!validar()) return;
+    if (!monto) { mostrarError('No se encontró el monto de la suscripción. Volvé a la tienda.'); return; }
+
+    var btn = document.getElementById('btn-pagar');
+    btn.disabled = true;
+    btn.innerHTML = 'Procesando...';
+
+    var payload = {
+      email:      document.getElementById('f-email').value.trim(),
+      monto:      parseFloat(monto),
+      descripcion: desc + ' x' + qty,
+      variantId:  variantId || null,
+      productId:  productId || null,
+      qty:        parseInt(qty) || 1,
+      envio: {
+        nombre:    document.getElementById('f-nombre').value.trim(),
+        apellido:  document.getElementById('f-apellido').value.trim(),
+        telefono:  document.getElementById('f-tel').value.trim(),
+        direccion: document.getElementById('f-direccion').value.trim(),
+        ciudad:    document.getElementById('f-ciudad').value.trim(),
+        cp:        document.getElementById('f-cp').value.trim(),
+        provincia: document.getElementById('f-provincia').value,
+      },
+    };
+
+    fetch(APP + '/api/subscripciones/crear-con-envio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.initPoint) {
+        window.location.href = d.initPoint;
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = 'Continuar al pago <span class="mp-badge">— Mercado Pago</span>';
+        mostrarError(d.error || 'Ocurrió un error. Intentá de nuevo.');
+      }
+    })
+    .catch(function(){
+      btn.disabled = false;
+      btn.innerHTML = 'Continuar al pago <span class="mp-badge">— Mercado Pago</span>';
+      mostrarError('Error de conexión. Verificá tu internet e intentá de nuevo.');
+    });
+  };
+})();
+</script>
+</body>
+</html>

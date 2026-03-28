@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Suscripción</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f6f6f7; --white: #fff; --border: #e1e3e5;
+      --primary: #009ee3; --text: #202223; --muted: #6d7175;
+      --green: #008060; --red: #d72c0d;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .header { background: var(--primary); color: white; padding: 20px 24px; text-align: center; }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header p { font-size: 14px; opacity: .8; margin-top: 4px; }
+    .container { max-width: 600px; margin: 0 auto; padding: 24px 16px; }
+
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+    .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+
+    .email-form { display: flex; gap: 8px; }
+    .email-form input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+    .email-form input:focus { border-color: var(--primary); }
+    .btn { padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-danger { background: white; color: var(--red); border: 1px solid var(--red); }
+    .btn-warning { background: white; color: #573b00; border: 1px solid #ffc453; }
+    .btn-success { background: white; color: var(--green); border: 1px solid var(--green); }
+
+    .sub-card { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .sub-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .sub-plan { font-size: 16px; font-weight: 600; }
+    .sub-monto { font-size: 22px; font-weight: 700; color: var(--primary); }
+    .sub-info { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .sub-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .badge-green { background: #aee9d1; color: #003d2b; }
+    .badge-yellow { background: #ffea8a; color: #573b00; }
+    .badge-red { background: #fed3d1; color: #7b0e00; }
+    .badge-gray { background: #e4e5e7; color: #6d7175; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); text-transform: uppercase; }
+    td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+
+    .planes-grid { display: grid; gap: 12px; }
+    .plan-option { border: 2px solid var(--border); border-radius: 8px; padding: 16px; cursor: pointer; transition: .15s; }
+    .plan-option:hover { border-color: var(--primary); }
+    .plan-option.selected { border-color: var(--primary); background: #f0f9ff; }
+    .plan-nombre { font-weight: 600; font-size: 15px; }
+    .plan-monto { font-size: 20px; font-weight: 700; color: var(--primary); margin-top: 4px; }
+    .plan-desc { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    .mp-btn { width: 100%; padding: 14px; background: #009ee3; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .mp-btn:hover { background: #0082c1; }
+    .mp-btn:disabled { opacity: .6; cursor: default; }
+
+    .empty { text-align: center; padding: 32px; color: var(--muted); font-size: 14px; }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #vista-inicio, #vista-planes, #vista-mis-subs { display: none; }
+    #vista-inicio.visible, #vista-planes.visible, #vista-mis-subs.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Mi Suscripción</h1>
+  <p>Gestioná tu suscripción con Mercado Pago</p>
+</div>
+
+<div class="container">
+
+  <!-- INICIO: pedir email -->
+  <div id="vista-inicio" class="visible">
+    <div class="card">
+      <h2>Ingresá tu email para ver tu suscripción</h2>
+      <div class="email-form">
+        <input type="email" id="input-email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')buscarSubs()" />
+        <button class="btn btn-primary" onclick="buscarSubs()">Ver suscripción</button>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-top:12px">
+        ¿No tenés una suscripción aún? <a href="#" onclick="mostrarPlanes();return false" style="color:var(--primary)">Ver planes disponibles</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- MIS SUSCRIPCIONES -->
+  <div id="vista-mis-subs">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:16px;font-weight:600">Tus suscripciones</h2>
+      <a href="#" onclick="nuevaSub();return false" style="color:var(--primary);font-size:14px">+ Nueva suscripción</a>
+    </div>
+    <div id="mis-subs-lista"></div>
+  </div>
+
+  <!-- ELEGIR PLAN -->
+  <div id="vista-planes">
+    <div class="card">
+      <h2>Elegí tu plan</h2>
+      <div id="planes-lista" class="planes-grid"></div>
+      <div id="form-email-sub" style="display:none;margin-top:16px">
+        <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">Tu email para la suscripción</label>
+        <input type="email" id="sub-email" placeholder="tu@email.com" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:4px" />
+        <button class="mp-btn" id="btn-suscribir" onclick="iniciarSuscripcion()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="10"/><path fill="#009ee3" d="M12 6c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6z"/></svg>
+          Suscribirme con Mercado Pago
+        </button>
+      </div>
+      <p style="margin-top:12px;text-align:center"><a href="#" onclick="mostrarInicio();return false" style="font-size:13px;color:var(--muted)">← Volver</a></p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let planSeleccionadoId = null;
+let emailActual = null;
+
+// ===================== INICIO =====================
+async function buscarSubs() {
+  const email = document.getElementById('input-email').value.trim();
+  if (!email) return;
+  emailActual = email;
+
+  const subs = await fetch(`/api/subscripciones/cliente/${encodeURIComponent(email)}`).then(r => r.json());
+
+  ocultarTodo();
+  document.getElementById('vista-mis-subs').classList.add('visible');
+
+  if (!subs.length) {
+    document.getElementById('mis-subs-lista').innerHTML = `
+      <div class="card empty">
+        <p>No tenés suscripciones activas con ese email.</p>
+        <a href="#" onclick="mostrarPlanes();return false" style="color:var(--primary);display:block;margin-top:8px">Ver planes disponibles →</a>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('mis-subs-lista').innerHTML = subs.map(s => `
+    <div class="sub-card">
+      <div class="sub-card-header">
+        <div>
+          <div class="sub-plan">${s.plan?.nombre || 'Plan'}</div>
+          <div class="sub-monto">$${Number(s.plan?.monto).toLocaleString('es-AR')}<span style="font-size:14px;font-weight:400;color:var(--muted)">/${s.plan?.tipoFrecuencia === 'months' ? (s.plan?.frecuencia === 1 ? 'mes' : s.plan?.frecuencia + ' meses') : s.plan?.frecuencia + ' días'}</span></div>
+          ${s.plan?.descripcion ? `<div class="sub-info">${s.plan.descripcion}</div>` : ''}
+        </div>
+        ${badge(s.status)}
+      </div>
+      <div style="font-size:13px;color:var(--muted)">Desde: ${fecha(s.createdAt)}</div>
+
+      ${s.pagos?.length ? `
+        <div style="margin-top:12px">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;font-weight:600">Últimos pagos</p>
+          <table>
+            <thead><tr><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
+            <tbody>
+              ${s.pagos.slice(0,5).map(p=>`<tr><td>${fecha(p.createdAt)}</td><td>$${Number(p.monto).toLocaleString('es-AR')}</td><td>${badge(p.status)}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>` : ''}
+
+      <div class="sub-actions">
+        ${s.status === 'authorized' ? `<button class="btn btn-warning" onclick="accion('${s.id}','pausar')">Pausar</button>` : ''}
+        ${s.status === 'paused' ? `<button class="btn btn-success" onclick="accion('${s.id}','reanudar')">Reanudar</button>` : ''}
+        ${s.status !== 'cancelled' ? `<button class="btn btn-danger" onclick="accion('${s.id}','cancelar')">Cancelar suscripción</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function accion(id, tipo) {
+  const msg = { cancelar: '¿Cancelar tu suscripción?', pausar: '¿Pausar tu suscripción?', reanudar: '¿Reanudar tu suscripción?' };
+  if (!confirm(msg[tipo])) return;
+  await fetch(`/api/subscripciones/${id}/${tipo}`, { method: 'POST' });
+  buscarSubs();
+}
+
+// ===================== PLANES =====================
+async function mostrarPlanes() {
+  ocultarTodo();
+  document.getElementById('vista-planes').classList.add('visible');
+
+  const planes = await fetch('/api/planes').then(r => r.json());
+  if (!planes.length) {
+    document.getElementById('planes-lista').innerHTML = '<p style="color:var(--muted);font-size:14px">No hay planes disponibles por el momento.</p>';
+    return;
+  }
+
+  document.getElementById('planes-lista').innerHTML = planes.map(p => `
+    <div class="plan-option" id="plan-${p.id}" onclick="seleccionarPlan('${p.id}')">
+      <div class="plan-nombre">${p.nombre}</div>
+      <div class="plan-monto">$${Number(p.monto).toLocaleString('es-AR')}<span style="font-size:14px;font-weight:400;color:var(--muted)">/${p.tipoFrecuencia === 'months' ? (p.frecuencia === 1 ? 'mes' : p.frecuencia + ' meses') : p.frecuencia + ' días'}</span></div>
+      ${p.descripcion ? `<div class="plan-desc">${p.descripcion}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function seleccionarPlan(id) {
+  planSeleccionadoId = id;
+  document.querySelectorAll('.plan-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('plan-' + id).classList.add('selected');
+  const form = document.getElementById('form-email-sub');
+  form.style.display = 'block';
+  if (emailActual) document.getElementById('sub-email').value = emailActual;
+}
+
+async function iniciarSuscripcion() {
+  const email = document.getElementById('sub-email').value.trim();
+  if (!email || !planSeleccionadoId) { alert('Seleccioná un plan e ingresá tu email'); return; }
+
+  const btn = document.getElementById('btn-suscribir');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Redirigiendo...';
+
+  const res = await fetch('/api/subscripciones/crear', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ planId: planSeleccionadoId, email }),
+  }).then(r => r.json());
+
+  if (res.initPoint) {
+    window.location.href = res.initPoint;
+  } else {
+    alert('Error al crear la suscripción: ' + (res.error || 'intente nuevamente'));
+    btn.disabled = false;
+    btn.innerHTML = 'Suscribirme con Mercado Pago';
+  }
+}
+
+function nuevaSub() { mostrarPlanes(); }
+function mostrarInicio() { ocultarTodo(); document.getElementById('vista-inicio').classList.add('visible'); }
+function ocultarTodo() {
+  ['vista-inicio','vista-planes','vista-mis-subs'].forEach(id =>
+    document.getElementById(id).classList.remove('visible'));
+}
+
+// ===================== HELPERS =====================
+const fecha = d => new Date(d).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' });
+function badge(status) {
+  const map = { authorized:['badge-green','Activo'], pending:['badge-yellow','Pendiente'], paused:['badge-yellow','Pausado'], cancelled:['badge-red','Cancelado'], approved:['badge-green','Aprobado'], rejected:['badge-red','Rechazado'] };
+  const [cls, lbl] = map[status] || ['badge-gray', status];
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+</script>
+</body>
+</html>
