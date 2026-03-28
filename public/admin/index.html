@@ -698,25 +698,18 @@
     <div id="tab-configuracion" class="page">
       <div class="config-grid">
 
-        <!-- Tienda Shopify -->
+        <!-- Mi tienda -->
         <div class="config-card">
           <div class="config-head">
             <div class="config-head-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             </div>
             <div>
-              <div class="config-head-title">Tienda Shopify</div>
-              <div class="config-head-sub">Datos de la tienda conectada</div>
+              <div class="config-head-title">Mi tienda</div>
+              <div class="config-head-sub">Datos de tu tienda Shopify</div>
             </div>
           </div>
           <div class="config-body">
-            <div class="config-row">
-              <span class="config-row-label">Estado</span>
-              <span class="status-dot-wrap">
-                <span class="status-dot green"></span>
-                <span style="font-size:12px;font-weight:600;color:var(--green)">Conectado</span>
-              </span>
-            </div>
             <div class="config-row">
               <span class="config-row-label">Nombre</span>
               <span class="config-row-value" id="cfg-shop-name">—</span>
@@ -726,18 +719,57 @@
               <span class="config-row-value mono" id="cfg-shop-domain">—</span>
             </div>
             <div class="config-row">
-              <span class="config-row-label">Email</span>
+              <span class="config-row-label">Email de contacto</span>
               <span class="config-row-value" id="cfg-shop-email">—</span>
+            </div>
+            <div class="config-row">
+              <span class="config-row-label">Conexión Shopify</span>
+              <span class="status-dot-wrap">
+                <span class="status-dot green"></span>
+                <span style="font-size:12px;font-weight:600;color:var(--green)">Activa</span>
+              </span>
             </div>
             <div class="config-btn-row">
               <button class="btn-config ghost" onclick="window.open('https://'+document.getElementById('cfg-shop-domain').textContent+'/admin','_blank')">
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                Abrir Shopify Admin
+                Ir a Shopify
               </button>
-              <button class="btn-config danger" onclick="logout()">
-                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Cerrar sesión
-              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mi plan Ziklo -->
+        <div class="config-card">
+          <div class="config-head">
+            <div class="config-head-icon" style="background:rgba(0,200,122,.1);border-color:rgba(0,200,122,.25)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <div class="config-head-title">Mi plan Ziklo</div>
+              <div class="config-head-sub">Detalles de tu suscripción</div>
+            </div>
+          </div>
+          <div class="config-body">
+            <div class="config-row">
+              <span class="config-row-label">Plan actual</span>
+              <span class="config-row-value">
+                <span class="badge" style="background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)">Early Access</span>
+              </span>
+            </div>
+            <div class="config-row">
+              <span class="config-row-label">Estado</span>
+              <span class="status-dot-wrap">
+                <span class="status-dot green"></span>
+                <span style="font-size:12px;font-weight:600;color:var(--green)">Activo</span>
+              </span>
+            </div>
+            <div class="config-row">
+              <span class="config-row-label">Comisión por cobro</span>
+              <span class="config-row-value">0% <span style="font-size:11px;color:var(--muted2)">(Early Access)</span></span>
+            </div>
+            <div class="config-row">
+              <span class="config-row-label">Soporte</span>
+              <span class="config-row-value">Prioritario</span>
             </div>
           </div>
         </div>
@@ -750,126 +782,67 @@
             </div>
             <div>
               <div class="config-head-title">Mercado Pago</div>
-              <div class="config-head-sub">Pasarela de cobros</div>
+              <div class="config-head-sub">Pasarela de cobros activa</div>
             </div>
           </div>
           <div class="config-body">
             <div class="config-row">
               <span class="config-row-label">Estado</span>
-              <span class="status-dot-wrap" id="cfg-mp-status-wrap">
-                <span class="status-dot green"></span>
-                <span style="font-size:12px;font-weight:600;color:var(--green)" id="cfg-mp-status">Configurado</span>
+              <span class="status-dot-wrap">
+                <span class="status-dot green" id="cfg-mp-dot"></span>
+                <span style="font-size:12px;font-weight:600;color:var(--green)" id="cfg-mp-status">Conectado</span>
               </span>
             </div>
             <div class="config-row">
-              <span class="config-row-label">Modo</span>
-              <span class="config-row-value" id="cfg-mp-mode">—</span>
+              <span class="config-row-label">Cobros recurrentes</span>
+              <span class="config-row-value">Preapproval API</span>
             </div>
             <div class="config-row">
-              <span class="config-row-label">Token</span>
-              <span class="config-row-value mono" id="cfg-mp-token">—</span>
+              <span class="config-row-label">Suscriptores activos</span>
+              <span class="config-row-value" id="cfg-mp-activos">—</span>
             </div>
             <div class="config-btn-row">
-              <button class="btn-config ghost" onclick="window.open('https://www.mercadopago.com.ar/developers/panel','_blank')">
+              <button class="btn-config ghost" onclick="window.open('https://www.mercadopago.com.ar/subscriptions','_blank')">
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                Panel de MP
+                Ver suscripciones en MP
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Webhooks -->
-        <div class="config-card config-card-full">
-          <div class="config-head">
-            <div class="config-head-icon" style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
-            </div>
-            <div>
-              <div class="config-head-title">Webhooks de Mercado Pago</div>
-              <div class="config-head-sub">Configurá estas URLs en el panel de MP para recibir notificaciones de pagos</div>
-            </div>
-          </div>
-          <div class="config-body">
-            <div style="margin-bottom:14px">
-              <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">URL de notificaciones</div>
-              <div class="webhook-url" id="cfg-webhook-url">—</div>
-              <div style="margin-top:8px;display:flex;gap:12px;align-items:center">
-                <button class="copy-inline" onclick="copiarWebhook()">
-                  <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  <span id="copy-webhook-text">Copiar URL</span>
-                </button>
-                <span style="font-size:11px;color:var(--muted)">Pegala en MP → Tu app → Webhooks → URL de notificación</span>
-              </div>
-            </div>
-            <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px;padding:12px 14px;font-size:12px;color:rgba(245,158,11,.9);line-height:1.6">
-              <strong>⚠ Importante:</strong> En el campo "Secreto" de MP usá el mismo valor que tenés en la variable <code style="font-family:'JetBrains Mono',monospace;font-size:11px">MP_WEBHOOK_SECRET</code> de Railway.
-            </div>
-          </div>
-        </div>
-
-        <!-- Seguridad -->
+        <!-- Soporte -->
         <div class="config-card">
           <div class="config-head">
             <div class="config-head-icon" style="background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.2)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
             <div>
-              <div class="config-head-title">Seguridad</div>
-              <div class="config-head-sub">Acceso al panel admin</div>
+              <div class="config-head-title">Soporte Ziklo</div>
+              <div class="config-head-sub">Estamos para ayudarte</div>
             </div>
           </div>
           <div class="config-body">
             <div class="config-row">
-              <span class="config-row-label">Usuario admin</span>
-              <span class="config-row-value mono" id="cfg-admin-user">—</span>
+              <span class="config-row-label">Email</span>
+              <span class="config-row-value">hola@ziklo.app</span>
             </div>
             <div class="config-row">
-              <span class="config-row-label">Contraseña</span>
-              <span class="config-row-value">••••••••</span>
+              <span class="config-row-label">Respuesta</span>
+              <span class="config-row-value">Mismo día hábil</span>
             </div>
             <div class="config-row">
-              <span class="config-row-label">Sesión</span>
-              <span class="config-row-value">8 horas</span>
+              <span class="config-row-label">Docs</span>
+              <span class="config-row-value">docs.ziklo.app</span>
             </div>
             <div class="config-btn-row">
-              <button class="btn-config ghost" onclick="alert('Para cambiar las credenciales, actualizá las variables ADMIN_USER y ADMIN_PASSWORD en Railway.')">
-                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Cambiar credenciales
+              <button class="btn-config primary" onclick="window.open('mailto:hola@ziklo.app','_blank')">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Escribir a soporte
               </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- App Info -->
-        <div class="config-card">
-          <div class="config-head">
-            <div class="config-head-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <div>
-              <div class="config-head-title">Ziklo</div>
-              <div class="config-head-sub">Información de la aplicación</div>
-            </div>
-          </div>
-          <div class="config-body">
-            <div class="config-row">
-              <span class="config-row-label">Versión</span>
-              <span class="config-row-value mono">1.0.0</span>
-            </div>
-            <div class="config-row">
-              <span class="config-row-label">Entorno</span>
-              <span class="config-row-value" id="cfg-env">—</span>
-            </div>
-            <div class="config-row">
-              <span class="config-row-label">URL de la app</span>
-              <span class="config-row-value mono" id="cfg-app-url">—</span>
-            </div>
-            <div class="config-btn-row">
-              <button class="btn-config ghost" onclick="window.open('https://github.com/ResolaMarcelo/ziklo-app','_blank')">
-                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-                Ver en GitHub
+              <button class="btn-config ghost" onclick="logout()">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Cerrar sesión
               </button>
-              <button class="btn-config ghost" onclick="window.open('mailto:hola@ziklo.app','_blank')">Soporte</button>
             </div>
           </div>
         </div>
@@ -1277,7 +1250,7 @@ function copiarCodigo() {
 
 // ===================== CONFIGURACIÓN =====================
 async function cargarConfiguracion() {
-  // Tienda Shopify
+  // Datos de la tienda Shopify
   try {
     const shop = await fetch('/admin/api/shop').then(r => r.json());
     document.getElementById('cfg-shop-name').textContent   = shop.name   || '—';
@@ -1285,39 +1258,17 @@ async function cargarConfiguracion() {
     document.getElementById('cfg-shop-email').textContent  = shop.email  || '—';
   } catch (_) {}
 
-  // Usuario admin
-  try {
-    const me = await fetch('/admin/api/me').then(r => r.json());
-    document.getElementById('cfg-admin-user').textContent = me.shopDomain || me.user || 'admin';
-  } catch (_) {}
-
-  // Mercado Pago — detección de modo por prefijo del token
-  const appUrl = window.location.origin;
-  document.getElementById('cfg-app-url').textContent = appUrl;
-  document.getElementById('cfg-webhook-url').textContent = appUrl + '/webhooks/mp';
-
-  // Modo MP: TEST vs producción (lo detectamos por el token via una llamada simple)
+  // Suscriptores activos para el card de MP
   try {
     const subs = await fetch('/api/subscripciones').then(r => r.json());
-    const modo = subs.length > 0 ? 'Producción / Test' : 'Sin datos aún';
-    document.getElementById('cfg-mp-mode').textContent = modo;
-  } catch (_) {
-    document.getElementById('cfg-mp-mode').textContent = 'Configurado';
-  }
-  document.getElementById('cfg-mp-token').textContent = 'TEST-••••••••••••';
-
-  // Entorno
-  document.getElementById('cfg-env').textContent =
-    appUrl.includes('railway') ? 'Producción (Railway)' : 'Local / Dev';
-}
-
-function copiarWebhook() {
-  const url = document.getElementById('cfg-webhook-url').textContent;
-  navigator.clipboard.writeText(url).then(() => {
-    const btn = document.getElementById('copy-webhook-text');
-    btn.textContent = '¡Copiado!';
-    setTimeout(() => btn.textContent = 'Copiar URL', 2000);
-  });
+    const activos = subs.filter(s => s.status === 'authorized').length;
+    document.getElementById('cfg-mp-activos').textContent = activos;
+    if (activos === 0) {
+      document.getElementById('cfg-mp-dot').className = 'status-dot yellow';
+      document.getElementById('cfg-mp-status').textContent = 'Sin suscriptores aún';
+      document.getElementById('cfg-mp-status').style.color = 'var(--warning)';
+    }
+  } catch (_) {}
 }
 
 // ===================== LOGOUT =====================
