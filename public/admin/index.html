@@ -2525,9 +2525,9 @@ async function cargarConfiguracion() {
     const activos = subs.filter(s => s.status === 'authorized').length;
     document.getElementById('cfg-mp-activos').textContent = activos;
     if (activos === 0) {
-      document.getElementById('cfg-mp-dot').className = 'status-dot yellow';
-      document.getElementById('cfg-mp-status').textContent = 'Sin suscriptores aún';
-      document.getElementById('cfg-mp-status').style.color = 'var(--warning)';
+      document.getElementById('cfg-mp-dot').className = 'status-dot green';
+      document.getElementById('cfg-mp-status').textContent = 'Listo para recibir suscriptores';
+      document.getElementById('cfg-mp-status').style.color = 'var(--green)';
     }
   } catch (_) {}
 }
