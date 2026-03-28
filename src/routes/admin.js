@@ -84,6 +84,15 @@ router.get('/api/shop', async (req, res) => {
   }
 });
 
+// GET /admin/api/status — qué integraciones están configuradas
+router.get('/api/status', (req, res) => {
+  res.json({
+    shopify:      !!(process.env.SHOPIFY_ACCESS_TOKEN && process.env.SHOPIFY_SHOP_DOMAIN),
+    mercadopago:  !!process.env.MP_ACCESS_TOKEN,
+    email:        !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+  });
+});
+
 // GET /admin/api/widget-code — contenido actual del widget
 router.get('/api/widget-code', (req, res) => {
   const filePath = path.join(__dirname, '../../public/widget-shopify.html');

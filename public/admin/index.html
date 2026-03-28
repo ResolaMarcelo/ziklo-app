@@ -392,6 +392,115 @@
     .chart-title { font-size: 12px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; font-family: 'JetBrains Mono', monospace; }
     .chart-wrap { position: relative; height: 180px; }
 
+    /* ── DASHBOARD 2-COL ── */
+    .dashboard-layout { display: flex; gap: 20px; align-items: flex-start; }
+    .dash-main { flex: 1; min-width: 0; }
+    .dash-aside { width: 268px; flex-shrink: 0; position: sticky; top: 80px; }
+
+    /* ── PERIOD FILTER ── */
+    .period-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .period-label { font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: .07em; font-family: 'JetBrains Mono', monospace; }
+    .period-pills { display: flex; gap: 4px; }
+    .period-pill {
+      padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+      border: 1px solid var(--border-s); background: transparent;
+      color: var(--muted2); cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all .15s;
+    }
+    .period-pill:hover { color: var(--white); border-color: rgba(255,255,255,.2); }
+    .period-pill.active { background: var(--green-dim); border-color: var(--green-border); color: var(--green); }
+
+    /* ── ONBOARDING CHECKLIST ── */
+    .checklist-card {
+      background: var(--card); border: 1px solid var(--border-s);
+      border-radius: 12px; overflow: hidden;
+    }
+    .checklist-head {
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .checklist-head-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .checklist-title { font-size: 13px; font-weight: 700; }
+    .checklist-badge {
+      font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+      background: var(--green-dim); color: var(--green);
+      border: 1px solid var(--green-border); border-radius: 20px;
+      padding: 2px 8px;
+    }
+    .checklist-progress-bg {
+      height: 4px; background: rgba(255,255,255,.06); border-radius: 2px; overflow: hidden;
+    }
+    .checklist-progress-fill {
+      height: 100%; background: var(--green);
+      border-radius: 2px; transition: width .4s ease;
+    }
+    .checklist-body { padding: 6px 0; }
+    .checklist-step {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 18px; cursor: pointer;
+      transition: background .12s;
+      border-left: 2px solid transparent;
+    }
+    .checklist-step:hover { background: rgba(255,255,255,.03); }
+    .checklist-step.done { opacity: .55; }
+    .checklist-step.active-step { border-left-color: var(--green); background: rgba(0,200,122,.04); }
+    .step-icon {
+      width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid var(--border-s);
+    }
+    .step-icon.done { background: var(--green); border-color: var(--green); }
+    .step-icon.done svg { display: block; }
+    .step-icon.pending svg { display: none; }
+    .step-icon svg { width: 10px; height: 10px; color: #000; }
+    .step-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); margin: 3px auto; }
+    .step-icon.done .step-dot { display: none; }
+    .step-icon.pending .step-dot { display: block; }
+    .step-text { flex: 1; }
+    .step-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .step-desc { font-size: 11px; color: var(--muted2); line-height: 1.4; }
+    .step-action { font-size: 10px; font-weight: 700; color: var(--green); margin-top: 4px; display: none; }
+    .checklist-step.active-step .step-action { display: block; }
+    .checklist-done-msg {
+      padding: 16px 18px; font-size: 12px; color: var(--green);
+      display: flex; align-items: center; gap: 8px; font-weight: 600;
+    }
+
+    /* ── INTEGRACIONES ── */
+    .integ-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .integ-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      display: flex; flex-direction: column; gap: 14px;
+      transition: border-color .15s;
+    }
+    .integ-card:hover { border-color: var(--border-strong); }
+    .integ-card-head { display: flex; align-items: center; gap: 12px; }
+    .integ-logo {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .integ-name { font-size: 14px; font-weight: 700; }
+    .integ-desc { font-size: 12px; color: var(--muted2); margin-top: 1px; }
+    .integ-status { display: flex; align-items: center; gap: 8px; }
+    .integ-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .integ-status-dot.green { background: var(--green); box-shadow: 0 0 8px rgba(0,200,122,.4); }
+    .integ-status-dot.yellow { background: var(--warning); }
+    .integ-status-dot.red { background: var(--danger); }
+    .integ-status-text { font-size: 12px; font-weight: 600; }
+    .integ-status-text.green { color: var(--green); }
+    .integ-status-text.yellow { color: var(--warning); }
+    .integ-status-text.red { color: var(--danger); }
+    .integ-detail { font-size: 11px; color: var(--muted2); line-height: 1.6; }
+    .integ-action {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; color: var(--muted2);
+      background: none; border: 1px solid var(--border-s);
+      border-radius: 7px; padding: 6px 10px; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all .15s; align-self: flex-start;
+    }
+    .integ-action:hover { color: var(--white); border-color: rgba(255,255,255,.2); }
+
     /* ── CONFIG SECTION ── */
     .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .config-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
@@ -504,6 +613,10 @@
 
   <div class="sidebar-section">Configuración</div>
 
+  <div class="nav-item" onclick="showTab('integraciones')">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    Integraciones
+  </div>
   <div class="nav-item" onclick="showTab('widget')">
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
     Instalar Widget
@@ -542,55 +655,91 @@
 
     <!-- DASHBOARD -->
     <div id="tab-dashboard" class="page active">
-      <div class="stats">
-        <div class="stat stat-mrr">
-          <div class="stat-value" id="stat-mrr">—</div>
-          <div class="stat-label">MRR estimado</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="stat-ingresos-mes">—</div>
-          <div class="stat-label">Ingresos este mes</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="stat-activos">—</div>
-          <div class="stat-label">Suscriptores activos</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="stat-total">—</div>
-          <div class="stat-label">Total histórico</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value" id="stat-pendientes">—</div>
-          <div class="stat-label">Pendientes</div>
-        </div>
-      </div>
+      <div class="dashboard-layout">
 
-      <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-title">Ingresos por mes</div>
-          <div class="chart-wrap"><canvas id="chart-ingresos"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Nuevas suscripciones</div>
-          <div class="chart-wrap"><canvas id="chart-nuevas"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Estado actual</div>
-          <div class="chart-wrap"><canvas id="chart-estado"></canvas></div>
-        </div>
-      </div>
+        <!-- MAIN -->
+        <div class="dash-main">
+          <div class="stats">
+            <div class="stat stat-mrr">
+              <div class="stat-value" id="stat-mrr">—</div>
+              <div class="stat-label">MRR estimado</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-ingresos-mes">—</div>
+              <div class="stat-label">Ingresos este mes</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-activos">—</div>
+              <div class="stat-label">Suscriptores activos</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-total">—</div>
+              <div class="stat-label">Total histórico</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-pendientes">—</div>
+              <div class="stat-label">Pendientes</div>
+            </div>
+          </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Últimas suscripciones</span>
-        </div>
-        <table>
-          <thead><tr><th>Cliente</th><th>Monto/mes</th><th>Estado</th><th>Fecha</th></tr></thead>
-          <tbody id="tabla-recientes">
-            <tr><td colspan="4" class="empty"><div class="spinner"></div></td></tr>
-          </tbody>
-        </table>
-      </div>
+          <!-- Period filter -->
+          <div class="period-bar">
+            <span class="period-label">Gráficos</span>
+            <div class="period-pills">
+              <button class="period-pill" onclick="setPeriod(7)">7D</button>
+              <button class="period-pill active" onclick="setPeriod(30)">30D</button>
+              <button class="period-pill" onclick="setPeriod(90)">3M</button>
+              <button class="period-pill" onclick="setPeriod(0)">Todo</button>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-title">Ingresos por mes</div>
+              <div class="chart-wrap"><canvas id="chart-ingresos"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Nuevas suscripciones</div>
+              <div class="chart-wrap"><canvas id="chart-nuevas"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Estado actual</div>
+              <div class="chart-wrap"><canvas id="chart-estado"></canvas></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Últimas suscripciones</span>
+            </div>
+            <table>
+              <thead><tr><th>Cliente</th><th>Monto/mes</th><th>Estado</th><th>Fecha</th></tr></thead>
+              <tbody id="tabla-recientes">
+                <tr><td colspan="4" class="empty"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div><!-- /dash-main -->
+
+        <!-- ASIDE: Checklist -->
+        <div class="dash-aside">
+          <div class="checklist-card">
+            <div class="checklist-head">
+              <div class="checklist-head-top">
+                <span class="checklist-title">Primeros pasos</span>
+                <span class="checklist-badge" id="checklist-badge">0/4</span>
+              </div>
+              <div class="checklist-progress-bg">
+                <div class="checklist-progress-fill" id="checklist-progress" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="checklist-body" id="checklist-body">
+              <!-- Steps rendered by JS -->
+            </div>
+          </div>
+        </div><!-- /dash-aside -->
+
+      </div><!-- /dashboard-layout -->
     </div>
 
     <!-- SUSCRIPTORES -->
@@ -643,6 +792,17 @@
             <tr><td colspan="6" class="empty"><div class="spinner"></div></td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- INTEGRACIONES -->
+    <div id="tab-integraciones" class="page">
+      <div class="integ-grid" id="integ-grid">
+        <!-- Renderizado por JS -->
+        <div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted2)">
+          <div class="spinner" style="margin:0 auto 12px"></div>
+          Cargando integraciones...
+        </div>
       </div>
     </div>
 
@@ -901,6 +1061,7 @@ const TITLES = {
   suscriptores:   ['Suscriptores', 'Gestión de clientes activos'],
   pagos:          ['Pagos', 'Historial de cobros'],
   planes:         ['Planes', 'Planes de suscripción'],
+  integraciones:  ['Integraciones', 'Servicios conectados a tu cuenta'],
   widget:         ['Instalar Widget', 'Instrucciones de integración'],
   configuracion:  ['Configuración', 'Ajustes de la cuenta y la app'],
 };
@@ -919,6 +1080,7 @@ function showTab(name) {
   if (name === 'suscriptores') cargarSuscriptores();
   if (name === 'pagos') cargarPagos();
   if (name === 'widget') cargarWidget();
+  if (name === 'integraciones') cargarIntegraciones();
   if (name === 'configuracion') cargarConfiguracion();
 }
 
@@ -952,7 +1114,14 @@ function destroyChart(id) {
   if (_charts[id]) { _charts[id].destroy(); delete _charts[id]; }
 }
 
-function buildCharts(subs) {
+function buildCharts(subs, days = 0) {
+  // Filtrar por período si aplica
+  if (days > 0) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    subs = subs.filter(s => new Date(s.createdAt) >= cutoff);
+  }
+
   // ── últimos 6 meses ──
   const meses = [];
   const ingresosPorMes = [];
@@ -1063,9 +1232,98 @@ function buildCharts(subs) {
   });
 }
 
+// ===================== PERIOD FILTER =====================
+let _currentPeriodDays = 30;
+let _allSubs = [];
+
+function setPeriod(days) {
+  _currentPeriodDays = days;
+  document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
+  const labels = { 7: '7D', 30: '30D', 90: '3M', 0: 'Todo' };
+  document.querySelectorAll('.period-pill').forEach(p => {
+    if (p.textContent === labels[days]) p.classList.add('active');
+  });
+  if (_allSubs.length) buildCharts(_allSubs, days);
+}
+
+// ===================== ONBOARDING CHECKLIST =====================
+const CHECKLIST_STEPS = [
+  {
+    id: 'shopify',
+    name: 'Conectar tu tienda Shopify',
+    desc: 'Tu tienda está vinculada y lista.',
+    action: null,
+    check: () => true, // siempre ok si están en el admin
+  },
+  {
+    id: 'plan',
+    name: 'Crear tu primer plan',
+    desc: 'Definí precio y frecuencia de cobro.',
+    action: 'Ir a Planes →',
+    actionTab: 'planes',
+    check: (data) => data.planes > 0,
+  },
+  {
+    id: 'widget',
+    name: 'Instalar el widget en tu tienda',
+    desc: 'Pegá el código en la página de producto.',
+    action: 'Ver instrucciones →',
+    actionTab: 'widget',
+    check: () => !!localStorage.getItem('ziklo_widget_installed'),
+  },
+  {
+    id: 'subscriber',
+    name: 'Obtener tu primer suscriptor',
+    desc: 'Cuando alguien se suscriba aparecerá aquí.',
+    action: null,
+    check: (data) => data.subs > 0,
+  },
+];
+
+async function renderChecklist(data) {
+  const body = document.getElementById('checklist-body');
+  const steps = CHECKLIST_STEPS.map(step => ({
+    ...step,
+    done: step.check(data),
+  }));
+
+  const doneCount = steps.filter(s => s.done).length;
+  const pct = Math.round((doneCount / steps.length) * 100);
+
+  document.getElementById('checklist-badge').textContent = `${doneCount}/${steps.length}`;
+  document.getElementById('checklist-progress').style.width = pct + '%';
+
+  if (doneCount === steps.length) {
+    body.innerHTML = `<div class="checklist-done-msg">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      ¡Todo listo! Tu cuenta está activa.
+    </div>`;
+    return;
+  }
+
+  // Primer paso pendiente = activo
+  const firstPending = steps.find(s => !s.done);
+
+  body.innerHTML = steps.map(step => `
+    <div class="checklist-step ${step.done ? 'done' : ''} ${(!step.done && step === firstPending) ? 'active-step' : ''}"
+         ${step.actionTab && !step.done ? `onclick="showTab('${step.actionTab}')"` : ''}>
+      <div class="step-icon ${step.done ? 'done' : 'pending'}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        <div class="step-dot"></div>
+      </div>
+      <div class="step-text">
+        <div class="step-name">${step.name}</div>
+        <div class="step-desc">${step.done ? '✓ Completado' : step.desc}</div>
+        ${step.action && !step.done ? `<div class="step-action">${step.action}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
 // ===================== DASHBOARD =====================
 async function cargarDashboard() {
   const subs = await fetch(API + '/api/subscripciones').then(r => r.json());
+  _allSubs = subs;
   const activos = subs.filter(s => s.status === 'authorized');
   const pendientes = subs.filter(s => s.status === 'pending');
 
@@ -1082,7 +1340,11 @@ async function cargarDashboard() {
   const ingresosMes = pagosMes.reduce((sum, p) => sum + (p.monto || 0), 0);
   document.getElementById('stat-ingresos-mes').textContent = ARS(ingresosMes);
 
-  buildCharts(subs);
+  buildCharts(subs, _currentPeriodDays);
+
+  // Checklist data
+  const planes = await fetch(API + '/api/planes/todos').then(r => r.json()).catch(() => []);
+  renderChecklist({ subs: subs.length, planes: planes.length });
 
   document.getElementById('tabla-recientes').innerHTML = subs.slice(0,10).map(s => {
     const envio = s.datosEnvio ? JSON.parse(s.datosEnvio) : null;
@@ -1246,6 +1508,79 @@ function copiarCodigo() {
   const btn = event.target.closest('button');
   btn.textContent = '¡Copiado!';
   setTimeout(() => btn.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar código`, 2000);
+}
+
+// ===================== INTEGRACIONES =====================
+async function cargarIntegraciones() {
+  const grid = document.getElementById('integ-grid');
+  let status = { shopify: false, mercadopago: false, email: false };
+  try {
+    status = await fetch('/admin/api/status').then(r => r.json());
+  } catch (_) {}
+
+  const integraciones = [
+    {
+      logo: `<svg width="22" height="22" viewBox="0 0 109.5 124.5"><path fill="#96BF48" d="M74.7 14.8s-1.4.4-3.7 1.1c-.4-1.3-1-2.8-1.9-4.3-2.8-5.3-6.9-8.1-11.8-8.1-.3 0-.7 0-1 .1-.1-.2-.3-.3-.4-.5-2.1-2.3-4.9-3.4-8.2-3.3-6.4.2-12.8 4.8-17.9 13-3.6 5.7-6.3 12.9-7.1 18.4-7.3 2.3-12.4 3.8-12.5 3.9C7.2 37.5 7 37.6 7 40.5c0 2.2 27.5 84.5 27.5 84.5l56.2-9.6-16-100.6z"/><path fill="#5E8E3E" d="M74.7 14.8l-3.8 79.7-21.1 15.9L57 110.6l40.9-7-3.9-88.3z"/><path fill="#FFF" d="M57 22.6l-2.5 7.3s-2.5-1.3-5.4-1.1c-4.4.3-4.4 3-4.4 3.7.2 3.9 10.7 4.8 11.3 14 .5 7.3-3.8 12.2-10 12.6-7.3.4-11-3.9-11-3.9l1.5-6.5s3.8 2.9 6.9 2.7c2-.1 2.7-1.8 2.7-2.9-.3-5.1-8.8-4.8-9.4-13.2-.5-7.1 4.2-14.2 14.4-14.9 4.2-.2 6.3.2 6.9.2z"/></svg>`,
+      logoBg: '#1a2e0a',
+      name: 'Shopify',
+      desc: 'Tienda online y gestión de pedidos',
+      connected: status.shopify,
+      detail: status.shopify ? 'API conectada. Órdenes y clientes sincronizados.' : 'Configurá tu SHOPIFY_ACCESS_TOKEN en las variables de entorno.',
+      action: status.shopify ? null : { label: 'Ver guía', url: 'https://help.shopify.com' },
+    },
+    {
+      logo: `<svg width="22" height="22" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#009EE3"/><path d="M12 30c3-6 8-10 14-10s10 3 12 8" stroke="white" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="20" r="5" fill="white"/></svg>`,
+      logoBg: '#001a2e',
+      name: 'Mercado Pago',
+      desc: 'Cobros recurrentes y suscripciones',
+      connected: status.mercadopago,
+      detail: status.mercadopago ? 'Preapproval API activa. Cobros automáticos habilitados.' : 'Configurá tu MP_ACCESS_TOKEN en las variables de entorno.',
+      action: status.mercadopago ? { label: 'Panel MP', url: 'https://www.mercadopago.com.ar/developers' } : null,
+    },
+    {
+      logo: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
+      logoBg: '#2d1b4e',
+      name: 'Email (SMTP)',
+      desc: 'Confirmaciones y notificaciones',
+      connected: status.email,
+      detail: status.email ? 'Servidor SMTP configurado. Emails de confirmación activos.' : 'Configurá SMTP_HOST, SMTP_USER y SMTP_PASS para enviar emails.',
+      action: !status.email ? { label: 'Ver guía', url: 'https://support.google.com/accounts/answer/185833' } : null,
+    },
+    {
+      logo: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>`,
+      logoBg: '#1a1a0a',
+      name: 'Webhooks MP',
+      desc: 'Notificaciones de pagos en tiempo real',
+      connected: status.mercadopago,
+      detail: `URL: ${window.location.origin}/webhooks/mp`,
+      action: { label: 'Copiar URL', onClick: `navigator.clipboard.writeText('${window.location.origin}/webhooks/mp').then(()=>alert('URL copiada'))` },
+    },
+  ];
+
+  grid.innerHTML = integraciones.map(integ => `
+    <div class="integ-card">
+      <div class="integ-card-head">
+        <div class="integ-logo" style="background:${integ.logoBg}">${integ.logo}</div>
+        <div>
+          <div class="integ-name">${integ.name}</div>
+          <div class="integ-desc">${integ.desc}</div>
+        </div>
+      </div>
+      <div class="integ-status">
+        <div class="integ-status-dot ${integ.connected ? 'green' : 'red'}"></div>
+        <span class="integ-status-text ${integ.connected ? 'green' : 'red'}">
+          ${integ.connected ? 'Conectado' : 'No configurado'}
+        </span>
+      </div>
+      <div class="integ-detail">${integ.detail}</div>
+      ${integ.action ? `
+        <button class="integ-action" ${integ.action.url ? `onclick="window.open('${integ.action.url}','_blank')"` : `onclick="${integ.action.onClick}"`}>
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          ${integ.action.label}
+        </button>
+      ` : ''}
+    </div>
+  `).join('');
 }
 
 // ===================== CONFIGURACIÓN =====================
