@@ -21,8 +21,16 @@ router.post('/mp', async (req, res) => {
     const { type, data } = body;
     console.log('Webhook MP recibido:', type, data?.id);
 
+    // Helper: carga el shop de una suscripción para obtener sus tokens
+    async function getShopForSub(sub) {
+      if (!sub?.shopDomain) return null;
+      return prisma.shop.findUnique({ where: { domain: sub.shopDomain } });
+    }
+
     // Notificación de pago
     if (type === 'payment' && data?.id) {
+      // Primero buscamos la sub para saber de qué shop es y usar su token de MP
+      // Como no sabemos el preapproval aún, usamos el token de env como fallback inicial
       const pago = await mp.getPago(data.id);
       console.log('Pago ID:', pago.id, '| Status:', pago.status, '| Preapproval:', pago.preapproval_id);
 
@@ -37,30 +45,47 @@ router.post('/mp', async (req, res) => {
           return;
         }
 
+        // Cargar el shop para usar sus tokens propios
+        const shop = await getShopForSub(sub);
+        const shopifyToken = shop?.accessToken  || process.env.SHOPIFY_ACCESS_TOKEN;
+        const shopDomain   = shop?.domain       || process.env.SHOPIFY_SHOP_DOMAIN;
+
         // Registrar el pago en BD
         await prisma.pago.upsert({
-          where: { mpPaymentId: String(pago.id) },
+          where:  { mpPaymentId: String(pago.id) },
           update: { status: pago.status },
           create: {
-            mpPaymentId: String(pago.id),
-            monto: pago.transaction_amount,
-            status: pago.status,
+            mpPaymentId:    String(pago.id),
+            monto:          pago.transaction_amount,
+            status:         pago.status,
             subscriptionId: sub.id,
           },
         });
 
-        // Crear orden en Shopify
+        // Crear orden en Shopify usando el token del shop correcto
         if (sub.variantId) {
           try {
             const envio = sub.datosEnvio ? JSON.parse(sub.datosEnvio) : null;
-            const orden = await shopify.crearOrden({
-              customerId: sub.shopifyCustomerId,
-              email: sub.shopifyCustomerEmail,
-              lineItems: [{ variant_id: sub.variantId, quantity: sub.qty || 1 }],
-              nota: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
-              envio,
-            });
-            console.log('Orden Shopify creada:', orden.id);
+            const orden = await shopify.shopifyRequestForShop(
+              shopDomain, shopifyToken, '/orders.json', 'POST',
+              {
+                order: {
+                  customer:   { id: sub.shopifyCustomerId },
+                  email:      sub.shopifyCustomerEmail,
+                  line_items: [{ variant_id: sub.variantId, quantity: sub.qty || 1 }],
+                  financial_status: 'paid',
+                  note: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
+                  tags: 'suscripcion,mp-auto',
+                  ...(envio ? { shipping_address: {
+                    first_name: envio.nombre, last_name: envio.apellido,
+                    address1: envio.direccion, city: envio.ciudad,
+                    province: envio.provincia, zip: envio.cp, country: 'AR',
+                    phone: envio.telefono,
+                  }} : {}),
+                },
+              }
+            );
+            console.log('Orden Shopify creada:', orden?.order?.id);
           } catch (err) {
             console.error('Error al crear orden Shopify:', err.message);
           }
@@ -70,29 +95,35 @@ router.post('/mp', async (req, res) => {
 
     // Notificación de cambio en preapproval (suscripción)
     if (type === 'subscription_preapproval' && data?.id) {
-      const preapproval = await mp.getPreapproval(data.id);
-      console.log('Preapproval actualizado:', preapproval.id, '| Status:', preapproval.status);
-
       const subs = await prisma.subscription.findMany({
-        where: { mpPreapprovalId: data.id },
+        where:   { mpPreapprovalId: data.id },
         include: { plan: true },
       });
 
+      // Obtener el preapproval usando el token del shop si está disponible
+      const shop = subs.length > 0 ? await getShopForSub(subs[0]) : null;
+      const mpToken = shop?.mpAccessToken || null;
+      const preapproval = await mp.getPreapproval(data.id, mpToken);
+      console.log('Preapproval actualizado:', preapproval.id, '| Status:', preapproval.status);
+
       await prisma.subscription.updateMany({
         where: { mpPreapprovalId: data.id },
-        data: { status: preapproval.status },
+        data:  { status: preapproval.status },
       });
 
-      // Enviar email de confirmación cuando se activa
+      // Email de confirmación cuando se activa
       if (preapproval.status === 'authorized' && subs.length > 0) {
         const sub = subs[0];
         try {
-          const storeName = await shopify.getShopName().catch(() => process.env.STORE_NAME);
+          const shopDomain = shop?.domain || process.env.SHOPIFY_SHOP_DOMAIN;
+          const shopToken  = shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN;
+          const shopData   = await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null);
+          const storeName  = shopData?.shop?.name || process.env.STORE_NAME || shopDomain;
           await email.enviarConfirmacionSuscripcion({
-            email: sub.shopifyCustomerEmail,
-            nombre: sub.datosEnvio ? JSON.parse(sub.datosEnvio).nombre : null,
+            email:      sub.shopifyCustomerEmail,
+            nombre:     sub.datosEnvio ? JSON.parse(sub.datosEnvio).nombre : null,
             planNombre: sub.plan.nombre,
-            monto: sub.plan.monto,
+            monto:      sub.plan.monto,
             storeName,
           });
           console.log('Email de confirmación enviado a:', sub.shopifyCustomerEmail);

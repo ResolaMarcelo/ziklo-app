@@ -1,9 +1,10 @@
 const express = require('express');
-const router = express.Router();
-const path = require('path');
-const fs = require('fs');
-const crypto = require('crypto');
+const router  = express.Router();
+const path    = require('path');
+const fs      = require('fs');
+const crypto  = require('crypto');
 const shopify = require('../services/shopify');
+const prisma  = require('../lib/prisma');
 
 // ── Rutas públicas (sin auth) ──────────────────────────────────────────────
 
@@ -33,7 +34,9 @@ router.post('/api/login', (req, res) => {
 
   if (userOk && passOk) {
     req.session.adminLoggedIn = true;
-    req.session.adminUser = validUser;
+    req.session.adminUser     = validUser;
+    // Para el flujo single-store, shopDomain viene del env var
+    req.session.shopDomain    = process.env.SHOPIFY_SHOP_DOMAIN || null;
     return res.json({ ok: true });
   }
 
@@ -84,12 +87,55 @@ router.get('/api/shop', async (req, res) => {
   }
 });
 
-// GET /admin/api/status — qué integraciones están configuradas
-router.get('/api/status', (req, res) => {
+// GET /admin/api/status — integraciones del shop logueado
+router.get('/api/status', async (req, res) => {
+  // Si el shop está en DB, usar sus tokens; si no, fallback a env vars
+  const shop = req.shop;
   res.json({
-    shopify:      !!(process.env.SHOPIFY_ACCESS_TOKEN && process.env.SHOPIFY_SHOP_DOMAIN),
-    mercadopago:  !!process.env.MP_ACCESS_TOKEN,
-    email:        !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+    shopify:     !!(shop?.accessToken || (process.env.SHOPIFY_ACCESS_TOKEN && process.env.SHOPIFY_SHOP_DOMAIN)),
+    mercadopago: !!(shop?.mpAccessToken || process.env.MP_ACCESS_TOKEN),
+    email:       !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+  });
+});
+
+// POST /admin/api/mp-token — guardar token de Mercado Pago del shop
+router.post('/api/mp-token', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'token requerido' });
+
+    const shopDomain = req.session?.shopDomain;
+    if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
+
+    // Upsert: crea el registro Shop si no existe aún
+    await prisma.shop.upsert({
+      where:  { domain: shopDomain },
+      update: { mpAccessToken: token },
+      create: {
+        domain:       shopDomain,
+        accessToken:  process.env.SHOPIFY_ACCESS_TOKEN || '',
+        mpAccessToken: token,
+        shopName:     shopDomain,
+      },
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /admin/api/mp-token — verificar si hay token de MP guardado
+router.get('/api/mp-token', async (req, res) => {
+  const shop = req.shop;
+  res.json({
+    configured: !!(shop?.mpAccessToken || process.env.MP_ACCESS_TOKEN),
+    // Nunca exponemos el token completo, solo los últimos 4 chars como hint
+    hint: shop?.mpAccessToken
+      ? `****${shop.mpAccessToken.slice(-4)}`
+      : process.env.MP_ACCESS_TOKEN
+        ? `****${process.env.MP_ACCESS_TOKEN.slice(-4)}`
+        : null,
   });
 });
 

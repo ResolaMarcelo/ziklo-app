@@ -1,62 +1,59 @@
 const { MercadoPagoConfig, PreApproval, Payment } = require('mercadopago');
 
-const client = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN,
-});
+/**
+ * Devuelve clientes de MP inicializados con el token del shop.
+ * Si no se pasa mpToken, usa MP_ACCESS_TOKEN del env (fallback single-store / legacy).
+ */
+function getClients(mpToken) {
+  const token = mpToken || process.env.MP_ACCESS_TOKEN;
+  if (!token) throw new Error('No hay token de Mercado Pago configurado para esta tienda.');
+  const config = new MercadoPagoConfig({ accessToken: token });
+  return {
+    preApproval: new PreApproval(config),
+    payment:     new Payment(config),
+  };
+}
 
-const preApprovalClient = new PreApproval(client);
-const paymentClient = new Payment(client);
-
-async function crearPreapproval({ plan, email, backUrl }) {
+async function crearPreapproval({ plan, email, backUrl, mpToken }) {
+  const { preApproval } = getClients(mpToken);
   const body = {
     reason: `Suscripción ${plan.nombre}`,
     auto_recurring: {
-      frequency: plan.frecuencia,
-      frequency_type: plan.tipoFrecuencia,
+      frequency:          plan.frecuencia,
+      frequency_type:     plan.tipoFrecuencia,
       transaction_amount: plan.monto,
-      currency_id: 'ARS',
+      currency_id:        'ARS',
     },
     back_url: backUrl || `${process.env.APP_URL}/cliente/gracias`,
-    status: 'pending',
+    status:   'pending',
   };
   if (email) body.payer_email = email;
-
-  const resultado = await preApprovalClient.create({ body });
-  return resultado;
+  return preApproval.create({ body });
 }
 
-async function getPreapproval(preapprovalId) {
-  const resultado = await preApprovalClient.get({ id: preapprovalId });
-  return resultado;
+async function getPreapproval(preapprovalId, mpToken) {
+  const { preApproval } = getClients(mpToken);
+  return preApproval.get({ id: preapprovalId });
 }
 
-async function cancelarPreapproval(preapprovalId) {
-  const resultado = await preApprovalClient.update({
-    id: preapprovalId,
-    body: { status: 'cancelled' },
-  });
-  return resultado;
+async function cancelarPreapproval(preapprovalId, mpToken) {
+  const { preApproval } = getClients(mpToken);
+  return preApproval.update({ id: preapprovalId, body: { status: 'cancelled' } });
 }
 
-async function pausarPreapproval(preapprovalId) {
-  const resultado = await preApprovalClient.update({
-    id: preapprovalId,
-    body: { status: 'paused' },
-  });
-  return resultado;
+async function pausarPreapproval(preapprovalId, mpToken) {
+  const { preApproval } = getClients(mpToken);
+  return preApproval.update({ id: preapprovalId, body: { status: 'paused' } });
 }
 
-async function reanudarPreapproval(preapprovalId) {
-  const resultado = await preApprovalClient.update({
-    id: preapprovalId,
-    body: { status: 'authorized' },
-  });
-  return resultado;
+async function reanudarPreapproval(preapprovalId, mpToken) {
+  const { preApproval } = getClients(mpToken);
+  return preApproval.update({ id: preapprovalId, body: { status: 'authorized' } });
 }
 
-async function getPago(paymentId) {
-  const resultado = await paymentClient.get({ id: paymentId });
-  return resultado;
+async function getPago(paymentId, mpToken) {
+  const { payment } = getClients(mpToken);
+  return payment.get({ id: paymentId });
 }
 
 module.exports = {

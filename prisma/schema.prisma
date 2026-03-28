@@ -9,43 +9,54 @@ datasource db {
 
 // Tiendas Shopify autenticadas via OAuth
 model Shop {
-  id           String   @id @default(cuid())
-  domain       String   @unique  // ej: mi-tienda.myshopify.com
-  accessToken  String            // token de Shopify Admin API
-  shopName     String?           // nombre de la tienda (cacheado)
-  email        String?           // email del owner
-  installedAt  DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-model Plan {
   id            String         @id @default(cuid())
-  nombre        String
-  descripcion   String?
-  monto         Float
-  frecuencia    Int            @default(1)
-  tipoFrecuencia String        @default("months") // "months" | "days"
-  activo        Boolean        @default(true)
-  createdAt     DateTime       @default(now())
+  domain        String         @unique  // ej: mi-tienda.myshopify.com
+  accessToken   String                  // token de Shopify Admin API
+  mpAccessToken String?                 // token de Mercado Pago de esta tienda
+  shopName      String?                 // nombre de la tienda (cacheado)
+  email         String?                 // email del owner
+  installedAt   DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  plans         Plan[]
   subscriptions Subscription[]
 }
 
+model Plan {
+  id             String         @id @default(cuid())
+  shopDomain     String?                // tienda a la que pertenece este plan
+  shop           Shop?          @relation(fields: [shopDomain], references: [domain])
+  nombre         String
+  descripcion    String?
+  monto          Float
+  frecuencia     Int            @default(1)
+  tipoFrecuencia String         @default("months") // "months" | "days"
+  activo         Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  subscriptions  Subscription[]
+
+  @@index([shopDomain])
+}
+
 model Subscription {
-  id                  String   @id @default(cuid())
-  shopifyCustomerId   String
+  id                   String   @id @default(cuid())
+  shopDomain           String?           // tienda a la que pertenece
+  shop                 Shop?    @relation(fields: [shopDomain], references: [domain])
+  shopifyCustomerId    String
   shopifyCustomerEmail String
-  variantId           String?
-  productId           String?
-  mpPreapprovalId     String   @unique
-  status              String   @default("pending") // pending | authorized | paused | cancelled
-  plan                Plan     @relation(fields: [planId], references: [id])
-  planId              String
-  datosEnvio          String?  // JSON: nombre, apellido, telefono, direccion, ciudad, provincia, cp
-  qty                 Int?     @default(1)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  pagos               Pago[]
+  variantId            String?
+  productId            String?
+  mpPreapprovalId      String   @unique
+  status               String   @default("pending") // pending | authorized | paused | cancelled
+  plan                 Plan     @relation(fields: [planId], references: [id])
+  planId               String
+  datosEnvio           String?  // JSON: nombre, apellido, telefono, direccion, ciudad, provincia, cp
+  qty                  Int?     @default(1)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  pagos                Pago[]
+
+  @@index([shopDomain])
 }
 
 model Pago {

@@ -10,7 +10,8 @@ const webhooksRoutes = require('./routes/webhooks');
 const adminRoutes = require('./routes/admin');
 const clienteRoutes = require('./routes/cliente');
 const authRoutes = require('./routes/auth');
-const adminAuth = require('./middleware/adminAuth');
+const adminAuth  = require('./middleware/adminAuth');
+const shopContext = require('./middleware/shopContext');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,6 +42,9 @@ app.use('/webhooks', express.raw({ type: 'application/json' }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Adjunta req.shop a todos los requests (usa sesión o ?shop= query param)
+app.use(shopContext);
 
 // Rutas API
 app.use('/api/planes', planesRoutes);
