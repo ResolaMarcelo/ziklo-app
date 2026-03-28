@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const shopify = require('../services/shopify');
 
 // ── Rutas públicas (sin auth) ──────────────────────────────────────────────
 
-// GET /admin/login — página de login con OAuth Shopify
+// GET /admin/login
 router.get('/login', (req, res) => {
   if (req.session && req.session.adminLoggedIn) {
     return res.redirect('/admin/');
@@ -14,14 +15,35 @@ router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/admin/login.html'));
 });
 
-// GET /admin/api/login-status — estado de sesión (público para que login.html lo chequee)
+// POST /admin/api/login — usuario + contraseña desde env vars
+router.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+
+  const validUser = process.env.ADMIN_USER || 'admin';
+  const validPass = process.env.ADMIN_PASSWORD || 'ziklo2024';
+
+  // Buffers de igual tamaño para timingSafeEqual
+  const uBuf = Buffer.alloc(64); Buffer.from(username || '').copy(uBuf);
+  const vBuf = Buffer.alloc(64); Buffer.from(validUser).copy(vBuf);
+  const pBuf = Buffer.alloc(64); Buffer.from(password || '').copy(pBuf);
+  const qBuf = Buffer.alloc(64); Buffer.from(validPass).copy(qBuf);
+
+  const userOk = crypto.timingSafeEqual(uBuf, vBuf);
+  const passOk = crypto.timingSafeEqual(pBuf, qBuf);
+
+  if (userOk && passOk) {
+    req.session.adminLoggedIn = true;
+    req.session.adminUser = validUser;
+    return res.json({ ok: true });
+  }
+
+  return res.status(401).json({ error: 'Credenciales incorrectas' });
+});
+
+// GET /admin/api/login-status
 router.get('/api/login-status', (req, res) => {
   if (req.session && req.session.adminLoggedIn) {
-    return res.json({
-      loggedIn: true,
-      shopDomain: req.session.shopDomain,
-      shopName: req.session.shopName,
-    });
+    return res.json({ loggedIn: true, shopName: req.session.shopName || null });
   }
   res.json({ loggedIn: false });
 });
