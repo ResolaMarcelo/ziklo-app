@@ -54,9 +54,9 @@ app.use('/auth', authRoutes);
 app.use('/admin', adminAuth, adminRoutes);
 app.use('/cliente', clienteRoutes);
 
-// Health check
+// Landing page
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', app: 'Suscripciones Shopify + MP' });
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 app.listen(PORT, () => {

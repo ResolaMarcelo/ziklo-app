@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ziklo — Suscripciones para tu tienda Shopify</title>
+  <meta name="description" content="Sumá suscripciones a tu tienda Shopify y cobrá de forma automática con Mercado Pago. Sin código, sin comisiones fijas." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --green:        #00C87A;
+      --green-dim:    rgba(0,200,122,.1);
+      --green-border: rgba(0,200,122,.2);
+      --navy:         #0F1F3D;
+      --black:        #0A0A0F;
+      --surface:      #111118;
+      --card:         #16161F;
+      --border:       rgba(255,255,255,.08);
+      --border-s:     rgba(255,255,255,.13);
+      --white:        #F8FAFC;
+      --muted:        #4B5563;
+      --muted2:       #6B7280;
+      --muted3:       #9CA3AF;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--black);
+      color: var(--white);
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── GRID BG ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── UTILS ─── */
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-dim); border: 1px solid var(--green-border);
+      color: var(--green); font-size: 11px; font-weight: 700;
+      padding: 5px 12px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .07em;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.15;
+    }
+    .section-sub {
+      font-size: 16px; color: var(--muted3); line-height: 1.7;
+      max-width: 560px;
+    }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .nav-logo-text { font-size: 17px; font-weight: 800; color: var(--white); }
+    .nav-logo-badge {
+      font-size: 9px; font-weight: 700; background: var(--green-dim);
+      border: 1px solid var(--green-border); color: var(--green);
+      padding: 2px 7px; border-radius: 10px; text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a {
+      font-size: 13px; font-weight: 500; color: var(--muted3);
+      text-decoration: none; transition: color .15s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta { display: flex; align-items: center; gap: 10px; }
+    .btn-nav-ghost {
+      font-size: 13px; font-weight: 600; color: var(--muted3);
+      background: none; border: 1px solid var(--border-s);
+      border-radius: 8px; padding: 7px 14px; cursor: pointer;
+      text-decoration: none; transition: all .15s; font-family: 'Inter', sans-serif;
+    }
+    .btn-nav-ghost:hover { color: var(--white); border-color: rgba(255,255,255,.25); }
+    .btn-nav-primary {
+      font-size: 13px; font-weight: 700; color: #000;
+      background: var(--green); border: none;
+      border-radius: 8px; padding: 8px 16px; cursor: pointer;
+      text-decoration: none; transition: opacity .15s; font-family: 'Inter', sans-serif;
+    }
+    .btn-nav-primary:hover { opacity: .85; }
+    .nav-ham {
+      display: none; background: none; border: 1px solid var(--border-s);
+      border-radius: 7px; padding: 6px 8px; cursor: pointer; color: var(--muted3);
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative; overflow: hidden;
+      padding: 100px 0 80px;
+      text-align: center;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 600px;
+      background: radial-gradient(ellipse, rgba(0,200,122,.13) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-tag { margin-bottom: 24px; }
+    .hero-title {
+      font-size: clamp(36px, 6vw, 68px);
+      font-weight: 900;
+      letter-spacing: -.04em;
+      line-height: 1.08;
+      margin-bottom: 22px;
+    }
+    .hero-title .accent { color: var(--green); }
+    .hero-sub {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--muted3); max-width: 560px;
+      margin: 0 auto 36px;
+      line-height: 1.65;
+    }
+    .hero-actions {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 60px;
+    }
+    .btn-hero-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green); color: #000; font-weight: 800;
+      font-size: 15px; padding: 14px 28px; border-radius: 12px;
+      text-decoration: none; border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: opacity .15s, transform .1s;
+    }
+    .btn-hero-primary:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-hero-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: var(--muted3); font-weight: 600;
+      font-size: 15px; padding: 14px 22px; border-radius: 12px;
+      text-decoration: none; border: 1px solid var(--border-s); cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all .15s;
+    }
+    .btn-hero-ghost:hover { color: var(--white); border-color: rgba(255,255,255,.25); }
+    .hero-note { font-size: 12px; color: var(--muted); margin-top: -46px; margin-bottom: 52px; }
+
+    /* Dashboard mockup */
+    .hero-mockup {
+      position: relative; max-width: 900px; margin: 0 auto;
+      border-radius: 16px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+    }
+    .mockup-topbar {
+      background: var(--surface); padding: 10px 16px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mockup-circle { width: 10px; height: 10px; border-radius: 50%; }
+    .mockup-url {
+      flex: 1; text-align: center; font-size: 11px;
+      color: rgba(255,255,255,.25); font-family: 'JetBrains Mono', monospace;
+    }
+    .mockup-body {
+      background: #0E0E16; padding: 20px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    }
+    .mockup-stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
+    }
+    .mockup-stat-card.green { border-color: var(--green-border); background: var(--green-dim); }
+    .mockup-stat-val {
+      font-size: 20px; font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--white); margin-bottom: 4px;
+    }
+    .mockup-stat-card.green .mockup-stat-val { color: var(--green); }
+    .mockup-stat-lbl { font-size: 10px; color: var(--muted2); }
+    .mockup-chart-row {
+      padding: 0 20px 20px; background: #0E0E16;
+      display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;
+    }
+    .mockup-chart-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
+    }
+    .mockup-chart-label { font-size: 9px; color: var(--muted2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; }
+    .mockup-svg { width: 100%; height: 70px; display: block; }
+    .mockup-skel { height: 8px; background: rgba(255,255,255,.06); border-radius: 4px; margin-bottom: 6px; }
+    .mockup-skel:last-child { width: 70%; }
+    .mockup-badge {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      padding: 3px 7px; border-radius: 10px; margin-bottom: 6px;
+    }
+    .mockup-badge.green { background: rgba(0,200,122,.15); color: var(--green); }
+    .mockup-badge.yellow { background: rgba(245,158,11,.12); color: #F59E0B; }
+
+    /* ─── LOGOS BAR ─── */
+    .logos-bar {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .logos-label {
+      text-align: center; font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .1em; margin-bottom: 24px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .logos-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 48px; flex-wrap: wrap;
+    }
+    .logo-pill {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 20px;
+    }
+    .logo-pill-name { font-size: 13px; font-weight: 700; color: var(--muted3); }
+
+    /* ─── STATS ─── */
+    .stats-section { padding: 80px 0; }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+      background: var(--border); border: 1px solid var(--border); border-radius: 16px;
+      overflow: hidden;
+    }
+    .stat-box {
+      background: var(--card); padding: 36px 32px; text-align: center;
+    }
+    .stat-number {
+      font-size: clamp(36px, 5vw, 52px); font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--green); letter-spacing: -.03em; line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-desc { font-size: 13px; color: var(--muted3); line-height: 1.5; }
+
+    /* ─── PROBLEM ─── */
+    .problem-section { padding: 80px 0; }
+    .problem-inner {
+      background: var(--card); border: 1px solid var(--border-s);
+      border-radius: 20px; padding: 60px;
+      position: relative; overflow: hidden;
+    }
+    .problem-inner::before {
+      content: '';
+      position: absolute; right: -80px; top: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(ellipse, rgba(239,68,68,.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+    .problem-tag { margin-bottom: 20px; background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.2); color: #EF4444; }
+    .problem-title { font-size: clamp(24px, 3.5vw, 36px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 16px; }
+    .problem-desc { color: var(--muted3); line-height: 1.8; margin-bottom: 24px; }
+    .problem-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .problem-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 14px; color: var(--muted3);
+    }
+    .problem-list li::before {
+      content: '✗'; color: #EF4444; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+    }
+    .solution-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .solution-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 14px; color: var(--muted3);
+    }
+    .solution-list li::before {
+      content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px;
+    }
+    .solution-title { font-size: clamp(24px, 3.5vw, 36px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 16px; }
+    .solution-desc { color: var(--muted3); line-height: 1.8; margin-bottom: 24px; }
+    .divider-arrow {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; background: var(--green-dim);
+      border: 1px solid var(--green-border); border-radius: 10px;
+      color: var(--green); margin: 0 auto;
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .how-section { padding: 100px 0; }
+    .how-header { text-align: center; margin-bottom: 64px; }
+    .how-header .section-sub { margin: 16px auto 0; }
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+      position: relative;
+    }
+    .step-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px 24px;
+      position: relative; transition: border-color .2s;
+    }
+    .step-card:hover { border-color: var(--green-border); }
+    .step-number {
+      font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+      color: var(--green); background: var(--green-dim); border: 1px solid var(--green-border);
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .step-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--surface); border: 1px solid var(--border-s);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; color: var(--green);
+    }
+    .step-name { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .step-desc { font-size: 13px; color: var(--muted3); line-height: 1.65; }
+
+    /* ─── FEATURES ─── */
+    .features-section { padding: 100px 0; }
+    .features-header { text-align: center; margin-bottom: 64px; }
+    .features-header .section-sub { margin: 16px auto 0; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px;
+      transition: border-color .2s, transform .2s;
+    }
+    .feature-card:hover { border-color: var(--green-border); transform: translateY(-2px); }
+    .feature-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px; flex-shrink: 0;
+    }
+    .feature-name { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .feature-desc { font-size: 13px; color: var(--muted3); line-height: 1.7; }
+
+    /* ─── PRICING ─── */
+    .pricing-section { padding: 100px 0; }
+    .pricing-header { text-align: center; margin-bottom: 56px; }
+    .pricing-header .section-sub { margin: 16px auto 0; }
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+      max-width: 900px; margin: 0 auto;
+    }
+    .pricing-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px 28px;
+      position: relative; transition: border-color .2s;
+    }
+    .pricing-card:hover { border-color: var(--border-s); }
+    .pricing-card.featured {
+      border-color: var(--green-border);
+      background: linear-gradient(160deg, rgba(0,200,122,.06) 0%, var(--card) 60%);
+    }
+    .pricing-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--green); color: #000; font-size: 10px; font-weight: 800;
+      padding: 4px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em;
+      white-space: nowrap;
+    }
+    .pricing-plan { font-size: 13px; font-weight: 700; color: var(--muted3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
+    .pricing-price {
+      font-size: 42px; font-weight: 900; font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -.03em; line-height: 1; margin-bottom: 4px;
+    }
+    .pricing-price sup { font-size: 18px; font-weight: 700; vertical-align: top; margin-top: 8px; }
+    .pricing-period { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .pricing-note { font-size: 11px; color: var(--muted3); margin-bottom: 24px; line-height: 1.5; }
+    .pricing-divider { height: 1px; background: var(--border); margin-bottom: 20px; }
+    .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .pricing-features li {
+      display: flex; align-items: flex-start; gap: 9px;
+      font-size: 13px; color: var(--muted3);
+    }
+    .pricing-features li svg { flex-shrink: 0; margin-top: 2px; color: var(--green); }
+    .pricing-features li.muted svg { color: var(--muted); }
+    .pricing-features li.muted { opacity: .5; }
+    .btn-pricing {
+      width: 100%; padding: 11px; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all .15s;
+      text-align: center; text-decoration: none; display: block;
+    }
+    .btn-pricing.primary { background: var(--green); color: #000; border: none; }
+    .btn-pricing.primary:hover { opacity: .88; }
+    .btn-pricing.ghost { background: transparent; color: var(--muted3); border: 1px solid var(--border-s); }
+    .btn-pricing.ghost:hover { color: var(--white); border-color: rgba(255,255,255,.25); }
+
+    /* ─── TESTIMONIALS ─── */
+    .testimonials-section { padding: 100px 0; }
+    .testimonials-header { text-align: center; margin-bottom: 56px; }
+    .testimonials-header .section-sub { margin: 16px auto 0; }
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    .testimonial-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px;
+    }
+    .testimonial-stars { color: #F59E0B; font-size: 14px; margin-bottom: 14px; letter-spacing: 2px; }
+    .testimonial-text { font-size: 14px; color: var(--muted3); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
+    .testimonial-text strong { color: var(--white); font-style: normal; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .testimonial-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--green-dim); border: 1px solid var(--green-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: var(--green); flex-shrink: 0;
+    }
+    .testimonial-name { font-size: 13px; font-weight: 700; }
+    .testimonial-store { font-size: 11px; color: var(--muted2); margin-top: 1px; }
+
+    /* ─── FAQ ─── */
+    .faq-section-landing { padding: 100px 0; }
+    .faq-landing-header { text-align: center; margin-bottom: 56px; }
+    .faq-landing-header .section-sub { margin: 16px auto 0; }
+    .faq-landing-list {
+      max-width: 720px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .faq-landing-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; transition: border-color .15s;
+    }
+    .faq-landing-item:hover { border-color: var(--border-s); }
+    .faq-landing-item.open { border-color: var(--green-border); }
+    .faq-landing-q {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 22px; cursor: pointer; user-select: none; gap: 16px;
+    }
+    .faq-landing-q span { font-size: 14px; font-weight: 600; flex: 1; }
+    .faq-landing-chevron {
+      width: 16px; height: 16px; color: var(--muted2); flex-shrink: 0;
+      transition: transform .2s, color .15s;
+    }
+    .faq-landing-item.open .faq-landing-chevron { transform: rotate(180deg); color: var(--green); }
+    .faq-landing-a {
+      display: none; padding: 0 22px 18px;
+      font-size: 13px; color: var(--muted3); line-height: 1.75;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    .faq-landing-item.open .faq-landing-a { display: block; }
+
+    /* ─── CTA BANNER ─── */
+    .cta-section { padding: 100px 0; }
+    .cta-inner {
+      background: linear-gradient(135deg, #0d1f3c 0%, #0e1a30 50%, #0A0A0F 100%);
+      border: 1px solid var(--green-border);
+      border-radius: 24px; padding: 72px 60px;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-inner::before {
+      content: '';
+      position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(0,200,122,.15) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cta-title { font-size: clamp(28px, 4vw, 46px); font-weight: 900; letter-spacing: -.03em; margin-bottom: 16px; }
+    .cta-sub { font-size: 16px; color: var(--muted3); max-width: 480px; margin: 0 auto 36px; line-height: 1.65; }
+    .cta-actions { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .cta-note { font-size: 12px; color: var(--muted); margin-top: 16px; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0 32px;
+    }
+    .footer-inner {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px;
+      margin-bottom: 48px;
+    }
+    .footer-brand { }
+    .footer-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .footer-logo-text { font-size: 16px; font-weight: 800; color: var(--white); }
+    .footer-desc { font-size: 13px; color: var(--muted2); line-height: 1.7; max-width: 240px; }
+    .footer-col-title {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .08em;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 16px;
+    }
+    .footer-col-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col-links a {
+      font-size: 13px; color: var(--muted2); text-decoration: none; transition: color .15s;
+    }
+    .footer-col-links a:hover { color: var(--white); }
+    .footer-bottom {
+      border-top: 1px solid var(--border); padding-top: 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-copy { font-size: 12px; color: var(--muted); }
+    .footer-copy span { color: var(--green); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1024px) {
+      .steps-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .hero { padding: 70px 0 60px; }
+      .mockup-body { grid-template-columns: repeat(2, 1fr); }
+      .mockup-chart-row { grid-template-columns: 1fr; }
+      .problem-grid { grid-template-columns: 1fr; gap: 32px; }
+      .divider-arrow { display: none; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 380px; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .cta-inner { padding: 48px 28px; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+      .nav-links { display: none; }
+      .nav-ham { display: flex; }
+      .problem-inner { padding: 36px 28px; }
+    }
+    @media (max-width: 480px) {
+      .hero { padding: 50px 0 40px; }
+      .logos-row { gap: 16px; }
+      .footer-inner { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+      .pricing-grid { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─────────────────────── NAV ─────────────────────── -->
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <svg width="28" height="28" viewBox="0 0 80 80">
+          <rect width="80" height="80" rx="18" fill="#0F1F3D"/>
+          <text x="40" y="52" text-anchor="middle" font-size="38" font-weight="700" fill="white" font-family="sans-serif">Z</text>
+          <path d="M24,60 A16,10 0 0,0 56,60" fill="none" stroke="#00C87A" stroke-width="3" stroke-linecap="round"/>
+          <polygon points="56,55 56,65 62,60" fill="#00C87A"/>
+        </svg>
+        <div>
+          <div class="nav-logo-text">Ziklo</div>
+        </div>
+        <span class="nav-logo-badge">Beta</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#features">Funcionalidades</a>
+        <a href="#precios">Precios</a>
+        <a href="#faqs">FAQs</a>
+      </div>
+
+      <div class="nav-cta">
+        <a href="/admin" class="btn-nav-ghost">Ingresar</a>
+        <a href="mailto:hola@ziklo.app" class="btn-nav-primary">Empezar ahora →</a>
+        <button class="nav-ham" aria-label="Menú">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ─────────────────────── HERO ─────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-tag tag">
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Nuevo en Argentina — Early Access
+    </div>
+
+    <h1 class="hero-title">
+      Tus clientes compraron<br>
+      <span class="accent">¿y si siguieran pagando solos?</span>
+    </h1>
+
+    <p class="hero-sub">
+      Ziklo agrega suscripciones recurrentes a tu tienda Shopify y las cobra automáticamente con Mercado Pago. Sin código, sin comisiones fijas, sin complicaciones.
+    </p>
+
+    <div class="hero-actions">
+      <a href="mailto:hola@ziklo.app" class="btn-hero-primary">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Empezar gratis
+      </a>
+      <a href="#como-funciona" class="btn-hero-ghost">
+        Ver cómo funciona →
+      </a>
+    </div>
+    <p class="hero-note">Sin costo fijo mensual · Solo pagás cuando vendés · Configuración en menos de 24 hs</p>
+
+    <!-- Mini dashboard mockup -->
+    <div class="hero-mockup">
+      <div class="mockup-topbar">
+        <span class="mockup-circle" style="background:#FF5F56"></span>
+        <span class="mockup-circle" style="background:#FFBD2E"></span>
+        <span class="mockup-circle" style="background:#27C93F"></span>
+        <span class="mockup-url">app.ziklo.app/admin</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-stat-card green">
+          <div class="mockup-stat-val">$284.500</div>
+          <div class="mockup-stat-lbl">MRR estimado</div>
+        </div>
+        <div class="mockup-stat-card">
+          <div class="mockup-stat-val">47</div>
+          <div class="mockup-stat-lbl">Suscriptores activos</div>
+        </div>
+        <div class="mockup-stat-card">
+          <div class="mockup-stat-val">$21.200</div>
+          <div class="mockup-stat-lbl">Ingresos este mes</div>
+        </div>
+        <div class="mockup-stat-card">
+          <div class="mockup-stat-val">3</div>
+          <div class="mockup-stat-lbl">Pendientes</div>
+        </div>
+      </div>
+      <div class="mockup-chart-row">
+        <div class="mockup-chart-box">
+          <div class="mockup-chart-label">Nuevas suscripciones</div>
+          <svg class="mockup-svg" viewBox="0 0 300 70" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00C87A" stop-opacity=".25"/>
+                <stop offset="100%" stop-color="#00C87A" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <polyline points="0,65 50,60 100,52 150,40 200,28 250,15 300,5" fill="none" stroke="#00C87A" stroke-width="2.5" opacity=".9"/>
+            <polyline points="0,65 50,60 100,52 150,40 200,28 250,15 300,5 300,70 0,70" fill="url(#grad)"/>
+          </svg>
+        </div>
+        <div class="mockup-chart-box">
+          <div class="mockup-chart-label">Estado actual</div>
+          <div style="margin-top:8px">
+            <span class="mockup-badge green">● 47 Activos</span><br>
+            <span class="mockup-badge yellow">● 3 Pendientes</span>
+          </div>
+          <div class="mockup-skel" style="margin-top:10px"></div>
+          <div class="mockup-skel"></div>
+        </div>
+        <div class="mockup-chart-box">
+          <div class="mockup-chart-label">Últimos pagos</div>
+          <div class="mockup-skel" style="margin-top:8px"></div>
+          <div class="mockup-skel"></div>
+          <div class="mockup-skel"></div>
+          <div class="mockup-skel"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── LOGOS ─────────────────────── -->
+<div class="logos-bar">
+  <div class="container">
+    <p class="logos-label">Integración nativa con</p>
+    <div class="logos-row">
+      <div class="logo-pill">
+        <svg width="20" height="20" viewBox="0 0 109 124" fill="none"><path d="M74.7 14.8c-.1-1.1-1-1.7-1.7-1.8-6.3-.5-10.1-2.5-11.9-3.3C55.3 6.2 50.3 5 44.6 5c-14.7 0-27.8 11-31.8 27.5-2.7 11 .6 22.5 8.5 28.6 1.6 1.2 3.6 1.6 5.5 1.1l2.5-.7c-.9 3.5-1.2 7-.8 10.3.5 3.3 2 5.2 2.9 5.9l.5.3c.4.2.8.2 1.2 0l.5-.3c1-.7 2.4-2.6 2.9-5.9.4-3.3.1-6.8-.8-10.3l2.5.7c1.9.5 3.9.1 5.5-1.1 7.9-6.1 11.2-17.6 8.5-28.6-.4-1.6-.9-3.1-1.5-4.5 1.8.8 4.2 1.8 7.2 2.5 5.5 1.2 7.5 5.7 7.5 5.7s-3.3 0-3.3 3.3v38.5l-4.7 2.5c-.5.3-.8.8-.8 1.3v16.2c0 .9.7 1.7 1.7 1.7h6.7c.9 0 1.7-.7 1.7-1.7V90.5c.1-.6-.2-1.1-.7-1.4l-4.7-2.5V55.4c0-3.3-3.3-3.3-3.3-3.3s2-4.5 7.5-5.7c5.5-1.2 8.8-5.8 9.2-12.2.5-7.5-1.6-14.8-5.4-19.4z" fill="#95BF47"/></svg>
+        <span class="logo-pill-name">Shopify</span>
+      </div>
+      <div class="logo-pill">
+        <svg width="20" height="20" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#00AEEF"/><path d="M14 30l5-12 5 8 3-5 7 9H14z" fill="white"/></svg>
+        <span class="logo-pill-name">Mercado Pago</span>
+      </div>
+      <div class="logo-pill">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <span class="logo-pill-name">Débito / Crédito</span>
+      </div>
+      <div class="logo-pill">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span class="logo-pill-name">Email automático</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── STATS ─────────────────────── -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-number">&lt; 24 hs</div>
+        <div class="stat-desc">Tiempo promedio para recibir el primer cobro recurrente desde que activás Ziklo</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">0%</div>
+        <div class="stat-desc">Costo fijo mensual. Solo pagás una comisión cuando procesamos un cobro exitoso</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">100%</div>
+        <div class="stat-desc">Automático. Los cobros se procesan solos, sin que vos ni tu cliente tengan que hacer nada</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── PROBLEMA ─────────────────────── -->
+<section class="problem-section">
+  <div class="container">
+    <div class="problem-inner">
+      <div class="problem-grid" style="position:relative">
+        <div>
+          <div class="tag problem-tag">El problema de hoy</div>
+          <h2 class="problem-title">Vendés una vez<br>y el cliente desaparece.</h2>
+          <p class="problem-desc">El modelo de venta único te obliga a conquistar cada cliente desde cero, mes a mes. Eso es plata en publicidad, tiempo en operación y un ingreso impredecible.</p>
+          <ul class="problem-list">
+            <li>Dependés 100% de la adquisición para facturar</li>
+            <li>No sabés cuánto vas a cobrar el próximo mes</li>
+            <li>Tus mejores clientes se van y vuelven cuando se acuerdan</li>
+            <li>Gestionar cobros manuales te roba horas de trabajo</li>
+          </ul>
+        </div>
+        <div class="divider-arrow">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+        <div>
+          <div class="tag" style="margin-bottom:20px">Con Ziklo</div>
+          <h2 class="solution-title">Ingresos recurrentes,<br>predecibles y automáticos.</h2>
+          <p class="solution-desc">Una vez que un cliente se suscribe, Ziklo se encarga de cobrarle todos los meses sin que vos hagas nada. Ingreso fijo, sin sorpresas.</p>
+          <ul class="solution-list">
+            <li>MRR (ingreso mensual recurrente) que crece con el tiempo</li>
+            <li>Sabés exactamente cuánto vas a facturar el próximo mes</li>
+            <li>Tus mejores clientes quedan fidelizados automáticamente</li>
+            <li>Cero gestión manual — Mercado Pago cobra solo</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── CÓMO FUNCIONA ─────────────────────── -->
+<section class="how-section" id="como-funciona">
+  <div class="container">
+    <div class="how-header">
+      <div class="tag" style="margin-bottom:18px">Proceso simple</div>
+      <h2 class="section-title">De cero a cobrar en<br>menos de un día</h2>
+      <p class="section-sub">Cuatro pasos y ya está. Sin código, sin técnicos, sin complicaciones.</p>
+    </div>
+    <div class="steps-grid">
+
+      <div class="step-card">
+        <div class="step-number">01</div>
+        <div class="step-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <div class="step-name">Conectá tu tienda Shopify</div>
+        <div class="step-desc">Vinculás tu tienda y tu cuenta de Mercado Pago en el panel de Ziklo. Son 5 minutos con tus credenciales existentes, sin tocar código.</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">02</div>
+        <div class="step-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </div>
+        <div class="step-name">Creá tus planes</div>
+        <div class="step-desc">Definís el nombre, precio y frecuencia de cobro (mensual, bimestral, etc.). Podés tener tantos planes como quieras — caja mensual, abono trimestral, lo que necesites.</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">03</div>
+        <div class="step-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div class="step-name">Instalá el widget</div>
+        <div class="step-desc">Pegás un bloque de código en la página de producto de tu tienda Shopify. El widget aparece automáticamente con el botón "Suscribirme". Funciona con cualquier tema.</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">04</div>
+        <div class="step-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="step-name">Empezá a cobrar</div>
+        <div class="step-desc">Cuando un cliente se suscribe, Mercado Pago cobra automáticamente en la fecha correspondiente. El dinero entra directo a tu cuenta de MP y Ziklo registra todo en el panel.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── FEATURES ─────────────────────── -->
+<section class="features-section" id="features">
+  <div class="container">
+    <div class="features-header">
+      <div class="tag" style="margin-bottom:18px">Todo incluido</div>
+      <h2 class="section-title">Todo lo que necesitás<br>para vender recurrente</h2>
+      <p class="section-sub">Ziklo maneja todo el ciclo de vida de una suscripción para que vos te enfoques en tu negocio.</p>
+    </div>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(0,200,122,.1);border:1px solid rgba(0,200,122,.2)">
+          <svg width="22" height="22" fill="none" stroke="#00C87A" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <div class="feature-name">Panel en tiempo real</div>
+        <div class="feature-desc">Visualizá MRR, suscriptores activos, pagos del mes e historial completo desde un solo panel. Con gráficos y filtros por período.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2)">
+          <svg width="22" height="22" fill="none" stroke="#818CF8" stroke-width="1.8" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        <div class="feature-name">Cobros automáticos con MP</div>
+        <div class="feature-desc">Mercado Pago cobra automáticamente en la fecha que corresponde. Si un pago falla, MP reintenta y te avisa. Vos no hacés nada.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2)">
+          <svg width="22" height="22" fill="none" stroke="#F59E0B" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div class="feature-name">Widget para tu tienda</div>
+        <div class="feature-desc">Un bloque que pegás en Shopify y listo. El widget muestra tus planes y deja que el cliente se suscriba sin salir de tu tienda. Compatible con cualquier tema.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2)">
+          <svg width="22" height="22" fill="none" stroke="#10B981" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </div>
+        <div class="feature-name">Órdenes en Shopify</div>
+        <div class="feature-desc">Cada cobro aprobado genera automáticamente una orden pagada en Shopify con etiquetas. Inventario, emails de confirmación y reportes, todo integrado.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)">
+          <svg width="22" height="22" fill="none" stroke="#EF4444" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="feature-name">Emails automáticos</div>
+        <div class="feature-desc">Tus suscriptores reciben confirmación al suscribirse, aviso de cada cobro exitoso y notificación cuando hay un problema con su pago. Todo configurado de fábrica.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2)">
+          <svg width="22" height="22" fill="none" stroke="#8B5CF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="feature-name">Gestión de suscriptores</div>
+        <div class="feature-desc">Buscá, filtrá y administrá todos tus suscriptores desde un solo lugar. Cancelá, pausá o modificá planes cuando necesites, en segundos.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── PRICING ─────────────────────── -->
+<section class="pricing-section" id="precios">
+  <div class="container">
+    <div class="pricing-header">
+      <div class="tag" style="margin-bottom:18px">Precios transparentes</div>
+      <h2 class="section-title">Solo pagás cuando vendés</h2>
+      <p class="section-sub">Sin costo fijo mensual. Sin sorpresas. Mientras no procesamos cobros, Ziklo es gratis.</p>
+    </div>
+    <div class="pricing-grid">
+
+      <!-- Starter -->
+      <div class="pricing-card">
+        <div class="pricing-plan">Starter</div>
+        <div class="pricing-price"><sup>%</sup>2.9</div>
+        <div class="pricing-period">por cobro exitoso procesado</div>
+        <div class="pricing-note">Ideal para empezar. Sin costo hasta que tengas tu primer suscriptor.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Hasta 50 suscriptores activos
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            1 plan de suscripción
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Widget instalable
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Emails automáticos
+          </li>
+          <li class="muted">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Planes ilimitados
+          </li>
+          <li class="muted">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Soporte prioritario
+          </li>
+        </ul>
+        <a href="mailto:hola@ziklo.app" class="btn-pricing ghost">Empezar gratis</a>
+      </div>
+
+      <!-- Growth (featured) -->
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Más popular</div>
+        <div class="pricing-plan">Growth</div>
+        <div class="pricing-price"><sup>%</sup>2.0</div>
+        <div class="pricing-period">por cobro exitoso procesado</div>
+        <div class="pricing-note">Para tiendas en crecimiento con volumen creciente de suscriptores.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Suscriptores ilimitados
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Planes ilimitados
+          </li>
+          <li>
+            <svg width="14" height="none" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Widget personalizable
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Emails automáticos
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Órdenes automáticas en Shopify
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Soporte prioritario
+          </li>
+        </ul>
+        <a href="mailto:hola@ziklo.app" class="btn-pricing primary">Quiero este plan →</a>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="pricing-card">
+        <div class="pricing-plan">Enterprise</div>
+        <div class="pricing-price" style="font-size:32px;margin-top:4px">A medida</div>
+        <div class="pricing-period">comisión negociada según volumen</div>
+        <div class="pricing-note">Para marcas con alto volumen de suscriptores o necesidades especiales.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Todo lo de Growth
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Comisión a negociar
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Onboarding dedicado
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Integraciones a medida
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            SLA garantizado
+          </li>
+          <li>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Soporte 24/7
+          </li>
+        </ul>
+        <a href="mailto:hola@ziklo.app" class="btn-pricing ghost">Hablar con el equipo</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── TESTIMONIALS ─────────────────────── -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="testimonials-header">
+      <div class="tag" style="margin-bottom:18px">Early adopters</div>
+      <h2 class="section-title">Lo que dicen los primeros<br>en usarlo</h2>
+      <p class="section-sub">Tiendas que ya probaron Ziklo y empezaron a generar ingresos recurrentes.</p>
+    </div>
+    <div class="testimonials-grid">
+
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Antes mandaba facturas manualmente todos los meses. Con Ziklo <strong>el cobro se hace solo</strong> y yo me entero por el panel. Ya tengo 23 suscriptores activos en el primer mes."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">V</div>
+          <div>
+            <div class="testimonial-name">Valentina R.</div>
+            <div class="testimonial-store">Tienda de cosméticos naturales · Shopify</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Lo instalé en una tarde y al día siguiente ya tenía mi primer suscriptor. <strong>El widget funciona perfecto</strong> con mi tema. Lo que más me gusta es que Mercado Pago cobra solo."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">M</div>
+          <div>
+            <div class="testimonial-name">Martín L.</div>
+            <div class="testimonial-store">Suplementos deportivos · Shopify</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Tenía miedo de complicarme con la integración de MP pero fue súper fácil. En menos de 24 horas <strong>ya estaba cobrando de forma recurrente</strong>. El panel está buenísimo."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">S</div>
+          <div>
+            <div class="testimonial-name">Sofía G.</div>
+            <div class="testimonial-store">Club de lectura online · Shopify</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── FAQ ─────────────────────── -->
+<section class="faq-section-landing" id="faqs">
+  <div class="container">
+    <div class="faq-landing-header">
+      <div class="tag" style="margin-bottom:18px">Preguntas frecuentes</div>
+      <h2 class="section-title">Todo lo que querés saber</h2>
+      <p class="section-sub">Si tenés dudas que no están acá, escribinos a hola@ziklo.app y te respondemos el mismo día.</p>
+    </div>
+    <div class="faq-landing-list">
+
+      <div class="faq-landing-item">
+        <div class="faq-landing-q" onclick="toggleLandingFAQ(this)">
+          <span>¿Necesito saber programar para instalar Ziklo?</span>
+          <svg class="faq-landing-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-landing-a">No. El proceso completo se hace desde el panel de Ziklo sin tocar código. Solo necesitás pegar un bloque de HTML en tu tienda Shopify (el panel te da exactamente qué pegar y dónde). Si en algún paso tenés dudas, te ayudamos.</div>
+      </div>
+
+      <div class="faq-landing-item">
+        <div class="faq-landing-q" onclick="toggleLandingFAQ(this)">
+          <span>¿Cuánto cobra Ziklo por cada cobro procesado?</span>
+          <svg class="faq-landing-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-landing-a">Depende del plan. En Starter es un 2,9% por cobro exitoso. En Growth bajás al 2,0%. No hay costo fijo mensual — si en un mes no procesamos ningún cobro, no te cobramos nada. A eso se suma la comisión estándar de Mercado Pago (que pagás igual sin Ziklo).</div>
+      </div>
+
+      <div class="faq-landing-item">
+        <div class="faq-landing-q" onclick="toggleLandingFAQ(this)">
+          <span>¿El dinero pasa por Ziklo o va directo a mi cuenta de Mercado Pago?</span>
+          <svg class="faq-landing-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-landing-a">Va directo a tu cuenta de Mercado Pago. Ziklo no intermedia fondos en ningún momento. Nosotros solo procesamos la instrucción de cobro — la plata entra en tu MP como cualquier otro pago.</div>
+      </div>
+
+      <div class="faq-landing-item">
+        <div class="faq-landing-q" onclick="toggleLandingFAQ(this)">
+          <span>¿Qué pasa si un cobro falla?</span>
+          <svg class="faq-landing-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-landing-a">Mercado Pago reintenta automáticamente hasta 3 veces. Si sigue fallando, el suscriptor recibe un aviso para actualizar su método de pago y la suscripción pasa a estado "Pendiente" en tu panel. Vos lo ves en tiempo real.</div>
+      </div>
+
+      <div class="faq-landing-item">
+        <div class="faq-landing-q" onclick="toggleLandingFAQ(this)">
+          <span>¿Funciona con cualquier tipo de producto o servicio?</span>
+          <svg class="faq-landing-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-landing-a">Sí. Ziklo funciona para cualquier producto físico, digital o servicio que quieras ofrecer de forma recurrente: cajas mensuales, suplementos, cursos, membresías, software, consultoría, lo que sea. Si se puede vender en Shopify, se puede suscribir con Ziklo.</div>
+      </div>
+
+      <div class="faq-landing-item">
+        <div class="faq-landing-q" onclick="toggleLandingFAQ(this)">
+          <span>¿Puedo cancelar cuando quiero?</span>
+          <svg class="faq-landing-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-landing-a">Sí, sin penalidades ni períodos mínimos. Como no hay costo fijo, simplemente dejás de usar Ziklo y listo. Los suscriptores existentes podrás gestionarlos hasta que sus suscripciones venzan naturalmente.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── CTA FINAL ─────────────────────── -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-inner">
+      <div class="tag" style="margin-bottom:20px;display:inline-flex">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Empezá hoy
+      </div>
+      <h2 class="cta-title">Tu próximo cliente<br>puede ser recurrente.</h2>
+      <p class="cta-sub">Sumá suscripciones a tu tienda hoy y empezá a generar ingresos predecibles todos los meses.</p>
+      <div class="cta-actions">
+        <a href="mailto:hola@ziklo.app" class="btn-hero-primary">
+          Quiero empezar →
+        </a>
+        <a href="#como-funciona" class="btn-hero-ghost">
+          Ver cómo funciona
+        </a>
+      </div>
+      <p class="cta-note">Sin costo fijo · Sin tarjeta de crédito · Soporte en español</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────── FOOTER ─────────────────────── -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <svg width="26" height="26" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#0F1F3D"/>
+            <text x="40" y="52" text-anchor="middle" font-size="38" font-weight="700" fill="white" font-family="sans-serif">Z</text>
+            <path d="M24,60 A16,10 0 0,0 56,60" fill="none" stroke="#00C87A" stroke-width="3" stroke-linecap="round"/>
+            <polygon points="56,55 56,65 62,60" fill="#00C87A"/>
+          </svg>
+          <span class="footer-logo-text">Ziklo</span>
+        </div>
+        <p class="footer-desc">Suscripciones recurrentes para tiendas Shopify con Mercado Pago. Hecho en Argentina.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Producto</div>
+        <ul class="footer-col-links">
+          <li><a href="#como-funciona">Cómo funciona</a></li>
+          <li><a href="#features">Funcionalidades</a></li>
+          <li><a href="#precios">Precios</a></li>
+          <li><a href="/admin">Panel admin</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Soporte</div>
+        <ul class="footer-col-links">
+          <li><a href="#faqs">FAQs</a></li>
+          <li><a href="mailto:hola@ziklo.app">hola@ziklo.app</a></li>
+          <li><a href="/admin/login">Iniciar sesión</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-col-links">
+          <li><a href="#">Términos de uso</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 Ziklo. Hecho con <span>♥</span> en Argentina.</span>
+      <span class="footer-copy">Integrado con <span>Shopify</span> + <span>Mercado Pago</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggleLandingFAQ(qEl) {
+    const item = qEl.closest('.faq-landing-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-landing-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+</body>
+</html>
