@@ -117,6 +117,24 @@
     }
     .shop-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
     .shop-name { font-size: 12px; font-weight: 600; color: var(--green); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-logout {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px;
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      color: var(--muted2);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .btn-logout:hover { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.25); color: var(--danger); }
 
     /* ── MAIN ── */
     .main {
@@ -419,10 +437,18 @@
   </div>
 
   <div class="sidebar-bottom">
-    <div class="shop-pill">
+    <div class="shop-pill" style="margin-bottom:10px;">
       <div class="shop-dot"></div>
       <div class="shop-name" id="shopName">Cargando...</div>
     </div>
+    <button class="btn-logout" id="btnLogout" onclick="logout()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Cerrar sesión
+    </button>
   </div>
 </aside>
 
@@ -986,6 +1012,27 @@ function copiarCodigo() {
   btn.textContent = '¡Copiado!';
   setTimeout(() => btn.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar código`, 2000);
 }
+
+// ===================== LOGOUT =====================
+async function logout() {
+  const btn = document.getElementById('btnLogout');
+  btn.textContent = 'Cerrando...';
+  btn.style.pointerEvents = 'none';
+  try {
+    await fetch('/admin/api/logout', { method: 'POST' });
+  } catch (_) {}
+  window.location.href = '/admin/login';
+}
+
+// Si la API devuelve 401 en cualquier fetch → redirigir al login
+const _origFetch = window.fetch;
+window.fetch = async function(...args) {
+  const res = await _origFetch(...args);
+  if (res.status === 401) {
+    window.location.href = '/admin/login';
+  }
+  return res;
+};
 
 // ===================== INIT =====================
 fetch('/admin/api/shop')

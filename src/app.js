@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const cookieSession = require('cookie-session');
 
 const planesRoutes = require('./routes/planes');
 const subscripcionesRoutes = require('./routes/subscripciones');
@@ -9,6 +10,7 @@ const webhooksRoutes = require('./routes/webhooks');
 const adminRoutes = require('./routes/admin');
 const clienteRoutes = require('./routes/cliente');
 const authRoutes = require('./routes/auth');
+const adminAuth = require('./middleware/adminAuth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +20,16 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Sesión encriptada para el admin
+app.use(cookieSession({
+  name: 'ziklo_admin',
+  keys: [process.env.SESSION_SECRET || 'ziklo-secret-dev-key-change-in-prod'],
+  maxAge: 8 * 60 * 60 * 1000, // 8 horas
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+}));
+
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Webhooks de MP necesitan el body raw
@@ -34,8 +46,8 @@ app.use('/webhooks', webhooksRoutes);
 // OAuth Shopify (para obtener el access token)
 app.use('/auth', authRoutes);
 
-// Rutas de UI
-app.use('/admin', adminRoutes);
+// Rutas de UI — admin protegido con auth
+app.use('/admin', adminAuth, adminRoutes);
 app.use('/cliente', clienteRoutes);
 
 // Health check
