@@ -725,6 +725,137 @@
       .card-header { flex-wrap: wrap; gap: 8px; }
     }
 
+    /* ── FAQs ── */
+    .faq-intro {
+      font-size: 13px;
+      color: var(--muted2);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .faq-categories {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .faq-cat-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      color: var(--muted2);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .faq-cat-btn:hover { color: var(--white); border-color: rgba(255,255,255,.25); }
+    .faq-cat-btn.active { background: var(--green-dim); border-color: var(--green-border); color: var(--green); }
+
+    .faq-section { margin-bottom: 28px; }
+    .faq-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .faq-list { display: flex; flex-direction: column; gap: 2px; }
+    .faq-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color .15s;
+    }
+    .faq-item:hover { border-color: var(--border-strong); }
+    .faq-item.open { border-color: var(--green-border); }
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 18px;
+      cursor: pointer;
+      user-select: none;
+      gap: 12px;
+    }
+    .faq-question-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      flex: 1;
+    }
+    .faq-chevron {
+      width: 16px;
+      height: 16px;
+      color: var(--muted);
+      flex-shrink: 0;
+      transition: transform .2s ease, color .15s;
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); color: var(--green); }
+    .faq-answer {
+      display: none;
+      padding: 0 18px 16px;
+      font-size: 13px;
+      color: var(--muted2);
+      line-height: 1.7;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+    .faq-item.open .faq-answer { display: block; }
+    .faq-answer a { color: var(--green); text-decoration: none; }
+    .faq-answer a:hover { text-decoration: underline; }
+    .faq-answer strong { color: var(--white); font-weight: 600; }
+    .faq-answer code {
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--green);
+    }
+
+    .faq-contact-banner {
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .faq-contact-text { font-size: 13px; color: var(--white); font-weight: 500; }
+    .faq-contact-text span { color: var(--green); font-weight: 700; }
+    .faq-contact-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--green);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: opacity .15s;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .faq-contact-btn:hover { opacity: .85; }
+
     /* Welcome BANNER ── */
     .welcome-banner {
       position: relative;
@@ -953,6 +1084,10 @@
   <div class="nav-item" onclick="showTab('configuracion')">
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     Configuración
+  </div>
+  <div class="nav-item" onclick="showTab('faqs')">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Ayuda / FAQs
   </div>
 
   <div class="sidebar-bottom">
@@ -1422,6 +1557,250 @@
       </div>
     </div><!-- /tab-configuracion -->
 
+    <!-- FAQs -->
+    <div id="tab-faqs" class="page">
+
+      <p class="faq-intro">Encontrá respuestas a las preguntas más comunes sobre Ziklo. Si no encontrás lo que buscás, escribinos directo.</p>
+
+      <!-- Filtro por categoría -->
+      <div class="faq-categories" id="faq-categories">
+        <button class="faq-cat-btn active" onclick="filtrarFAQs('all', this)">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Todo
+        </button>
+        <button class="faq-cat-btn" onclick="filtrarFAQs('suscripciones', this)">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Suscripciones
+        </button>
+        <button class="faq-cat-btn" onclick="filtrarFAQs('pagos', this)">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Pagos & MP
+        </button>
+        <button class="faq-cat-btn" onclick="filtrarFAQs('widget', this)">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Widget
+        </button>
+        <button class="faq-cat-btn" onclick="filtrarFAQs('ziklo', this)">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Sobre Ziklo
+        </button>
+      </div>
+
+      <!-- SECCIÓN: Suscripciones -->
+      <div class="faq-section" data-cat="suscripciones">
+        <div class="faq-section-title">Suscripciones</div>
+        <div class="faq-list">
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Cómo funciona el cobro recurrente?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Cuando un cliente activa una suscripción, Mercado Pago genera un <strong>preapproval</strong> que autoriza cobros periódicos sin que el cliente tenga que intervenir. Ziklo se encarga de procesar ese cobro automáticamente según la frecuencia que configuraste en el plan (mensual, bimestral, etc.) y de registrar cada pago en tu historial.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Qué pasa si un cobro falla por falta de fondos?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Mercado Pago reintenta el cobro automáticamente hasta 3 veces en los días siguientes. Si después de los reintentos sigue sin poder cobrar, la suscripción pasa a estado <strong>Pendiente</strong> y el cliente recibe una notificación de MP para actualizar su método de pago. Vos lo podés ver reflejado en el panel en tiempo real.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Puede el cliente cancelar su suscripción por cuenta propia?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Sí. El cliente puede cancelar directamente desde su cuenta de Mercado Pago en cualquier momento. Cuando lo hace, MP envía un webhook a Ziklo que actualiza el estado de la suscripción a <strong>Cancelado</strong> automáticamente. También podés cancelarla vos desde el panel, en la sección Suscriptores.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Se crea una orden en Shopify con cada cobro?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Sí. Cada vez que se procesa un pago aprobado, Ziklo crea automáticamente una orden en Shopify con estado <code>paid</code> y la etiqueta <code>suscripcion, mp-auto</code>. Esto te permite ver el historial de ingresos en tu tienda y usar todas las automatizaciones de Shopify (emails de confirmación, inventario, etc.).
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Puedo tener más de un plan de suscripción activo?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Sí, podés crear tantos planes como necesites desde la sección <strong>Planes</strong>. Cada plan tiene su propio nombre, monto y frecuencia. El widget en tu tienda puede mostrar un plan específico o todos los disponibles, según cómo lo configures.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECCIÓN: Pagos & Mercado Pago -->
+      <div class="faq-section" data-cat="pagos">
+        <div class="faq-section-title">Pagos & Mercado Pago</div>
+        <div class="faq-list">
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Cuándo se acredita el dinero de los pagos?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              El dinero se acredita directamente en tu cuenta de Mercado Pago según los tiempos estándar de MP: generalmente entre <strong>1 y 3 días hábiles</strong> dependiendo del método de pago del suscriptor. Ziklo no retiene ni intermedia ningún fondo — la plata va directo a tu cuenta de MP.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Por qué algunos pagos aparecen como "Pendiente"?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Un pago pendiente significa que MP lo recibió pero todavía no lo procesó. Esto puede pasar por: el cliente pagó en efectivo (rapipago/pagofácil) y aún no fue a pagar, MP está verificando la transacción, o hubo un intento fallido y está en reintentos. Los pagos pendientes se actualizan solos cuando MP confirma o rechaza el cobro vía webhook.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Debo crear una cuenta de MP especial para usar Ziklo?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              No. Usás tu cuenta de Mercado Pago de siempre. Solo necesitás generar un <strong>Access Token</strong> desde el panel de desarrolladores de MP (<a href="https://www.mercadopago.com.ar/developers" target="_blank">mercadopago.com.ar/developers</a>) y configurarlo en Ziklo. Ese token le da permiso a Ziklo para procesar cobros en tu nombre.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Qué comisión cobra Mercado Pago por suscripción?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Mercado Pago cobra su comisión habitual por cada cobro procesado, que varía según el plan que tengas con ellos (generalmente entre <strong>3,99% y 5,99% + IVA</strong> para pagos con tarjeta de débito/crédito). Consultá las tarifas actualizadas directamente en tu panel de Mercado Pago.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECCIÓN: Widget -->
+      <div class="faq-section" data-cat="widget">
+        <div class="faq-section-title">Widget & Integración</div>
+        <div class="faq-list">
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿En qué páginas debo pegar el código del widget?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Lo más común es pegarlo en la <strong>página de producto</strong> del ítem que querés ofrecer como suscripción. También podés pegarlo en una landing page dedicada a tus planes. El widget detecta automáticamente los planes activos y muestra el botón de suscribirse.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Funciona con cualquier tema de Shopify?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Sí. El widget es HTML puro que se inyecta como bloque de contenido personalizado en Shopify. Funciona con cualquier tema que soporte bloques de código HTML (Dawn, Debut, Brooklyn, y prácticamente todos los temas de terceros). Si usás un tema muy customizado y tenés problemas, escribinos.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿El widget es responsive para mobile?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Sí. El widget está diseñado para adaptarse a cualquier ancho de pantalla. Se ajusta automáticamente al contenedor donde lo pegaste y se ve bien tanto en desktop como en mobile.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Qué datos le pide el widget al cliente?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              El widget le pide al cliente: nombre, apellido, email, dirección de envío (si aplica) y el método de pago. El proceso de pago se realiza de forma segura en la plataforma de Mercado Pago, Ziklo nunca almacena datos de tarjetas.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECCIÓN: Sobre Ziklo -->
+      <div class="faq-section" data-cat="ziklo">
+        <div class="faq-section-title">Sobre Ziklo</div>
+        <div class="faq-list">
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Cuánto cobra Ziklo por cada suscripción procesada?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Ziklo cobra una comisión sobre cada cobro exitoso procesado. El porcentaje exacto depende de tu plan. Podés ver los detalles de tu plan actual en la sección <strong>Configuración → Mi plan Ziklo</strong> o escribirnos a <a href="mailto:hola@ziklo.app">hola@ziklo.app</a>.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Hay un límite de suscriptores activos?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              No hay un límite fijo. Ziklo escala con tu negocio. Si tenés un volumen muy alto de suscriptores y necesitás condiciones especiales, escribinos para hablar de un plan enterprise a medida.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Mis datos y los de mis clientes están seguros?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Sí. Todos los datos se almacenan en servidores seguros (Railway + PostgreSQL con cifrado en reposo). El panel admin está protegido con autenticación. Los datos de tarjetas nunca pasan por Ziklo — son manejados íntegramente por Mercado Pago, que cumple con los estándares PCI-DSS.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Ziklo funciona solo con Shopify y Mercado Pago?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Por ahora sí. Ziklo está optimizado para tiendas Shopify que procesan pagos con Mercado Pago en Argentina. Estamos trabajando en soporte para otras plataformas de ecommerce y otros procesadores de pago. Si necesitás algo específico, escribinos.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Banner contacto -->
+      <div class="faq-contact-banner">
+        <div class="faq-contact-text">
+          ¿No encontraste lo que buscabas? <span>Nuestro equipo te responde el mismo día hábil.</span>
+        </div>
+        <a href="mailto:hola@ziklo.app" class="faq-contact-btn">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Escribir a soporte
+        </a>
+      </div>
+
+    </div><!-- /tab-faqs -->
+
   </div><!-- /content -->
 </main>
 
@@ -1476,6 +1855,7 @@ const TITLES = {
   integraciones:  ['Integraciones', 'Servicios conectados a tu cuenta'],
   widget:         ['Instalar Widget', 'Instrucciones de integración'],
   configuracion:  ['Configuración', 'Ajustes de la cuenta y la app'],
+  faqs:           ['Ayuda & FAQs', 'Preguntas frecuentes sobre Ziklo'],
 };
 
 // ===================== TABS =====================
@@ -1496,6 +1876,29 @@ function showTab(name) {
   if (name === 'configuracion') cargarConfiguracion();
   // Cerrar sidebar en mobile al navegar
   if (window.innerWidth <= 768) closeSidebar();
+}
+
+// ===================== FAQs =====================
+function toggleFAQ(questionEl) {
+  const item = questionEl.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  // Cerrar todos los abiertos en la misma lista
+  item.closest('.faq-list').querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+function filtrarFAQs(cat, btn) {
+  // Actualizar botones activos
+  document.querySelectorAll('.faq-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Mostrar/ocultar secciones
+  document.querySelectorAll('.faq-section').forEach(section => {
+    if (cat === 'all' || section.dataset.cat === cat) {
+      section.style.display = '';
+    } else {
+      section.style.display = 'none';
+    }
+  });
 }
 
 // ===================== HELPERS =====================
