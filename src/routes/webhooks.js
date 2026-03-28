@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router();
+const router  = express.Router();
 const prisma = require('../lib/prisma');
 const mp = require('../services/mercadopago');
 const shopify = require('../services/shopify');
@@ -134,6 +134,127 @@ router.post('/mp', async (req, res) => {
     }
   } catch (err) {
     console.error('Error procesando webhook:', err.message);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GDPR WEBHOOKS — obligatorios para Shopify App Store
+// ══════════════════════════════════════════════════════════════════════════════
+
+const crypto = require('crypto');
+
+/**
+ * Verifica que el webhook venga realmente de Shopify usando HMAC-SHA256.
+ * Shopify firma el body con el Client Secret y lo manda en X-Shopify-Hmac-Sha256.
+ */
+function verificarHMACShopify(req) {
+  const secret = process.env.SHOPIFY_CLIENT_SECRET;
+  if (!secret) return false;
+
+  const hmacHeader = req.headers['x-shopify-hmac-sha256'];
+  if (!hmacHeader) return false;
+
+  // El body debe llegar como raw Buffer (ya configurado con express.raw en app.js)
+  const body = req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body));
+  const computed = crypto
+    .createHmac('sha256', secret)
+    .update(body)
+    .digest('base64');
+
+  return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(hmacHeader));
+}
+
+// POST /webhooks/gdpr/customers-data — cliente pide ver sus datos
+router.post('/gdpr/customers-data', express.raw({ type: '*/*' }), async (req, res) => {
+  if (!verificarHMACShopify(req)) {
+    console.warn('GDPR customers/data_request: HMAC inválido');
+    return res.status(401).send('Unauthorized');
+  }
+
+  res.sendStatus(200);
+
+  try {
+    const body = JSON.parse(req.body.toString());
+    const { shop_domain, customer } = body;
+    console.log(`GDPR data_request — shop: ${shop_domain} | customer: ${customer?.email}`);
+
+    // Registrar la solicitud en los logs (en producción enviarías un email con los datos)
+    // Por ahora solo logueamos; en una app completa deberías enviar los datos por email
+  } catch (err) {
+    console.error('Error GDPR customers-data:', err.message);
+  }
+});
+
+// POST /webhooks/gdpr/customers-redact — borrar datos de un cliente
+router.post('/gdpr/customers-redact', express.raw({ type: '*/*' }), async (req, res) => {
+  if (!verificarHMACShopify(req)) {
+    console.warn('GDPR customers/redact: HMAC inválido');
+    return res.status(401).send('Unauthorized');
+  }
+
+  res.sendStatus(200);
+
+  try {
+    const body = JSON.parse(req.body.toString());
+    const { shop_domain, customer } = body;
+    console.log(`GDPR customers/redact — shop: ${shop_domain} | customer: ${customer?.email}`);
+
+    if (!customer?.email) return;
+
+    // Anonimizar suscripciones del cliente (no borramos para mantener integridad financiera)
+    await prisma.subscription.updateMany({
+      where: { shopDomain: shop_domain, shopifyCustomerEmail: customer.email },
+      data: {
+        shopifyCustomerEmail: 'redacted@gdpr.ziklo',
+        shopifyCustomerId:    'redacted',
+        datosEnvio:           null,
+      },
+    });
+
+    console.log(`GDPR: datos de ${customer.email} anonimizados en ${shop_domain}`);
+  } catch (err) {
+    console.error('Error GDPR customers-redact:', err.message);
+  }
+});
+
+// POST /webhooks/gdpr/shop-redact — borrar todos los datos de una tienda
+router.post('/gdpr/shop-redact', express.raw({ type: '*/*' }), async (req, res) => {
+  if (!verificarHMACShopify(req)) {
+    console.warn('GDPR shop/redact: HMAC inválido');
+    return res.status(401).send('Unauthorized');
+  }
+
+  res.sendStatus(200);
+
+  try {
+    const body = JSON.parse(req.body.toString());
+    const { shop_domain } = body;
+    console.log(`GDPR shop/redact — shop: ${shop_domain}`);
+
+    // Borrar en orden para respetar foreign keys
+    // 1. Pagos de las suscripciones del shop
+    const subs = await prisma.subscription.findMany({
+      where:  { shopDomain: shop_domain },
+      select: { id: true },
+    });
+    const subIds = subs.map(s => s.id);
+
+    if (subIds.length > 0) {
+      await prisma.pago.deleteMany({ where: { subscriptionId: { in: subIds } } });
+    }
+
+    // 2. Suscripciones
+    await prisma.subscription.deleteMany({ where: { shopDomain: shop_domain } });
+
+    // 3. Planes del shop
+    await prisma.plan.deleteMany({ where: { shopDomain: shop_domain } });
+
+    // 4. Registro del shop
+    await prisma.shop.deleteMany({ where: { domain: shop_domain } });
+
+    console.log(`GDPR: todos los datos de ${shop_domain} eliminados`);
+  } catch (err) {
+    console.error('Error GDPR shop-redact:', err.message);
   }
 });
 
