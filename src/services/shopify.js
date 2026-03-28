@@ -4,6 +4,10 @@ const SHOP = process.env.SHOPIFY_SHOP_DOMAIN;
 const TOKEN = process.env.SHOPIFY_ACCESS_TOKEN;
 const BASE = `https://${SHOP}/admin/api/2024-01`;
 
+/**
+ * Llamada a Shopify API usando las credenciales del .env (app de un solo shop).
+ * Compatibilidad hacia atrás con el código existente.
+ */
 async function shopifyRequest(endpoint, method = 'GET', body = null) {
   const options = {
     method,
@@ -15,6 +19,33 @@ async function shopifyRequest(endpoint, method = 'GET', body = null) {
   if (body) options.body = JSON.stringify(body);
 
   const res = await fetch(`${BASE}${endpoint}`, options);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Shopify API error ${res.status}: ${err}`);
+  }
+  return res.json();
+}
+
+/**
+ * Llamada a Shopify API para un shop específico (multi-tenant).
+ * Si no se proveen domain/token, cae al env var.
+ */
+async function shopifyRequestForShop(domain, token, endpoint, method = 'GET', body = null) {
+  const d = domain || SHOP;
+  const t = token || TOKEN;
+  if (!d || !t) throw new Error('Shop domain o access token no disponibles');
+
+  const base = `https://${d}/admin/api/2024-01`;
+  const options = {
+    method,
+    headers: {
+      'X-Shopify-Access-Token': t,
+      'Content-Type': 'application/json',
+    },
+  };
+  if (body) options.body = JSON.stringify(body);
+
+  const res = await fetch(`${base}${endpoint}`, options);
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Shopify API error ${res.status}: ${err}`);
@@ -78,4 +109,4 @@ async function getShopName() {
   return _shopName;
 }
 
-module.exports = { getCustomer, getCustomers, crearOrden, getOrdenes, shopifyRequest, getShopName };
+module.exports = { getCustomer, getCustomers, crearOrden, getOrdenes, shopifyRequest, shopifyRequestForShop, getShopName };

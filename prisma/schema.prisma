@@ -7,6 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Tiendas Shopify autenticadas via OAuth
+model Shop {
+  id           String   @id @default(cuid())
+  domain       String   @unique  // ej: mi-tienda.myshopify.com
+  accessToken  String            // token de Shopify Admin API
+  shopName     String?           // nombre de la tienda (cacheado)
+  email        String?           // email del owner
+  installedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 model Plan {
   id            String         @id @default(cuid())
   nombre        String
