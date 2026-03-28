@@ -362,7 +362,7 @@
     .info-row-value { color: var(--white); font-weight: 500; }
 
     /* ── ACTIONS ── */
-    .actions { display: flex; gap: 6px; }
+    .actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
 
     /* ── MONO ── */
     .mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted2); }
@@ -787,11 +787,11 @@ function renderSubs(subs) {
           <td class="mono" style="color:var(--white)">${ARS(s.plan?.monto||0)}<span style="color:var(--muted2)">/mes</span></td>
           <td>${badge(s.status)}</td>
           <td style="color:var(--muted2)">${fecha(s.createdAt)}</td>
-          <td class="actions">
+          <td style="text-align:right"><div class="actions">
             ${s.status==='authorized' ? `<button class="btn btn-ghost" onclick="accionSub('${s.id}','pausar')">Pausar</button>` : ''}
             ${s.status==='paused' ? `<button class="btn btn-ghost" onclick="accionSub('${s.id}','reanudar')">Reanudar</button>` : ''}
             ${s.status!=='cancelled' ? `<button class="btn btn-danger" onclick="accionSub('${s.id}','cancelar')">Cancelar</button>` : ''}
-          </td>
+          </div></td>
         </tr>`;
       }).join('')
     : '<tr><td colspan="5" class="empty">Sin suscriptores aún</td></tr>';
