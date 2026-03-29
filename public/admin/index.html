@@ -2562,7 +2562,7 @@ async function toggleProducto(inputEl) {
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error al guardar');
-    showToast(enabled ? '✓ Suscripción activada para este producto' : 'Suscripción desactivada', 'success');
+    showToast(enabled ? 'Suscripción activada para este producto' : 'Suscripción desactivada', 'success');
     cargarProductos();
   } catch (err) {
     // Revertir si falla
