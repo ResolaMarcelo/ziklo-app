@@ -273,28 +273,31 @@ router.get('/api/pagos', async (req, res) => {
 
     const { status, desde, hasta, q } = req.query;
 
-    const where = { subscription: { shopDomain } };
-    if (status) where.status = status;
-    if (desde || hasta) {
-      where.createdAt = {};
-      if (desde) where.createdAt.gte = new Date(desde);
-      if (hasta) where.createdAt.lte = new Date(hasta + 'T23:59:59Z');
-    }
-
     const pagos = await prisma.pago.findMany({
-      where,
+      where: {
+        ...(status ? { status } : {}),
+        ...(desde || hasta ? {
+          createdAt: {
+            ...(desde ? { gte: new Date(desde) } : {}),
+            ...(hasta ? { lte: new Date(hasta + 'T23:59:59Z') } : {}),
+          }
+        } : {}),
+      },
       include: { subscription: { include: { plan: true } } },
       orderBy: { createdAt: 'desc' },
       take: 500,
     });
 
-    // Filtro de texto en memoria (email/nombre de envío)
-    const resultado = q
-      ? pagos.filter(p =>
-          p.subscription.shopifyCustomerEmail.toLowerCase().includes(q.toLowerCase()) ||
-          (p.subscription.datosEnvio || '').toLowerCase().includes(q.toLowerCase())
-        )
-      : pagos;
+    // Filtrar por shopDomain y texto en memoria
+    const resultado = pagos.filter(p => {
+      if (p.subscription.shopDomain !== shopDomain) return false;
+      if (q) {
+        const email  = p.subscription.shopifyCustomerEmail.toLowerCase();
+        const envio  = (p.subscription.datosEnvio || '').toLowerCase();
+        if (!email.includes(q.toLowerCase()) && !envio.includes(q.toLowerCase())) return false;
+      }
+      return true;
+    });
 
     // Enriquecer con productTitle desde ProductSubscription
     const productIds = [...new Set(resultado.map(p => p.subscription.productId).filter(Boolean))];
