@@ -346,10 +346,58 @@
     hookProductForm();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+  // ── Verificar si este producto tiene suscripciones activadas ─────────────
+  // Detecta shop (hostname) y productId (ShopifyAnalytics o meta global)
+  function getProductId() {
+    try {
+      // Shopify expone el product ID en ShopifyAnalytics en todos los temas
+      if (window.ShopifyAnalytics && window.ShopifyAnalytics.meta && window.ShopifyAnalytics.meta.product) {
+        return String(window.ShopifyAnalytics.meta.product.id);
+      }
+      // Fallback: meta global de algunos temas
+      if (window.meta && window.meta.product && window.meta.product.id) {
+        return String(window.meta.product.id);
+      }
+    } catch(e) {}
+    return null;
+  }
+
+  var shopDomain = window.location.hostname; // ej: mi-tienda.myshopify.com
+  var productId  = getProductId();
+
+  if (productId) {
+    // Consultar si el producto tiene suscripciones activadas
+    fetch(APP + '/api/products/check?shop=' + encodeURIComponent(shopDomain) + '&productId=' + encodeURIComponent(productId))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.enabled) {
+          // Producto no habilitado: ocultar widget completamente
+          var w = document.getElementById('subs-widget');
+          if (w) w.style.display = 'none';
+        } else {
+          // Habilitado: inicializar normalmente
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+          } else {
+            init();
+          }
+        }
+      })
+      .catch(function() {
+        // Si la llamada falla, no bloquear — inicializar igual
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      });
   } else {
-    init();
+    // Sin productId detectable: inicializar sin verificar (compatibilidad)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   }
 })();
 </script>

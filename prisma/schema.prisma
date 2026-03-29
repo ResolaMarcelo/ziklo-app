@@ -68,3 +68,18 @@ model Pago {
   subscriptionId String
   createdAt      DateTime     @default(now())
 }
+
+// Productos de Shopify con suscripciones activadas por el merchant
+model ProductSubscription {
+  id           String   @id @default(cuid())
+  shopDomain   String
+  productId    String
+  productTitle String?
+  productImage String?
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([shopDomain, productId])
+  @@index([shopDomain])
+}

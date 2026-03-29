@@ -145,6 +145,86 @@ router.get('/api/widget-code', (req, res) => {
   res.type('text/plain').send(fs.readFileSync(filePath, 'utf8'));
 });
 
+// ══════════════════════════════════════════════════════════════════════════════
+// PRODUCTOS — gestión de productos con suscripciones activadas
+// ══════════════════════════════════════════════════════════════════════════════
+
+// GET /admin/api/products — lista de productos Shopify + estado de suscripción
+router.get('/api/products', async (req, res) => {
+  try {
+    const shopDomain   = req.session?.shopDomain;
+    const accessToken  = req.shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN;
+
+    if (!shopDomain || !accessToken) {
+      return res.status(400).json({ error: 'No hay tienda en sesión' });
+    }
+
+    // Traer productos desde Shopify
+    let data;
+    try {
+      data = await shopify.shopifyRequestForShop(
+        shopDomain, accessToken,
+        '/products.json?limit=250&fields=id,title,image'
+      );
+    } catch (shopifyErr) {
+      // Token sin scope read_products u otro error de Shopify
+      if (shopifyErr.message && shopifyErr.message.includes('403')) {
+        return res.status(400).json({ error: 'El token de Shopify no tiene permiso para leer productos. Reconectá tu tienda via OAuth.' });
+      }
+      throw shopifyErr;
+    }
+
+    const shopifyProducts = data?.products || [];
+
+    // Traer estados guardados en BD
+    const dbRecords = await prisma.productSubscription.findMany({
+      where: { shopDomain },
+    });
+    const dbMap = {};
+    dbRecords.forEach(r => { dbMap[r.productId] = r; });
+
+    // Combinar: solo devolver productos que tienen registro en BD
+    // + todos los productos de Shopify con estado (por defecto disabled)
+    const products = shopifyProducts.map(p => ({
+      id:      String(p.id),
+      title:   p.title,
+      image:   p.image?.src || null,
+      enabled: dbMap[String(p.id)]?.enabled ?? false,
+    }));
+
+    res.json({ products });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /admin/api/products/toggle — activar/desactivar suscripciones para un producto
+router.post('/api/products/toggle', async (req, res) => {
+  try {
+    const { productId, productTitle, productImage, enabled } = req.body;
+    const shopDomain = req.session?.shopDomain;
+
+    if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
+    if (!productId)  return res.status(400).json({ error: 'productId requerido' });
+
+    await prisma.productSubscription.upsert({
+      where:  { shopDomain_productId: { shopDomain, productId: String(productId) } },
+      update: { enabled: !!enabled, productTitle, productImage },
+      create: {
+        shopDomain,
+        productId:    String(productId),
+        productTitle: productTitle || null,
+        productImage: productImage || null,
+        enabled:      !!enabled,
+      },
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Sirve el panel admin (HTML estático que consume la API)
 router.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/admin/index.html'));

@@ -5,6 +5,7 @@ const path = require('path');
 const cookieSession = require('cookie-session');
 
 const planesRoutes = require('./routes/planes');
+const productsRoutes = require('./routes/products');
 const subscripcionesRoutes = require('./routes/subscripciones');
 const webhooksRoutes = require('./routes/webhooks');
 const adminRoutes = require('./routes/admin');
@@ -48,6 +49,7 @@ app.use(shopContext);
 
 // Rutas API
 app.use('/api/planes', planesRoutes);
+app.use('/api/products', productsRoutes);
 app.use('/api/subscripciones', subscripcionesRoutes);
 app.use('/webhooks', webhooksRoutes);
 
