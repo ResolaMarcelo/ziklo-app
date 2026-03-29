@@ -2734,9 +2734,11 @@ function actualizarOverrideInput(selectEl) {
   if (!panel) return;
   const input = panel.querySelector('.override-value');
   if (!input) return;
-  const placeholders = { discount: 'Ej: 15', gift: 'Ej: Muestra de crema', free_shipping: '', points: 'Ej: 150 puntos' };
+  const isFreeShipping = selectEl.value === 'free_shipping';
+  input.style.display = isFreeShipping ? 'none' : '';
+  if (isFreeShipping) input.value = '';
+  const placeholders = { discount: 'Ej: 15', gift: 'Ej: Muestra de crema', points: 'Ej: 150 puntos' };
   input.placeholder = placeholders[selectEl.value] || 'Valor';
-  if (selectEl.value === 'free_shipping') input.value = '';
 }
 
 function toggleOverride(productId) {
@@ -2873,7 +2875,7 @@ async function cargarProductos(force = false) {
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <span style="font-size:12px;color:var(--muted2);font-weight:600">Beneficio para este producto:</span>
             <select class="override-type" onchange="actualizarOverrideInput(this)">${overrideTypeOptions}</select>
-            <input class="override-value" type="text" placeholder="Valor" value="${(p.benefitValue||'').replace(/"/g,'&quot;')}" style="width:160px">
+            <input class="override-value" type="text" placeholder="Valor" value="${(p.benefitValue||'').replace(/"/g,'&quot;')}" style="width:160px${p.benefitType === 'free_shipping' ? ';display:none' : ''}">
             <button class="btn btn-xs btn-primary" onclick="guardarOverride('${p.id}')">Guardar</button>
             ${clearBtn}
           </div>
