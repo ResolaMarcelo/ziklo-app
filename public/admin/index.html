@@ -2554,6 +2554,7 @@ async function toggleProducto(productId, productTitle, productImage, enabled) {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error al guardar');
     showToast(enabled ? '✓ Suscripción activada para este producto' : 'Suscripción desactivada', 'success');
+    cargarProductos(); // Refrescar lista y contador
   } catch (err) {
     // Revertir si falla
     const input = document.querySelector(`#prow-${productId} input[type=checkbox]`);
