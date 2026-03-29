@@ -2511,16 +2511,16 @@ async function cargarProductos(force = false) {
       const checked = p.enabled ? 'checked' : '';
       const labelText = p.enabled ? 'Activo' : 'Inactivo';
       const labelClass = p.enabled ? 'on' : '';
-      return `<div class="product-row" id="prow-${p.id}">
+      return `<div class="product-row" data-pid="${p.id}">
         ${img}
         <div style="flex:1;min-width:0">
           <div class="product-title">${p.title}</div>
           <div class="product-id">#${p.id}</div>
         </div>
         <div class="toggle-wrap">
-          <span class="toggle-label ${labelClass}" id="plabel-${p.id}">${labelText}</span>
+          <span class="toggle-label ${labelClass}">${labelText}</span>
           <label class="toggle">
-            <input type="checkbox" ${checked} onchange="toggleProducto('${p.id}', ${JSON.stringify(p.title)}, ${JSON.stringify(p.image || null)}, this.checked)">
+            <input type="checkbox" ${checked} onchange="toggleProducto('${p.id}', ${JSON.stringify(p.title)}, ${JSON.stringify(p.image || null)}, this.checked, this)">
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -2537,9 +2537,12 @@ async function cargarProductos(force = false) {
   }
 }
 
-async function toggleProducto(productId, productTitle, productImage, enabled) {
+async function toggleProducto(productId, productTitle, productImage, enabled, inputEl) {
+  // Buscar la fila y el label usando data-pid (evita problemas con CSS selectors e IDs numéricos)
+  const row = document.querySelector(`[data-pid="${productId}"]`);
+  const label = row ? row.querySelector('.toggle-label') : null;
+
   // Actualizar label optimistamente
-  const label = document.getElementById('plabel-' + productId);
   if (label) {
     label.textContent = enabled ? 'Activo' : 'Inactivo';
     label.className = 'toggle-label' + (enabled ? ' on' : '');
@@ -2554,11 +2557,10 @@ async function toggleProducto(productId, productTitle, productImage, enabled) {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error al guardar');
     showToast(enabled ? '✓ Suscripción activada para este producto' : 'Suscripción desactivada', 'success');
-    cargarProductos(); // Refrescar lista y contador
+    cargarProductos(); // Refrescar contador y lista
   } catch (err) {
     // Revertir si falla
-    const input = document.querySelector(`#prow-${productId} input[type=checkbox]`);
-    if (input) input.checked = !enabled;
+    if (inputEl) inputEl.checked = !enabled;
     if (label) {
       label.textContent = !enabled ? 'Activo' : 'Inactivo';
       label.className = 'toggle-label' + (!enabled ? ' on' : '');
