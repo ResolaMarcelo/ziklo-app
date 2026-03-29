@@ -12,9 +12,11 @@ model Shop {
   id            String         @id @default(cuid())
   domain        String         @unique  // ej: mi-tienda.myshopify.com
   accessToken   String                  // token de Shopify Admin API
-  mpAccessToken String?                 // token de Mercado Pago de esta tienda
-  shopName      String?                 // nombre de la tienda (cacheado)
-  email         String?                 // email del owner
+  mpAccessToken   String?                 // token de Mercado Pago de esta tienda
+  shopName        String?                 // nombre de la tienda (cacheado)
+  email           String?                 // email del owner
+  subBenefitType  String?                 // "discount" | "gift" | "free_shipping" | "points"
+  subBenefitValue String?                 // "10" | "Muestra de crema" | "150 puntos"
   installedAt   DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   plans         Plan[]
@@ -77,6 +79,8 @@ model ProductSubscription {
   productTitle String?
   productImage String?
   enabled      Boolean  @default(true)
+  benefitType  String?  // null = heredar global del shop
+  benefitValue String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

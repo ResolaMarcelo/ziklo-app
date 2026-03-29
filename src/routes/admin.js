@@ -139,6 +139,44 @@ router.get('/api/mp-token', async (req, res) => {
   });
 });
 
+// GET /admin/api/subscription-benefit — beneficio global configurado para el shop
+router.get('/api/subscription-benefit', (req, res) => {
+  const shop = req.shop;
+  res.json({
+    benefitType:  shop?.subBenefitType  || 'discount',
+    benefitValue: shop?.subBenefitValue || '10',
+  });
+});
+
+// POST /admin/api/subscription-benefit — guardar beneficio global del shop
+router.post('/api/subscription-benefit', async (req, res) => {
+  try {
+    const { benefitType, benefitValue } = req.body;
+    const shopDomain = req.session?.shopDomain;
+    if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
+
+    const validTypes = ['discount', 'gift', 'free_shipping', 'points'];
+    if (!validTypes.includes(benefitType)) {
+      return res.status(400).json({ error: 'Tipo de beneficio inválido' });
+    }
+
+    await prisma.shop.upsert({
+      where:  { domain: shopDomain },
+      update: { subBenefitType: benefitType, subBenefitValue: benefitValue || '' },
+      create: {
+        domain:         shopDomain,
+        accessToken:    process.env.SHOPIFY_ACCESS_TOKEN || '',
+        subBenefitType:  benefitType,
+        subBenefitValue: benefitValue || '',
+      },
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /admin/api/widget-code — contenido actual del widget
 router.get('/api/widget-code', (req, res) => {
   const filePath = path.join(__dirname, '../../public/widget-shopify.html');
@@ -183,13 +221,13 @@ router.get('/api/products', async (req, res) => {
     const dbMap = {};
     dbRecords.forEach(r => { dbMap[r.productId] = r; });
 
-    // Combinar: solo devolver productos que tienen registro en BD
-    // + todos los productos de Shopify con estado (por defecto disabled)
     const products = shopifyProducts.map(p => ({
-      id:      String(p.id),
-      title:   p.title,
-      image:   p.image?.src || null,
-      enabled: dbMap[String(p.id)]?.enabled ?? false,
+      id:          String(p.id),
+      title:       p.title,
+      image:       p.image?.src || null,
+      enabled:     dbMap[String(p.id)]?.enabled ?? false,
+      benefitType:  dbMap[String(p.id)]?.benefitType  || null,
+      benefitValue: dbMap[String(p.id)]?.benefitValue || null,
     }));
 
     res.json({ products });
@@ -201,7 +239,7 @@ router.get('/api/products', async (req, res) => {
 // POST /admin/api/products/toggle — activar/desactivar suscripciones para un producto
 router.post('/api/products/toggle', async (req, res) => {
   try {
-    const { productId, productTitle, productImage, enabled } = req.body;
+    const { productId, productTitle, productImage, enabled, benefitType, benefitValue } = req.body;
     const shopDomain = req.session?.shopDomain;
 
     if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
@@ -209,13 +247,15 @@ router.post('/api/products/toggle', async (req, res) => {
 
     await prisma.productSubscription.upsert({
       where:  { shopDomain_productId: { shopDomain, productId: String(productId) } },
-      update: { enabled: !!enabled, productTitle, productImage },
+      update: { enabled: !!enabled, productTitle, productImage, benefitType: benefitType || null, benefitValue: benefitValue || null },
       create: {
         shopDomain,
         productId:    String(productId),
         productTitle: productTitle || null,
         productImage: productImage || null,
         enabled:      !!enabled,
+        benefitType:  benefitType  || null,
+        benefitValue: benefitValue || null,
       },
     });
 

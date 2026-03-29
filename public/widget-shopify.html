@@ -140,8 +140,12 @@
 
 <script>
 (function(){
-  var APP      = 'https://app-production-338a.up.railway.app';
-  var DESCUENTO = 0.10; // 10% de descuento en suscripción — cambiá este valor
+  var APP = 'https://app-production-338a.up.railway.app';
+
+  // benefitType y benefitValue se cargan dinámicamente desde la API
+  var BENEFIT_TYPE  = 'discount';
+  var BENEFIT_VALUE = '10';
+  var DESCUENTO     = 0.10;
 
   var precioActual = 0;
   var modoSub = false;
@@ -205,14 +209,16 @@
 
   function actualizarPrecioSub(precio) {
     if (!precio) return;
-    var precioSub  = Math.round(precio * (1 - DESCUENTO));
-    var ahorro     = Math.round(precio * DESCUENTO);
-    var pct        = Math.round(DESCUENTO * 100);
-
-    document.getElementById('subs-p-original').textContent  = formatPrecio(precio);
-    document.getElementById('subs-p-final').textContent     = formatPrecio(precioSub) + '/mes';
-    document.getElementById('subs-ahorro-badge').textContent = 'Ahorrás ' + formatPrecio(ahorro);
-    document.getElementById('subs-badge-pct').textContent   = pct + '% OFF';
+    if (BENEFIT_TYPE === 'discount') {
+      var precioSub = Math.round(precio * (1 - DESCUENTO));
+      var ahorro    = Math.round(precio * DESCUENTO);
+      var pct       = Math.round(DESCUENTO * 100);
+      document.getElementById('subs-p-original').textContent  = formatPrecio(precio);
+      document.getElementById('subs-p-final').textContent     = formatPrecio(precioSub) + '/mes';
+      document.getElementById('subs-ahorro-badge').textContent = 'Ahorrás ' + formatPrecio(ahorro);
+      document.getElementById('subs-badge-pct').textContent   = pct + '% OFF';
+    }
+    // Para otros tipos el precio no cambia — la UI ya muestra el beneficio
   }
 
   function actualizarWidget(precio) {
@@ -285,7 +291,9 @@
   function iniciarSub() {
     if (!precioActual) { alert('Seleccioná una cantidad de productos primero'); return; }
 
-    var precioSub = Math.round(precioActual * (1 - DESCUENTO));
+    var precioSub = BENEFIT_TYPE === 'discount'
+      ? Math.round(precioActual * (1 - DESCUENTO))
+      : precioActual;
 
     var form = document.querySelector('form[action*="/cart/add"]');
     var variantId = form ? (form.querySelector('[name="id"]') || {}).value || '' : '';
@@ -365,8 +373,45 @@
   var shopDomain = window.location.hostname; // ej: mi-tienda.myshopify.com
   var productId  = getProductId();
 
+  function aplicarBeneficio(benefitType, benefitValue) {
+    BENEFIT_TYPE  = benefitType  || 'discount';
+    BENEFIT_VALUE = benefitValue || '10';
+    DESCUENTO     = BENEFIT_TYPE === 'discount' ? (parseFloat(BENEFIT_VALUE) || 10) / 100 : 0;
+
+    var badgeEl = document.getElementById('subs-badge-pct');
+    var precioRow = document.getElementById('subs-panel') ? document.getElementById('subs-panel').querySelector('.subs-precio-row') : null;
+
+    if (BENEFIT_TYPE === 'discount') {
+      if (badgeEl) badgeEl.textContent = Math.round(DESCUENTO * 100) + '% OFF';
+      if (precioRow) precioRow.style.display = '';
+    } else {
+      // Ocultar fila de precio y mostrar badge de beneficio
+      if (precioRow) precioRow.style.display = 'none';
+      var badgeLabels = { gift: 'REGALO', free_shipping: 'ENV\u00cdO GRATIS', points: 'PUNTOS' };
+      if (badgeEl) badgeEl.textContent = badgeLabels[BENEFIT_TYPE] || BENEFIT_TYPE.toUpperCase();
+      // Mostrar chip de beneficio en el panel
+      var benefitChipId = 'subs-benefit-chip';
+      var existing = document.getElementById(benefitChipId);
+      if (!existing) {
+        var chip = document.createElement('div');
+        chip.id = benefitChipId;
+        chip.className = 'subs-precio-row';
+        chip.style.cssText = 'font-size:14px;font-weight:600;margin-bottom:10px';
+        var panel = document.getElementById('subs-panel');
+        if (panel && precioRow) panel.insertBefore(chip, precioRow.nextSibling);
+        existing = chip;
+      }
+      var chipTexts = {
+        gift:         '🎁 Con cada entrega recib\u00eds: ' + (BENEFIT_VALUE || ''),
+        free_shipping: '🚚 Cada entrega incluye env\u00edo gratis',
+        points:       '⭐ Acumul\u00e1s ' + (BENEFIT_VALUE || '') + ' en cada entrega',
+      };
+      existing.textContent = chipTexts[BENEFIT_TYPE] || BENEFIT_VALUE;
+    }
+  }
+
   if (productId) {
-    // Consultar si el producto tiene suscripciones activadas
+    // Consultar si el producto tiene suscripciones activadas + beneficio configurado
     fetch(APP + '/api/products/check?shop=' + encodeURIComponent(shopDomain) + '&productId=' + encodeURIComponent(productId))
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -375,7 +420,8 @@
           var w = document.getElementById('subs-widget');
           if (w) w.style.display = 'none';
         } else {
-          // Habilitado: inicializar normalmente
+          // Habilitado: configurar beneficio e inicializar
+          aplicarBeneficio(data.benefitType, data.benefitValue);
           if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
           } else {
@@ -384,7 +430,7 @@
         }
       })
       .catch(function() {
-        // Si la llamada falla, no bloquear — inicializar igual
+        // Si la llamada falla, no bloquear — inicializar con defaults
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', init);
         } else {

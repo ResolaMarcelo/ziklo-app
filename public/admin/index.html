@@ -594,15 +594,16 @@
     /* ── PRODUCTOS ── */
     .product-list { display: flex; flex-direction: column; gap: 0; }
     .product-row {
+      border-bottom: 1px solid var(--border);
+    }
+    .product-row:last-child { border-bottom: none; }
+    .product-row:hover { background: rgba(255,255,255,.02); }
+    .product-row-main {
       display: flex;
       align-items: center;
       gap: 14px;
       padding: 12px 20px;
-      border-bottom: 1px solid var(--border);
-      transition: background .12s;
     }
-    .product-row:last-child { border-bottom: none; }
-    .product-row:hover { background: rgba(255,255,255,.02); }
     .product-thumb {
       width: 40px; height: 40px;
       border-radius: 8px;
@@ -681,6 +682,114 @@
     .toggle input:checked + .toggle-slider::before {
       transform: translateX(16px) translateY(-50%);
       background: var(--green);
+    }
+
+    /* ── BENEFIT RADIO CARDS ── */
+    .benefit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 500px) { .benefit-grid { grid-template-columns: 1fr; } }
+    .benefit-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      background: var(--surface);
+    }
+    .benefit-card:hover { border-color: var(--border-strong); }
+    .benefit-card.selected {
+      border-color: var(--green-border);
+      background: var(--green-dim);
+    }
+    .benefit-card input[type="radio"] { display: none; }
+    .benefit-card-icon {
+      font-size: 22px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .benefit-card-body { flex: 1; min-width: 0; }
+    .benefit-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .benefit-card-desc {
+      font-size: 11px;
+      color: var(--muted2);
+      line-height: 1.4;
+    }
+    .benefit-value-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .benefit-value-row label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted2);
+      white-space: nowrap;
+    }
+    .benefit-value-row input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .benefit-value-row input:focus { outline: none; border-color: var(--green-border); }
+    .benefit-override-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .benefit-override-btn {
+      font-size: 11px;
+      color: var(--muted2);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      font-family: inherit;
+    }
+    .benefit-override-btn:hover { color: var(--text); }
+    .benefit-override-panel {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .benefit-override-panel.open { display: block; }
+    .benefit-override-panel select,
+    .benefit-override-panel input {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: inherit;
+      margin-right: 6px;
+    }
+    .benefit-override-panel .btn-xs {
+      font-size: 11px;
+      padding: 5px 12px;
     }
 
     /* ── HAMBURGER (mobile) ── */
@@ -1202,6 +1311,11 @@
     Productos
   </div>
 
+  <div class="nav-item" onclick="showTab('beneficio')">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+    Beneficio
+  </div>
+
   <div class="sidebar-section">Configuración</div>
 
   <div class="nav-item" onclick="showTab('integraciones')">
@@ -1491,6 +1605,76 @@
             <div class="spinner" style="margin:0 auto 12px"></div>
             Cargando productos...
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BENEFICIO -->
+    <div id="tab-beneficio" class="page">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Beneficio de suscripción</div>
+            <div class="card-sub">Elegí qué reciben tus clientes al suscribirse. Podés personalizar el beneficio por producto desde la sección Productos.</div>
+          </div>
+        </div>
+        <div style="padding:20px 24px">
+
+          <!-- Radio cards -->
+          <div class="benefit-grid">
+            <label class="benefit-card" id="bc-discount" onclick="seleccionarBeneficio('discount')">
+              <input type="radio" name="benefitType" value="discount">
+              <span class="benefit-card-icon">%</span>
+              <div class="benefit-card-body">
+                <div class="benefit-card-title">Descuento</div>
+                <div class="benefit-card-desc">El cliente paga menos en cada entrega</div>
+              </div>
+            </label>
+            <label class="benefit-card" id="bc-gift" onclick="seleccionarBeneficio('gift')">
+              <input type="radio" name="benefitType" value="gift">
+              <span class="benefit-card-icon">🎁</span>
+              <div class="benefit-card-body">
+                <div class="benefit-card-title">Producto de regalo</div>
+                <div class="benefit-card-desc">Incluís una muestra o producto extra</div>
+              </div>
+            </label>
+            <label class="benefit-card" id="bc-free_shipping" onclick="seleccionarBeneficio('free_shipping')">
+              <input type="radio" name="benefitType" value="free_shipping">
+              <span class="benefit-card-icon">🚚</span>
+              <div class="benefit-card-body">
+                <div class="benefit-card-title">Envío gratis</div>
+                <div class="benefit-card-desc">Cada entrega tiene envío sin costo</div>
+              </div>
+            </label>
+            <label class="benefit-card" id="bc-points" onclick="seleccionarBeneficio('points')">
+              <input type="radio" name="benefitType" value="points">
+              <span class="benefit-card-icon">⭐</span>
+              <div class="benefit-card-body">
+                <div class="benefit-card-title">Puntos / Crédito</div>
+                <div class="benefit-card-desc">El cliente acumula puntos de fidelidad</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Input de valor (condicional) -->
+          <div id="benefit-value-discount" class="benefit-value-row" style="display:none">
+            <label>Porcentaje de descuento</label>
+            <input type="number" id="bv-discount" min="1" max="100" placeholder="10" style="max-width:90px">
+            <span style="font-size:13px;color:var(--muted2)">%</span>
+          </div>
+          <div id="benefit-value-gift" class="benefit-value-row" style="display:none">
+            <label>Producto de regalo</label>
+            <input type="text" id="bv-gift" placeholder="Ej: Muestra de crema hidratante">
+          </div>
+          <div id="benefit-value-free_shipping" class="benefit-value-row" style="display:none">
+            <label style="color:var(--muted2);font-size:12px">El envío gratis se comunica automáticamente en el widget.</label>
+          </div>
+          <div id="benefit-value-points" class="benefit-value-row" style="display:none">
+            <label>Descripción de puntos</label>
+            <input type="text" id="bv-points" placeholder="Ej: 150 puntos de fidelidad">
+          </div>
+
+          <button class="btn btn-primary" onclick="guardarBeneficio()">Guardar beneficio</button>
         </div>
       </div>
     </div>
@@ -2006,6 +2190,7 @@ const TITLES = {
   pagos:          ['Pagos', 'Historial de cobros'],
   planes:         ['Planes', 'Planes de suscripción'],
   productos:      ['Productos', 'Activá el widget de suscripción por producto'],
+  beneficio:      ['Beneficio', 'Configurá qué reciben tus clientes al suscribirse'],
   integraciones:  ['Integraciones', 'Servicios conectados a tu cuenta'],
   widget:         ['Instalar Widget', 'Instrucciones de integración'],
   configuracion:  ['Configuración', 'Ajustes de la cuenta y la app'],
@@ -2027,6 +2212,7 @@ function showTab(name) {
   if (name === 'pagos') cargarPagos();
   if (name === 'widget') cargarWidget();
   if (name === 'productos') cargarProductos();
+  if (name === 'beneficio') cargarBeneficio();
   if (name === 'integraciones') cargarIntegraciones();
   if (name === 'configuracion') cargarConfiguracion();
   // Cerrar sidebar en mobile al navegar
@@ -2482,6 +2668,143 @@ function copiarCodigo() {
   setTimeout(() => btn.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar código`, 2000);
 }
 
+// ===================== BENEFICIO =====================
+let _benefitSelected = 'discount';
+
+function seleccionarBeneficio(type) {
+  _benefitSelected = type;
+  ['discount','gift','free_shipping','points'].forEach(t => {
+    const card = document.getElementById('bc-' + t);
+    if (card) card.classList.toggle('selected', t === type);
+    const row = document.getElementById('benefit-value-' + t);
+    if (row) row.style.display = (t === type) ? 'flex' : 'none';
+  });
+}
+
+async function cargarBeneficio() {
+  try {
+    const data = await fetch('/admin/api/subscription-benefit').then(r => r.json());
+    seleccionarBeneficio(data.benefitType || 'discount');
+    const val = data.benefitValue || '';
+    const type = data.benefitType || 'discount';
+    const inputMap = { discount: 'bv-discount', gift: 'bv-gift', free_shipping: null, points: 'bv-points' };
+    const inputId = inputMap[type];
+    if (inputId) {
+      const el = document.getElementById(inputId);
+      if (el) el.value = val;
+    }
+  } catch (_) {}
+}
+
+async function guardarBeneficio() {
+  const type = _benefitSelected;
+  const inputMap = { discount: 'bv-discount', gift: 'bv-gift', free_shipping: null, points: 'bv-points' };
+  const inputId = inputMap[type];
+  let value = '';
+  if (inputId) {
+    const el = document.getElementById(inputId);
+    value = el ? el.value.trim() : '';
+    if (type === 'discount') {
+      const n = parseFloat(value);
+      if (!value || isNaN(n) || n < 1 || n > 100) {
+        showToast('Ingresá un porcentaje válido (1-100)', 'error'); return;
+      }
+      value = String(Math.round(n));
+    } else if (!value) {
+      showToast('Ingresá el detalle del beneficio', 'error'); return;
+    }
+  }
+
+  try {
+    const res = await fetch('/admin/api/subscription-benefit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ benefitType: type, benefitValue: value }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Error al guardar');
+    showToast('Beneficio guardado correctamente', 'success');
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+function actualizarOverrideInput(selectEl) {
+  const panel = selectEl.closest('.benefit-override-panel');
+  if (!panel) return;
+  const input = panel.querySelector('.override-value');
+  if (!input) return;
+  const placeholders = { discount: 'Ej: 15', gift: 'Ej: Muestra de crema', free_shipping: '', points: 'Ej: 150 puntos' };
+  input.placeholder = placeholders[selectEl.value] || 'Valor';
+  if (selectEl.value === 'free_shipping') input.value = '';
+}
+
+function toggleOverride(productId) {
+  const panel = document.querySelector(`[data-bop="${productId}"]`);
+  if (panel) panel.classList.toggle('open');
+}
+
+async function guardarOverride(productId) {
+  const panel = document.querySelector(`[data-bop="${productId}"]`);
+  if (!panel) return;
+  const typeEl  = panel.querySelector('.override-type');
+  const valueEl = panel.querySelector('.override-value');
+  const benefitType  = typeEl  ? typeEl.value  : null;
+  const benefitValue = valueEl ? valueEl.value.trim() : '';
+
+  const row = document.querySelector(`[data-pid="${productId}"]`);
+  const titleEl = row ? row.querySelector('.product-title') : null;
+  const imgEl   = row ? row.querySelector('.product-thumb') : null;
+  const cbEl    = row ? row.querySelector('input[type="checkbox"]') : null;
+
+  try {
+    const res = await fetch('/admin/api/products/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        productId,
+        productTitle: titleEl?.textContent || null,
+        productImage: imgEl?.src || cbEl?.dataset?.image || null,
+        enabled: cbEl ? cbEl.checked : true,
+        benefitType:  benefitType || null,
+        benefitValue: benefitValue || null,
+      }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Error al guardar');
+    showToast('Beneficio personalizado guardado', 'success');
+    cargarProductos();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+async function limpiarOverride(productId) {
+  const row = document.querySelector(`[data-pid="${productId}"]`);
+  const titleEl = row ? row.querySelector('.product-title') : null;
+  const cbEl    = row ? row.querySelector('input[type="checkbox"]') : null;
+  try {
+    const res = await fetch('/admin/api/products/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        productId,
+        productTitle: titleEl?.textContent || null,
+        productImage: cbEl?.dataset?.image || null,
+        enabled: cbEl ? cbEl.checked : true,
+        benefitType:  null,
+        benefitValue: null,
+      }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Error');
+    showToast('Beneficio personalizado eliminado', 'success');
+    cargarProductos();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
 // ===================== PRODUCTOS =====================
 async function cargarProductos(force = false) {
   const body = document.getElementById('productos-body');
@@ -2513,18 +2836,48 @@ async function cargarProductos(force = false) {
       const labelClass = p.enabled ? 'on' : '';
       const safeTitle = (p.title || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
       const safeImage = (p.image || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+
+      const BENEFIT_LABELS = { discount: 'Descuento', gift: 'Regalo', free_shipping: 'Envío gratis', points: 'Puntos' };
+      const overrideBadge = p.benefitType
+        ? `<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,.07);color:var(--muted2);margin-left:4px">${BENEFIT_LABELS[p.benefitType] || p.benefitType}${p.benefitValue ? ': ' + p.benefitValue : ''}</span>`
+        : '';
+      const overrideBtnLabel = p.benefitType ? 'Editar beneficio' : 'Personalizar beneficio';
+
+      const overrideTypeOptions = ['discount','gift','free_shipping','points'].map(t =>
+        `<option value="${t}" ${p.benefitType === t ? 'selected' : ''}>${BENEFIT_LABELS[t]}</option>`
+      ).join('');
+
+      const clearBtn = p.benefitType
+        ? `<button class="btn btn-xs" style="background:none;color:var(--danger);border-color:var(--danger)" onclick="limpiarOverride('${p.id}')">Quitar override</button>`
+        : '';
+
       return `<div class="product-row" data-pid="${p.id}">
-        ${img}
-        <div style="flex:1;min-width:0">
-          <div class="product-title">${p.title}</div>
-          <div class="product-id">#${p.id}</div>
+        <div class="product-row-main">
+          ${img}
+          <div style="flex:1;min-width:0">
+            <div class="product-title">${p.title} ${overrideBadge}</div>
+            <div class="product-id">#${p.id}</div>
+          </div>
+          <div class="benefit-override-row">
+            <button class="benefit-override-btn" onclick="toggleOverride('${p.id}')">${overrideBtnLabel}</button>
+          </div>
+          <div class="toggle-wrap">
+            <span class="toggle-label ${labelClass}">${labelText}</span>
+            <label class="toggle">
+              <input type="checkbox" ${checked} data-pid="${p.id}" data-title="${safeTitle}" data-image="${safeImage}" onchange="toggleProducto(this)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
         </div>
-        <div class="toggle-wrap">
-          <span class="toggle-label ${labelClass}">${labelText}</span>
-          <label class="toggle">
-            <input type="checkbox" ${checked} data-pid="${p.id}" data-title="${safeTitle}" data-image="${safeImage}" onchange="toggleProducto(this)">
-            <span class="toggle-slider"></span>
-          </label>
+        <div class="benefit-override-panel" data-bop="${p.id}">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--muted2);font-weight:600">Beneficio para este producto:</span>
+            <select class="override-type" onchange="actualizarOverrideInput(this)">${overrideTypeOptions}</select>
+            <input class="override-value" type="text" placeholder="Valor" value="${(p.benefitValue||'').replace(/"/g,'&quot;')}" style="width:160px">
+            <button class="btn btn-xs btn-primary" onclick="guardarOverride('${p.id}')">Guardar</button>
+            ${clearBtn}
+          </div>
+          <div style="font-size:11px;color:var(--muted2);margin-top:6px">Sobreescribe el beneficio global para este producto solamente. Dejá vacío para usar el global.</div>
         </div>
       </div>`;
     }).join('');

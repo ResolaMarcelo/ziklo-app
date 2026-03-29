@@ -13,19 +13,21 @@ router.get('/check', async (req, res) => {
     const { shop, productId } = req.query;
 
     if (!shop || !productId) {
-      return res.json({ enabled: false });
+      return res.json({ enabled: false, benefitType: 'discount', benefitValue: '10' });
     }
 
-    const record = await prisma.productSubscription.findUnique({
-      where: {
-        shopDomain_productId: {
-          shopDomain: shop,
-          productId:  String(productId),
-        },
-      },
-    });
+    const [record, shopRecord] = await Promise.all([
+      prisma.productSubscription.findUnique({
+        where: { shopDomain_productId: { shopDomain: shop, productId: String(productId) } },
+      }),
+      prisma.shop.findUnique({ where: { domain: shop } }),
+    ]);
 
-    res.json({ enabled: record?.enabled ?? false });
+    res.json({
+      enabled:      record?.enabled ?? false,
+      benefitType:  record?.benefitType  || shopRecord?.subBenefitType  || 'discount',
+      benefitValue: record?.benefitValue || shopRecord?.subBenefitValue || '10',
+    });
   } catch (err) {
     // En caso de error, no bloquear el widget — devolver enabled: false
     console.error('products/check error:', err.message);
