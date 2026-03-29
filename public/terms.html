@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Términos de Uso — Ziklo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    :root {
+      --green: #00C87A; --black: #0A0A0F; --surface: #111118;
+      --card: #16161F; --border: rgba(255,255,255,.07);
+      --border-s: rgba(255,255,255,.13); --white: #F8FAFC;
+      --muted: #4B5563; --muted2: #6B7280;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--black); color: var(--white); font-size: 15px; line-height: 1.7; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,.9); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-icon {
+      width: 34px; height: 34px;
+      background: rgba(0,200,122,.1); border: 1px solid rgba(0,200,122,.25);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo-name { font-size: 18px; font-weight: 800; color: var(--white); }
+    .nav-logo-name span { color: var(--green); }
+    .nav-back { font-size: 13px; color: var(--muted2); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color .2s; }
+    .nav-back:hover { color: var(--white); }
+
+    .hero {
+      text-align: center; padding: 80px 24px 60px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-tag {
+      display: inline-block; background: rgba(0,200,122,.1);
+      border: 1px solid rgba(0,200,122,.2); border-radius: 20px;
+      padding: 4px 14px; font-size: 12px; font-weight: 600;
+      color: var(--green); margin-bottom: 16px; letter-spacing: .05em;
+    }
+    .hero h1 { font-size: 36px; font-weight: 800; margin-bottom: 12px; }
+    .hero p { font-size: 15px; color: var(--muted2); max-width: 500px; margin: 0 auto; }
+    .hero-date { font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+    .content { max-width: 780px; margin: 0 auto; padding: 60px 24px 100px; }
+    .section { margin-bottom: 48px; }
+    .section h2 {
+      font-size: 20px; font-weight: 700; margin-bottom: 16px;
+      color: var(--white); display: flex; align-items: center; gap: 10px;
+    }
+    .section h2::before {
+      content: ''; display: inline-block;
+      width: 4px; height: 20px; background: var(--green); border-radius: 2px;
+    }
+    .section p { color: rgba(248,250,252,.75); margin-bottom: 12px; }
+    .section ul { padding-left: 20px; color: rgba(248,250,252,.75); }
+    .section ul li { margin-bottom: 8px; }
+    .section a { color: var(--green); text-decoration: none; }
+    .section a:hover { text-decoration: underline; }
+
+    .highlight-box {
+      background: var(--card); border: 1px solid var(--border-s);
+      border-radius: 12px; padding: 20px 24px; margin: 16px 0;
+      color: rgba(248,250,252,.75);
+    }
+    .highlight-box strong { color: var(--white); }
+
+    footer {
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 40px 24px; text-align: center;
+      font-size: 13px; color: var(--muted2);
+    }
+    footer a { color: var(--muted2); text-decoration: none; margin: 0 12px; }
+    footer a:hover { color: var(--white); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M5 6h14L7 18h12" stroke="#00C87A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="nav-logo-name">Ziklo<span>.</span></span>
+  </a>
+  <a href="/" class="nav-back">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Volver al inicio
+  </a>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">LEGAL</div>
+  <h1>Términos de Uso</h1>
+  <p>Las condiciones que regulan el uso de Ziklo por parte de merchants y suscriptores.</p>
+  <div class="hero-date">Última actualización: 28 de marzo de 2026</div>
+</div>
+
+<div class="content">
+
+  <div class="section">
+    <h2>1. Aceptación de los términos</h2>
+    <p>Al instalar o usar Ziklo, aceptás estos Términos de Uso en su totalidad. Si no estás de acuerdo con alguna parte, no debés usar el servicio.</p>
+    <p>Ziklo se reserva el derecho de modificar estos términos en cualquier momento. Los cambios entrarán en vigor al ser publicados. El uso continuado del servicio implica la aceptación de los nuevos términos.</p>
+  </div>
+
+  <div class="section">
+    <h2>2. Descripción del servicio</h2>
+    <p>Ziklo es una aplicación para tiendas Shopify que permite:</p>
+    <ul>
+      <li>Crear y gestionar planes de suscripción para productos</li>
+      <li>Procesar cobros recurrentes automáticos usando Mercado Pago</li>
+      <li>Administrar suscriptores desde un panel centralizado</li>
+      <li>Crear órdenes automáticas en Shopify por cada cobro exitoso</li>
+      <li>Enviar notificaciones por email a los suscriptores</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>3. Requisitos para usar Ziklo</h2>
+    <ul>
+      <li>Tener una tienda activa en Shopify</li>
+      <li>Tener una cuenta de Mercado Pago verificada</li>
+      <li>Ser mayor de 18 años o tener la mayoría de edad legal en tu país</li>
+      <li>Estar autorizado a operar comercialmente en tu jurisdicción</li>
+      <li>Cumplir con los términos de servicio de Shopify y Mercado Pago</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>4. Responsabilidades del merchant</h2>
+    <p>Como merchant que usa Ziklo, sos responsable de:</p>
+    <ul>
+      <li>Mantener la seguridad de tus credenciales de acceso al panel</li>
+      <li>Informar a tus clientes sobre los términos de las suscripciones</li>
+      <li>Cumplir con las leyes de protección al consumidor aplicables en tu país</li>
+      <li>Garantizar que los productos ofrecidos en suscripción existen y están disponibles</li>
+      <li>Gestionar devoluciones y cancelaciones de acuerdo a tu política comercial</li>
+      <li>Mantener actualizado tu Access Token de Mercado Pago</li>
+    </ul>
+    <div class="highlight-box">
+      <strong>Importante:</strong> Ziklo actúa como intermediario tecnológico. Las relaciones comerciales son exclusivamente entre el merchant y sus clientes. Ziklo no es responsable por disputas entre merchants y suscriptores.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>5. Uso prohibido</h2>
+    <p>Queda estrictamente prohibido usar Ziklo para:</p>
+    <ul>
+      <li>Procesar pagos de productos o servicios ilegales</li>
+      <li>Realizar actividades fraudulentas o engañosas</li>
+      <li>Cobrar a clientes sin su consentimiento expreso</li>
+      <li>Revender o sublicenciar el servicio a terceros</li>
+      <li>Intentar acceder a datos de otros merchants</li>
+      <li>Realizar ingeniería inversa o modificar el código del servicio</li>
+      <li>Sobrecargar intencionalmente la infraestructura del servicio</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>6. Pagos y comisiones</h2>
+    <p>El uso de Ziklo puede estar sujeto a una tarifa mensual según el plan contratado. Los detalles de precios están disponibles en <a href="/#pricing">ziklo.app/#pricing</a>.</p>
+    <ul>
+      <li>Las tarifas se cobran por adelantado de forma mensual</li>
+      <li>No se realizan reembolsos por períodos parciales</li>
+      <li>Mercado Pago aplica sus propias comisiones sobre cada cobro procesado, independientemente de las tarifas de Ziklo</li>
+      <li>Ziklo no retiene ni intermedia fondos de los pagos de los suscriptores — el dinero va directamente a la cuenta de MP del merchant</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>7. Disponibilidad del servicio</h2>
+    <p>Ziklo se esfuerza por mantener el servicio disponible las 24 horas, los 7 días de la semana. Sin embargo, no garantizamos una disponibilidad del 100% y no nos responsabilizamos por:</p>
+    <ul>
+      <li>Interrupciones por mantenimiento programado (notificado con anticipación)</li>
+      <li>Fallos en servicios de terceros (Shopify, Mercado Pago, Railway)</li>
+      <li>Eventos de fuerza mayor</li>
+      <li>Problemas de conectividad del usuario</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>8. Propiedad intelectual</h2>
+    <p>Todo el código, diseño, marca, contenido y materiales de Ziklo son propiedad exclusiva de sus creadores. No se otorga ninguna licencia para reproducir, distribuir o crear obras derivadas sin autorización expresa por escrito.</p>
+  </div>
+
+  <div class="section">
+    <h2>9. Limitación de responsabilidad</h2>
+    <p>En la máxima medida permitida por la ley aplicable, Ziklo no será responsable por:</p>
+    <ul>
+      <li>Pérdida de ingresos o ganancias del merchant</li>
+      <li>Daños indirectos, incidentales o consecuentes</li>
+      <li>Errores en el procesamiento de pagos por parte de Mercado Pago</li>
+      <li>Acciones u omisiones de Shopify que afecten el funcionamiento de la app</li>
+      <li>Pérdida de datos por causas fuera de nuestro control</li>
+    </ul>
+    <p>La responsabilidad máxima de Ziklo en cualquier caso no excederá el monto pagado por el merchant en los últimos 3 meses de servicio.</p>
+  </div>
+
+  <div class="section">
+    <h2>10. Cancelación y terminación</h2>
+    <p><strong>Por parte del merchant:</strong> Podés cancelar tu cuenta en cualquier momento desinstalando la app de Shopify. Tus datos serán eliminados dentro de los 30 días siguientes.</p>
+    <p><strong>Por parte de Ziklo:</strong> Nos reservamos el derecho de suspender o terminar cuentas que violen estos términos, con o sin previo aviso dependiendo de la gravedad de la infracción.</p>
+    <p>Las suscripciones activas de tus clientes en Mercado Pago deben ser canceladas por el merchant antes de desinstalar la app, ya que Mercado Pago puede seguir cobrando si el preapproval queda activo.</p>
+  </div>
+
+  <div class="section">
+    <h2>11. Ley aplicable</h2>
+    <p>Estos términos se rigen por las leyes de la República Argentina. Cualquier disputa se someterá a la jurisdicción de los tribunales ordinarios de la Ciudad Autónoma de Buenos Aires, renunciando a cualquier otro fuero que pudiera corresponder.</p>
+  </div>
+
+  <div class="section">
+    <h2>12. Contacto</h2>
+    <p>Para cualquier consulta sobre estos términos:</p>
+    <div class="highlight-box">
+      📧 <a href="mailto:hola@ziklo.app">hola@ziklo.app</a><br/>
+      🌐 <a href="https://ziklo.app">ziklo.app</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div style="margin-bottom:16px">
+    <a href="/">Inicio</a>
+    <a href="/privacy.html">Privacidad</a>
+    <a href="/terms.html">Términos</a>
+    <a href="mailto:hola@ziklo.app">Contacto</a>
+  </div>
+  Ziklo &copy; 2026 — Todos los derechos reservados
+</footer>
+
+</body>
+</html>
