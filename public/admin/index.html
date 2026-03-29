@@ -1557,12 +1557,38 @@
     <div id="tab-pagos" class="page">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Historial de pagos</span>
+          <span class="card-title">Historial de cobros</span>
+          <span id="pagos-count" style="font-size:12px;color:var(--muted2)"></span>
+        </div>
+        <!-- Filtros -->
+        <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <div class="search-wrap">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="search-input" id="pagos-search" placeholder="Email o nombre..." oninput="filtrarPagos()">
+          </div>
+          <select id="pagos-status" onchange="filtrarPagos()" style="background:var(--surface);border:1px solid var(--border-strong);border-radius:8px;color:var(--text);padding:6px 10px;font-size:12px;font-family:inherit">
+            <option value="">Todos los estados</option>
+            <option value="approved">Aprobado</option>
+            <option value="rejected">Rechazado</option>
+            <option value="pending">Pendiente</option>
+          </select>
+          <input type="date" id="pagos-desde" onchange="filtrarPagos()" title="Desde" style="background:var(--surface);border:1px solid var(--border-strong);border-radius:8px;color:var(--text);padding:6px 10px;font-size:12px;font-family:inherit">
+          <input type="date" id="pagos-hasta" onchange="filtrarPagos()" title="Hasta" style="background:var(--surface);border:1px solid var(--border-strong);border-radius:8px;color:var(--text);padding:6px 10px;font-size:12px;font-family:inherit">
+          <button class="btn btn-xs" onclick="limpiarFiltrosPagos()">Limpiar</button>
         </div>
         <table>
-          <thead><tr><th>Email</th><th>Monto</th><th>Estado</th><th>MP Payment ID</th><th>Fecha</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Producto</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>ID Pago MP</th>
+            </tr>
+          </thead>
           <tbody id="tabla-pagos">
-            <tr><td colspan="5" class="empty"><div class="spinner"></div></td></tr>
+            <tr><td colspan="6" class="empty"><div class="spinner"></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -2624,20 +2650,65 @@ async function accionSub(id, accion) {
 }
 
 // ===================== PAGOS =====================
+let _todosPagos = [];
+
 async function cargarPagos() {
-  const subs = await fetch(API + '/api/subscripciones').then(r => r.json());
-  const pagos = subs.flatMap(s => s.pagos.map(p => ({...p, email: s.shopifyCustomerEmail})));
-  pagos.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+  document.getElementById('tabla-pagos').innerHTML =
+    '<tr><td colspan="6" class="empty"><div class="spinner"></div></td></tr>';
+  try {
+    const res = await fetch('/admin/api/pagos');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error');
+    _todosPagos = data;
+    renderPagos(_todosPagos);
+  } catch (err) {
+    document.getElementById('tabla-pagos').innerHTML =
+      `<tr><td colspan="6" class="empty" style="color:var(--danger)">Error al cargar: ${err.message}</td></tr>`;
+  }
+}
+
+function filtrarPagos() {
+  const q      = (document.getElementById('pagos-search').value || '').toLowerCase();
+  const status = document.getElementById('pagos-status').value;
+  const desde  = document.getElementById('pagos-desde').value;
+  const hasta  = document.getElementById('pagos-hasta').value;
+
+  const filtered = _todosPagos.filter(p => {
+    if (q && !p.email.toLowerCase().includes(q) && !(p.nombre||'').toLowerCase().includes(q)) return false;
+    if (status && p.status !== status) return false;
+    if (desde && new Date(p.createdAt) < new Date(desde)) return false;
+    if (hasta && new Date(p.createdAt) > new Date(hasta + 'T23:59:59')) return false;
+    return true;
+  });
+
+  renderPagos(filtered);
+}
+
+function limpiarFiltrosPagos() {
+  document.getElementById('pagos-search').value = '';
+  document.getElementById('pagos-status').value = '';
+  document.getElementById('pagos-desde').value  = '';
+  document.getElementById('pagos-hasta').value  = '';
+  renderPagos(_todosPagos);
+}
+
+function renderPagos(pagos) {
+  const countEl = document.getElementById('pagos-count');
+  if (countEl) countEl.textContent = pagos.length + ' cobro' + (pagos.length !== 1 ? 's' : '');
 
   document.getElementById('tabla-pagos').innerHTML = pagos.length
     ? pagos.map(p => `<tr>
-        <td style="color:var(--muted2)">${p.email}</td>
+        <td style="color:var(--muted2)">${fecha(p.createdAt)}</td>
+        <td>
+          <div style="font-size:12px">${p.email}</div>
+          ${p.nombre ? `<div style="font-size:11px;color:var(--muted2)">${p.nombre}</div>` : ''}
+        </td>
+        <td style="color:var(--muted2);font-size:12px">${p.productTitle || p.productId || '—'}</td>
         <td class="mono" style="color:var(--white)">${ARS(p.monto)}</td>
         <td>${badge(p.status)}</td>
-        <td><span class="mono">${p.mpPaymentId}</span></td>
-        <td style="color:var(--muted2)">${fecha(p.createdAt)}</td>
+        <td><span class="mono" style="font-size:11px;color:var(--muted2)">${p.mpPaymentId}</span></td>
       </tr>`).join('')
-    : '<tr><td colspan="5" class="empty">Sin pagos registrados aún</td></tr>';
+    : '<tr><td colspan="6" class="empty">Sin resultados</td></tr>';
 }
 
 // ===================== WIDGET =====================

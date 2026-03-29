@@ -265,6 +265,69 @@ router.post('/api/products/toggle', async (req, res) => {
   }
 });
 
+// GET /admin/api/pagos — historial completo de cobros con filtros
+router.get('/api/pagos', async (req, res) => {
+  try {
+    const shopDomain = req.session?.shopDomain;
+    if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
+
+    const { status, desde, hasta, q } = req.query;
+
+    const where = { subscription: { shopDomain } };
+    if (status) where.status = status;
+    if (desde || hasta) {
+      where.createdAt = {};
+      if (desde) where.createdAt.gte = new Date(desde);
+      if (hasta) where.createdAt.lte = new Date(hasta + 'T23:59:59Z');
+    }
+
+    const pagos = await prisma.pago.findMany({
+      where,
+      include: { subscription: { include: { plan: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+
+    // Filtro de texto en memoria (email/nombre de envío)
+    const resultado = q
+      ? pagos.filter(p =>
+          p.subscription.shopifyCustomerEmail.toLowerCase().includes(q.toLowerCase()) ||
+          (p.subscription.datosEnvio || '').toLowerCase().includes(q.toLowerCase())
+        )
+      : pagos;
+
+    // Enriquecer con productTitle desde ProductSubscription
+    const productIds = [...new Set(resultado.map(p => p.subscription.productId).filter(Boolean))];
+    const prodMap = {};
+    if (productIds.length) {
+      const prodSubs = await prisma.productSubscription.findMany({
+        where: { shopDomain, productId: { in: productIds } },
+        select: { productId: true, productTitle: true },
+      });
+      prodSubs.forEach(ps => { prodMap[ps.productId] = ps.productTitle; });
+    }
+
+    res.json(resultado.map(p => {
+      let nombre = '';
+      try { const d = JSON.parse(p.subscription.datosEnvio || '{}'); nombre = `${d.nombre||''} ${d.apellido||''}`.trim(); } catch {}
+      return {
+        id:           p.id,
+        mpPaymentId:  p.mpPaymentId,
+        monto:        p.monto,
+        status:       p.status,
+        createdAt:    p.createdAt,
+        email:        p.subscription.shopifyCustomerEmail,
+        nombre,
+        planNombre:   p.subscription.plan?.nombre || null,
+        productId:    p.subscription.productId || null,
+        productTitle: prodMap[p.subscription.productId] || null,
+      };
+    }));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Sirve el panel admin (HTML estático que consume la API)
 router.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/admin/index.html'));
