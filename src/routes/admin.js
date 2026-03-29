@@ -155,7 +155,7 @@ router.post('/api/subscription-benefit', async (req, res) => {
     const shopDomain = req.session?.shopDomain;
     if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
 
-    const validTypes = ['discount', 'gift', 'free_shipping', 'points'];
+    const validTypes = ['discount', 'gift', 'free_shipping'];
     if (!validTypes.includes(benefitType)) {
       return res.status(400).json({ error: 'Tipo de beneficio inválido' });
     }

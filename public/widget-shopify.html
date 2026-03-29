@@ -387,7 +387,7 @@
     } else {
       // Ocultar fila de precio y mostrar badge de beneficio
       if (precioRow) precioRow.style.display = 'none';
-      var badgeLabels = { gift: 'REGALO', free_shipping: 'ENV\u00cdO GRATIS', points: 'PUNTOS' };
+      var badgeLabels = { gift: 'REGALO', free_shipping: 'ENV\u00cdO GRATIS' };
       if (badgeEl) badgeEl.textContent = badgeLabels[BENEFIT_TYPE] || BENEFIT_TYPE.toUpperCase();
       // Mostrar chip de beneficio en el panel
       var benefitChipId = 'subs-benefit-chip';
@@ -404,7 +404,6 @@
       var chipTexts = {
         gift:         '🎁 Con cada entrega recib\u00eds: ' + (BENEFIT_VALUE || ''),
         free_shipping: '🚚 Cada entrega incluye env\u00edo gratis',
-        points:       '⭐ Acumul\u00e1s ' + (BENEFIT_VALUE || '') + ' en cada entrega',
       };
       existing.textContent = chipTexts[BENEFIT_TYPE] || BENEFIT_VALUE;
     }

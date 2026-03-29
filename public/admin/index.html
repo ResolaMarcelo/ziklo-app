@@ -1646,14 +1646,6 @@
                 <div class="benefit-card-desc">Cada entrega tiene envío sin costo</div>
               </div>
             </label>
-            <label class="benefit-card" id="bc-points" onclick="seleccionarBeneficio('points')">
-              <input type="radio" name="benefitType" value="points">
-              <span class="benefit-card-icon">⭐</span>
-              <div class="benefit-card-body">
-                <div class="benefit-card-title">Puntos / Crédito</div>
-                <div class="benefit-card-desc">El cliente acumula puntos de fidelidad</div>
-              </div>
-            </label>
           </div>
 
           <!-- Input de valor (condicional) -->
@@ -1664,14 +1656,12 @@
           </div>
           <div id="benefit-value-gift" class="benefit-value-row" style="display:none">
             <label>Producto de regalo</label>
-            <input type="text" id="bv-gift" placeholder="Ej: Muestra de crema hidratante">
+            <select id="bv-gift" style="flex:1">
+              <option value="">Cargando productos...</option>
+            </select>
           </div>
           <div id="benefit-value-free_shipping" class="benefit-value-row" style="display:none">
             <label style="color:var(--muted2);font-size:12px">El envío gratis se comunica automáticamente en el widget.</label>
-          </div>
-          <div id="benefit-value-points" class="benefit-value-row" style="display:none">
-            <label>Descripción de puntos</label>
-            <input type="text" id="bv-points" placeholder="Ej: 150 puntos de fidelidad">
           </div>
 
           <button class="btn btn-primary" onclick="guardarBeneficio()">Guardar beneficio</button>
@@ -2673,7 +2663,7 @@ let _benefitSelected = 'discount';
 
 function seleccionarBeneficio(type) {
   _benefitSelected = type;
-  ['discount','gift','free_shipping','points'].forEach(t => {
+  ['discount','gift','free_shipping'].forEach(t => {
     const card = document.getElementById('bc-' + t);
     if (card) card.classList.toggle('selected', t === type);
     const row = document.getElementById('benefit-value-' + t);
@@ -2683,11 +2673,24 @@ function seleccionarBeneficio(type) {
 
 async function cargarBeneficio() {
   try {
-    const data = await fetch('/admin/api/subscription-benefit').then(r => r.json());
-    seleccionarBeneficio(data.benefitType || 'discount');
-    const val = data.benefitValue || '';
-    const type = data.benefitType || 'discount';
-    const inputMap = { discount: 'bv-discount', gift: 'bv-gift', free_shipping: null, points: 'bv-points' };
+    const [benefitData, productsData] = await Promise.all([
+      fetch('/admin/api/subscription-benefit').then(r => r.json()),
+      fetch('/admin/api/products').then(r => r.json()),
+    ]);
+
+    // Poblar select de productos para regalo
+    const giftSelect = document.getElementById('bv-gift');
+    if (giftSelect && productsData.products) {
+      giftSelect.innerHTML = '<option value="">Seleccioná un producto...</option>' +
+        productsData.products.map(p =>
+          `<option value="${p.title.replace(/"/g,'&quot;')}">${p.title}</option>`
+        ).join('');
+    }
+
+    seleccionarBeneficio(benefitData.benefitType || 'discount');
+    const val = benefitData.benefitValue || '';
+    const type = benefitData.benefitType || 'discount';
+    const inputMap = { discount: 'bv-discount', gift: 'bv-gift' };
     const inputId = inputMap[type];
     if (inputId) {
       const el = document.getElementById(inputId);
@@ -2698,7 +2701,7 @@ async function cargarBeneficio() {
 
 async function guardarBeneficio() {
   const type = _benefitSelected;
-  const inputMap = { discount: 'bv-discount', gift: 'bv-gift', free_shipping: null, points: 'bv-points' };
+  const inputMap = { discount: 'bv-discount', gift: 'bv-gift' };
   const inputId = inputMap[type];
   let value = '';
   if (inputId) {
@@ -2711,7 +2714,7 @@ async function guardarBeneficio() {
       }
       value = String(Math.round(n));
     } else if (!value) {
-      showToast('Ingresá el detalle del beneficio', 'error'); return;
+      showToast('Seleccioná un producto de regalo', 'error'); return;
     }
   }
 
@@ -2732,13 +2735,13 @@ async function guardarBeneficio() {
 function actualizarOverrideInput(selectEl) {
   const panel = selectEl.closest('.benefit-override-panel');
   if (!panel) return;
-  const input = panel.querySelector('.override-value');
-  if (!input) return;
-  const isFreeShipping = selectEl.value === 'free_shipping';
-  input.style.display = isFreeShipping ? 'none' : '';
-  if (isFreeShipping) input.value = '';
-  const placeholders = { discount: 'Ej: 15', gift: 'Ej: Muestra de crema', points: 'Ej: 150 puntos' };
-  input.placeholder = placeholders[selectEl.value] || 'Valor';
+  const discountInput = panel.querySelector('.override-discount');
+  const pctLabel      = panel.querySelector('.override-pct');
+  const giftSelect    = panel.querySelector('.override-gift');
+  const type = selectEl.value;
+  if (discountInput) discountInput.style.display = type === 'discount' ? '' : 'none';
+  if (pctLabel)      pctLabel.style.display      = type === 'discount' ? '' : 'none';
+  if (giftSelect)    giftSelect.style.display     = type === 'gift'     ? '' : 'none';
 }
 
 function toggleOverride(productId) {
@@ -2749,10 +2752,16 @@ function toggleOverride(productId) {
 async function guardarOverride(productId) {
   const panel = document.querySelector(`[data-bop="${productId}"]`);
   if (!panel) return;
-  const typeEl  = panel.querySelector('.override-type');
-  const valueEl = panel.querySelector('.override-value');
-  const benefitType  = typeEl  ? typeEl.value  : null;
-  const benefitValue = valueEl ? valueEl.value.trim() : '';
+  const typeEl       = panel.querySelector('.override-type');
+  const benefitType  = typeEl ? typeEl.value : null;
+  let benefitValue = '';
+  if (benefitType === 'discount') {
+    const el = panel.querySelector('.override-discount');
+    benefitValue = el ? el.value.trim() : '';
+  } else if (benefitType === 'gift') {
+    const el = panel.querySelector('.override-gift');
+    benefitValue = el ? el.value.trim() : '';
+  }
 
   const row = document.querySelector(`[data-pid="${productId}"]`);
   const titleEl = row ? row.querySelector('.product-title') : null;
@@ -2829,6 +2838,9 @@ async function cargarProductos(force = false) {
     }
 
     const enabledCount = products.filter(p => p.enabled).length;
+    // Opciones de productos para el select de regalo en el override panel
+    const giftProductOptions = '<option value="">Seleccioná un producto...</option>' +
+      products.map(pr => `<option value="${(pr.title||'').replace(/"/g,'&quot;')}">${pr.title}</option>`).join('');
     const rows = products.map(p => {
       const img = p.image
         ? `<img class="product-thumb" src="${p.image}" alt="" loading="lazy">`
@@ -2839,13 +2851,13 @@ async function cargarProductos(force = false) {
       const safeTitle = (p.title || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
       const safeImage = (p.image || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
 
-      const BENEFIT_LABELS = { discount: 'Descuento', gift: 'Regalo', free_shipping: 'Envío gratis', points: 'Puntos' };
+      const BENEFIT_LABELS = { discount: 'Descuento', gift: 'Regalo', free_shipping: 'Envío gratis' };
       const overrideBadge = p.benefitType
         ? `<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,.07);color:var(--muted2);margin-left:4px">${BENEFIT_LABELS[p.benefitType] || p.benefitType}${p.benefitValue ? ': ' + p.benefitValue : ''}</span>`
         : '';
       const overrideBtnLabel = p.benefitType ? 'Editar beneficio' : 'Personalizar beneficio';
 
-      const overrideTypeOptions = ['discount','gift','free_shipping','points'].map(t =>
+      const overrideTypeOptions = ['discount','gift','free_shipping'].map(t =>
         `<option value="${t}" ${p.benefitType === t ? 'selected' : ''}>${BENEFIT_LABELS[t]}</option>`
       ).join('');
 
@@ -2875,7 +2887,9 @@ async function cargarProductos(force = false) {
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <span style="font-size:12px;color:var(--muted2);font-weight:600">Beneficio para este producto:</span>
             <select class="override-type" onchange="actualizarOverrideInput(this)">${overrideTypeOptions}</select>
-            <input class="override-value" type="text" placeholder="Valor" value="${(p.benefitValue||'').replace(/"/g,'&quot;')}" style="width:160px${p.benefitType === 'free_shipping' ? ';display:none' : ''}">
+            <input class="override-value override-discount" type="number" min="1" max="100" placeholder="Ej: 15" style="width:80px${p.benefitType !== 'discount' ? ';display:none' : ''}" value="${p.benefitType === 'discount' ? (p.benefitValue||'') : ''}">
+            <span class="override-pct" style="font-size:12px;color:var(--muted2)${p.benefitType !== 'discount' ? ';display:none' : ''}">%</span>
+            <select class="override-value override-gift" style="${p.benefitType !== 'gift' ? 'display:none;' : ''}width:200px">${giftProductOptions.replace(`value="${(p.benefitValue||'').replace(/"/g,'&quot;')}"`, `value="${(p.benefitValue||'').replace(/"/g,'&quot;')}" selected`)}</select>
             <button class="btn btn-xs btn-primary" onclick="guardarOverride('${p.id}')">Guardar</button>
             ${clearBtn}
           </div>
