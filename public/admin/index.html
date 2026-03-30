@@ -495,6 +495,9 @@
     .step-desc { font-size: 11px; color: var(--muted2); line-height: 1.4; }
     .step-action { font-size: 10px; font-weight: 700; color: var(--green); margin-top: 4px; display: none; }
     .checklist-step.active-step .step-action { display: block; }
+    .step-optional-badge { font-size: 9px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--muted); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+    .checklist-step.optional { opacity: .7; }
+    .checklist-step.optional.done { opacity: .45; }
     .checklist-done-msg {
       padding: 16px 18px; font-size: 12px; color: var(--green);
       display: flex; align-items: center; gap: 8px; font-weight: 600;
@@ -1605,7 +1608,7 @@
             <div class="checklist-head">
               <div class="checklist-head-top">
                 <span class="checklist-title">Primeros pasos</span>
-                <span class="checklist-badge" id="checklist-badge">0/4</span>
+                <span class="checklist-badge" id="checklist-badge">0/5</span>
               </div>
               <div class="checklist-progress-bg">
                 <div class="checklist-progress-fill" id="checklist-progress" style="width:0%"></div>
@@ -2936,16 +2939,25 @@ function setPeriod(days) {
 }
 
 // ===================== ONBOARDING CHECKLIST =====================
+// optional: true → no cuenta para el total ni bloquea "todo listo"
 const CHECKLIST_STEPS = [
   {
     id: 'shopify',
     name: 'Conectar tu tienda Shopify',
-    desc: 'Tu tienda está vinculada y lista.',
+    desc: 'Tu tienda está vinculada y lista para cobrar.',
     action: null,
     check: () => true, // siempre ok si están en el admin
   },
   {
-    id: 'plan',
+    id: 'mp',
+    name: 'Conectar Mercado Pago',
+    desc: 'Autorizá tu cuenta de MP para habilitar cobros recurrentes.',
+    action: 'Conectar ahora →',
+    actionTab: 'integraciones',
+    check: (data) => !!data.mp,
+  },
+  {
+    id: 'producto',
     name: 'Activar tu primer producto',
     desc: 'Habilitá el widget de suscripción en un producto.',
     action: 'Ir a Productos →',
@@ -2967,6 +2979,15 @@ const CHECKLIST_STEPS = [
     action: null,
     check: (data) => data.subs > 0,
   },
+  {
+    id: 'klaviyo',
+    name: 'Conectar Klaviyo',
+    desc: 'Activá flows de email automáticos para tus suscriptores.',
+    action: 'Conectar Klaviyo →',
+    actionTab: 'integraciones',
+    optional: true,
+    check: (data) => !!data.klaviyo,
+  },
 ];
 
 async function renderChecklist(data) {
@@ -2976,37 +2997,41 @@ async function renderChecklist(data) {
     done: step.check(data),
   }));
 
-  const doneCount = steps.filter(s => s.done).length;
-  const pct = Math.round((doneCount / steps.length) * 100);
+  // Solo los pasos obligatorios cuentan para el progreso
+  const required = steps.filter(s => !s.optional);
+  const doneCount = required.filter(s => s.done).length;
+  const pct = Math.round((doneCount / required.length) * 100);
 
-  document.getElementById('checklist-badge').textContent = `${doneCount}/${steps.length}`;
+  document.getElementById('checklist-badge').textContent = `${doneCount}/${required.length}`;
   document.getElementById('checklist-progress').style.width = pct + '%';
 
-  if (doneCount === steps.length) {
-    body.innerHTML = `<div class="checklist-done-msg">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-      ¡Todo listo! Tu cuenta está activa.
-    </div>`;
-    return;
-  }
+  // "Todo listo" solo cuando todos los obligatorios están completos
+  const allRequiredDone = required.every(s => s.done);
 
-  // Primer paso pendiente = activo
-  const firstPending = steps.find(s => !s.done);
+  // Primer paso obligatorio pendiente = activo
+  const firstPending = steps.find(s => !s.done && !s.optional);
 
   body.innerHTML = steps.map(step => `
-    <div class="checklist-step ${step.done ? 'done' : ''} ${(!step.done && step === firstPending) ? 'active-step' : ''}"
+    <div class="checklist-step ${step.optional ? 'optional' : ''} ${step.done ? 'done' : ''} ${(!step.done && step === firstPending) ? 'active-step' : ''}"
          ${step.actionTab && !step.done ? `onclick="showTab('${step.actionTab}')"` : ''}>
       <div class="step-icon ${step.done ? 'done' : 'pending'}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
         <div class="step-dot"></div>
       </div>
       <div class="step-text">
-        <div class="step-name">${step.name}</div>
+        <div class="step-name">
+          ${step.name}
+          ${step.optional ? '<span class="step-optional-badge">Opcional</span>' : ''}
+        </div>
         <div class="step-desc">${step.done ? '✓ Completado' : step.desc}</div>
         ${step.action && !step.done ? `<div class="step-action">${step.action}</div>` : ''}
       </div>
     </div>
-  `).join('');
+  `).join('') + (allRequiredDone ? `
+    <div class="checklist-done-msg">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      ¡Todo listo! Tu cuenta está activa.
+    </div>` : '');
 }
 
 // ===================== DASHBOARD =====================
@@ -3022,8 +3047,16 @@ async function cargarDashboard() {
   buildCharts(subs, _currentPeriodDays);
 
   // Checklist data
-  const productosData = await fetch(API + '/api/products/enabled').then(r => r.json()).catch(() => ({ count: 0 }));
-  renderChecklist({ subs: subs.length, productos: productosData.count || 0 });
+  const [productosData, statusData] = await Promise.all([
+    fetch(API + '/api/products/enabled').then(r => r.json()).catch(() => ({ count: 0 })),
+    fetch(API + '/admin/api/status').then(r => r.json()).catch(() => ({})),
+  ]);
+  renderChecklist({
+    subs:      subs.length,
+    productos: productosData.count || 0,
+    mp:        !!statusData.mercadopago,
+    klaviyo:   !!statusData.klaviyo,
+  });
 
   document.getElementById('tabla-recientes').innerHTML = subs.slice(0,10).map(s => {
     const envio = s.datosEnvio ? JSON.parse(s.datosEnvio) : null;
