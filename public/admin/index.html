@@ -187,11 +187,33 @@
       line-height: 1;
       margin-bottom: 6px;
     }
-    .stat-label { font-size: 11px; color: var(--muted2); font-weight: 500; }
+    .stat-label { font-size: 11px; color: var(--muted2); font-weight: 500; display: flex; align-items: center; gap: 5px; }
     .stat-mrr .stat-value { color: var(--green); }
     .stat-mrr { border-color: var(--green-border); background: var(--green-dim); }
     .stat-danger .stat-value { color: var(--danger); }
     .stat-danger { border-color: rgba(239,68,68,.2); background: rgba(239,68,68,.04); }
+    .stat-warn .stat-value { color: #f59e0b; }
+    .stat-warn { border-color: rgba(245,158,11,.2); background: rgba(245,158,11,.04); }
+    /* Tooltip ⓘ en KPIs */
+    .stat-info {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+      color: var(--muted); font-size: 8px; font-weight: 800;
+      cursor: default; position: relative; font-style: normal; line-height: 1;
+    }
+    .stat-info::after {
+      content: attr(data-tip);
+      position: absolute; bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%);
+      background: #151520; border: 1px solid rgba(255,255,255,.15);
+      color: #c9c9d3; font-size: 11px; font-weight: 400; line-height: 1.5;
+      padding: 9px 11px; border-radius: 8px; width: 210px;
+      white-space: normal; text-align: left;
+      pointer-events: none; opacity: 0; transition: opacity .15s ease;
+      z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+    .stat-info:hover::after { opacity: 1; }
 
     /* ── CARD ── */
     .card {
@@ -1542,35 +1564,51 @@
           <div class="stats">
             <div class="stat stat-mrr">
               <div class="stat-value" id="stat-mrr">—</div>
-              <div class="stat-label">MRR estimado</div>
+              <div class="stat-label">MRR estimado <i class="stat-info" data-tip="Monthly Recurring Revenue: suma de los cobros mensuales de todos tus suscriptores activos. Indica cuánto facturás por mes de forma recurrente.">i</i></div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-arr">—</div>
+              <div class="stat-label">ARR estimado <i class="stat-info" data-tip="Annual Recurring Revenue: el MRR multiplicado por 12. Proyecta cuánto vas a facturar en un año si la base de suscriptores se mantiene igual.">i</i></div>
             </div>
             <div class="stat">
               <div class="stat-value" id="stat-ingresos-mes">—</div>
-              <div class="stat-label">Ingresos</div>
+              <div class="stat-label">Ingresos cobrados <i class="stat-info" data-tip="Total efectivamente cobrado en el período seleccionado, basado en pagos con estado 'aprobado' procesados por Mercado Pago.">i</i></div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-ticket">—</div>
+              <div class="stat-label">Ticket promedio <i class="stat-info" data-tip="Monto promedio que paga cada suscriptor activo. Se calcula dividiendo los ingresos del período por la cantidad de suscriptores activos.">i</i></div>
             </div>
             <div class="stat">
               <div class="stat-value" id="stat-activos">—</div>
-              <div class="stat-label">Suscriptores activos</div>
+              <div class="stat-label">Suscriptores activos <i class="stat-info" data-tip="Cantidad de suscripciones con cobro automático habilitado y al día en el período seleccionado.">i</i></div>
             </div>
             <div class="stat">
               <div class="stat-value" id="stat-total">—</div>
-              <div class="stat-label">Nuevas suscripciones</div>
+              <div class="stat-label">Nuevas suscripciones <i class="stat-info" data-tip="Cantidad de suscripciones nuevas creadas en el período, sin importar su estado actual (activas, pendientes o canceladas).">i</i></div>
             </div>
             <div class="stat">
               <div class="stat-value" id="stat-pendientes">—</div>
-              <div class="stat-label">Pendientes</div>
+              <div class="stat-label">Pendientes <i class="stat-info" data-tip="Suscripciones que iniciaron el proceso pero el primer pago aún no fue aprobado por Mercado Pago.">i</i></div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-pausadas">—</div>
+              <div class="stat-label">Pausadas <i class="stat-info" data-tip="Suscripciones que el suscriptor o el merchant pausaron temporalmente. No generan cobros hasta que se reactiven.">i</i></div>
             </div>
             <div class="stat">
               <div class="stat-value" id="stat-cobros-proximos">—</div>
-              <div class="stat-label">Cobros próximos (7d)</div>
+              <div class="stat-label">Cobros próximos (7d) <i class="stat-info" data-tip="Suscripciones activas que tienen un cobro automático programado en los próximos 7 días.">i</i></div>
             </div>
             <div class="stat stat-danger">
               <div class="stat-value" id="stat-pago-fallido">—</div>
-              <div class="stat-label">Pagos fallidos</div>
+              <div class="stat-label">Pagos fallidos <i class="stat-info" data-tip="Suscripciones en las que el último cobro automático no pudo procesarse. MP reintenta hasta 3 veces antes de pasar a estado cancelado.">i</i></div>
             </div>
             <div class="stat">
               <div class="stat-value" id="stat-churn">—</div>
-              <div class="stat-label">Canceladas</div>
+              <div class="stat-label">Canceladas <i class="stat-info" data-tip="Suscripciones canceladas en el período seleccionado, ya sea por el suscriptor, el merchant o por pagos fallidos reiterados.">i</i></div>
+            </div>
+            <div class="stat stat-warn">
+              <div class="stat-value" id="stat-churn-rate">—</div>
+              <div class="stat-label">Churn rate <i class="stat-info" data-tip="Porcentaje de suscriptores que cancelaron en el período sobre el total. Cuanto más bajo, mejor. Un churn menor al 5% mensual se considera saludable.">i</i></div>
             </div>
           </div>
 
@@ -2834,12 +2872,19 @@ function updatePeriodStats(subs, days) {
   const mrr = activosEnPeriodo.reduce((sum, s) => sum + (s.plan?.tipoFrecuencia === 'months' ? s.plan?.monto || 0 : 0), 0);
   document.getElementById('stat-mrr').textContent = ARS(mrr);
 
+  // ARR — MRR × 12
+  document.getElementById('stat-arr').textContent = ARS(mrr * 12);
+
   // Ingresos en el período
   const pagosEnPeriodo = subs.flatMap(s => s.pagos || []).filter(p =>
     p.status === 'approved' && (!desde || new Date(p.createdAt) >= desde)
   );
   const ingresos = pagosEnPeriodo.reduce((sum, p) => sum + (p.monto || 0), 0);
   document.getElementById('stat-ingresos-mes').textContent = ARS(ingresos);
+
+  // Ticket promedio
+  const ticketProm = activosEnPeriodo.length > 0 ? ingresos / activosEnPeriodo.length : 0;
+  document.getElementById('stat-ticket').textContent = ticketProm > 0 ? ARS(ticketProm) : '—';
 
   // Suscriptores activos en el período
   document.getElementById('stat-activos').textContent = activosEnPeriodo.length;
@@ -2849,6 +2894,9 @@ function updatePeriodStats(subs, days) {
 
   // Pendientes en el período
   document.getElementById('stat-pendientes').textContent = subsEnPeriodo.filter(s => s.status === 'pending').length;
+
+  // Pausadas (global, no cambia con período)
+  document.getElementById('stat-pausadas').textContent = subs.filter(s => s.status === 'paused').length;
 
   // Cobros próximos (siempre próximos 7 días, no cambia con período)
   const en7dias = new Date(ahora.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -2863,6 +2911,11 @@ function updatePeriodStats(subs, days) {
     ? subs.filter(s => s.status === 'cancelled' && new Date(s.updatedAt) >= desde).length
     : subs.filter(s => s.status === 'cancelled').length;
   document.getElementById('stat-churn').textContent = canceladas;
+
+  // Churn rate — canceladas / (activos + canceladas) * 100
+  const totalBase = activosEnPeriodo.length + canceladas;
+  const churnRate = totalBase > 0 ? ((canceladas / totalBase) * 100).toFixed(1) : 0;
+  document.getElementById('stat-churn-rate').textContent = churnRate > 0 ? churnRate + '%' : '0%';
 }
 
 let _customDesde = null;
@@ -2906,13 +2959,21 @@ function updatePeriodStatsCustom(subs, desde, hasta) {
   const activosEnPeriodo = subsEnPeriodo.filter(s => s.status === 'authorized');
   const mrr = activosEnPeriodo.reduce((sum, s) => sum + (s.plan?.tipoFrecuencia === 'months' ? s.plan?.monto || 0 : 0), 0);
   document.getElementById('stat-mrr').textContent = ARS(mrr);
+  document.getElementById('stat-arr').textContent = ARS(mrr * 12);
   const pagosEnPeriodo = subs.flatMap(s => s.pagos || []).filter(p => { const d = new Date(p.createdAt); return p.status === 'approved' && d >= desde && d <= hasta; });
-  document.getElementById('stat-ingresos-mes').textContent = ARS(pagosEnPeriodo.reduce((sum, p) => sum + (p.monto || 0), 0));
+  const ingresos = pagosEnPeriodo.reduce((sum, p) => sum + (p.monto || 0), 0);
+  document.getElementById('stat-ingresos-mes').textContent = ARS(ingresos);
+  const ticketProm = activosEnPeriodo.length > 0 ? ingresos / activosEnPeriodo.length : 0;
+  document.getElementById('stat-ticket').textContent = ticketProm > 0 ? ARS(ticketProm) : '—';
   document.getElementById('stat-activos').textContent = activosEnPeriodo.length;
   document.getElementById('stat-total').textContent = subsEnPeriodo.length;
   document.getElementById('stat-pendientes').textContent = subsEnPeriodo.filter(s => s.status === 'pending').length;
+  document.getElementById('stat-pausadas').textContent = subs.filter(s => s.status === 'paused').length;
   document.getElementById('stat-pago-fallido').textContent = subsEnPeriodo.filter(s => s.status === 'payment_failed').length;
-  document.getElementById('stat-churn').textContent = subs.filter(s => { const d = new Date(s.updatedAt); return s.status === 'cancelled' && d >= desde && d <= hasta; }).length;
+  const canceladas = subs.filter(s => { const d = new Date(s.updatedAt); return s.status === 'cancelled' && d >= desde && d <= hasta; }).length;
+  document.getElementById('stat-churn').textContent = canceladas;
+  const totalBase = activosEnPeriodo.length + canceladas;
+  document.getElementById('stat-churn-rate').textContent = totalBase > 0 ? ((canceladas / totalBase) * 100).toFixed(1) + '%' : '0%';
   const ahora = new Date();
   const en7dias = new Date(ahora.getTime() + 7 * 24 * 60 * 60 * 1000);
   document.getElementById('stat-cobros-proximos').textContent = subs.filter(s => s.status === 'authorized' && s.nextChargeDate && new Date(s.nextChargeDate) <= en7dias).length;
