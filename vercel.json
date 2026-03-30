@@ -1,0 +1,49 @@
+{
+  "outputDirectory": "public",
+  "rewrites": [],
+  "redirects": [
+    {
+      "source": "/admin/:path*",
+      "destination": "https://app.zikloapp.com/admin/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/cliente/:path*",
+      "destination": "https://app.zikloapp.com/cliente/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://app.zikloapp.com/api/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "https://app.zikloapp.com/auth/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/webhooks/:path*",
+      "destination": "https://app.zikloapp.com/webhooks/:path*",
+      "permanent": false
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/privacy",
+      "dest": "/privacy.html"
+    },
+    {
+      "src": "/terms",
+      "dest": "/terms.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
