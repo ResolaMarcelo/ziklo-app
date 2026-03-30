@@ -1710,11 +1710,26 @@
             <input type="number" id="bv-discount" min="1" max="100" placeholder="10" style="max-width:90px">
             <span style="font-size:13px;color:var(--muted2)">%</span>
           </div>
-          <div id="benefit-value-gift" class="benefit-value-row" style="display:none">
-            <label>Producto de regalo</label>
-            <select id="bv-gift" style="flex:1">
-              <option value="">Cargando productos...</option>
-            </select>
+          <div id="benefit-value-gift" class="benefit-value-row" style="display:none;flex-direction:column;gap:8px;">
+            <label style="font-size:13px;font-weight:500;color:var(--white);">Producto de regalo</label>
+            <!-- Custom dropdown — valor real en #bv-gift hidden -->
+            <input type="hidden" id="bv-gift" value="">
+            <div id="gift-dropdown" style="position:relative;">
+              <button type="button" id="gift-dropdown-btn" onclick="toggleGiftDropdown()"
+                style="width:100%;background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px 14px;color:var(--white);font-family:Inter,sans-serif;font-size:14px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:border-color .15s;">
+                <span id="gift-dropdown-label" style="color:var(--muted2);">Seleccioná un producto...</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;transition:transform .2s;" id="gift-dropdown-arrow"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div id="gift-dropdown-list"
+                style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:10px;overflow:hidden;z-index:100;max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);">
+                <div style="padding:8px;">
+                  <input type="text" id="gift-search" placeholder="Buscar producto..." oninput="filtrarGiftProducts()"
+                    style="width:100%;background:var(--surface);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;margin-bottom:4px;"
+                  />
+                </div>
+                <div id="gift-options"></div>
+              </div>
+            </div>
           </div>
           <div id="benefit-value-free_shipping" class="benefit-value-row" style="display:none">
             <label style="color:var(--muted2);font-size:12px">El envío gratis se comunica automáticamente en el widget.</label>
@@ -2772,6 +2787,72 @@ function seleccionarBeneficio(type) {
   });
 }
 
+// ── Gift product custom dropdown ─────────────────────────────────────────────
+window._giftProducts = [];
+
+function renderGiftOptions(products) {
+  const container = document.getElementById('gift-options');
+  if (!container) return;
+  if (!products.length) {
+    container.innerHTML = '<div style="padding:12px 16px;font-size:13px;color:var(--muted2);">No hay productos</div>';
+    return;
+  }
+  container.innerHTML = products.map(p => `
+    <div class="gift-option" data-value="${p.title.replace(/"/g,'&quot;')}"
+      onclick="selectGiftProduct('${p.title.replace(/'/g,"\\'")}'); event.stopPropagation();"
+      style="padding:10px 16px;font-size:13px;color:var(--white);cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .1s;"
+      onmouseover="this.style.background='rgba(255,255,255,.06)'"
+      onmouseout="this.style.background=''"
+    >
+      <div style="width:28px;height:28px;background:rgba(255,255,255,.06);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+      </div>
+      ${p.title}
+    </div>`).join('');
+}
+
+function filtrarGiftProducts() {
+  const q = (document.getElementById('gift-search')?.value || '').toLowerCase();
+  const filtered = window._giftProducts.filter(p => p.title.toLowerCase().includes(q));
+  renderGiftOptions(filtered);
+}
+
+function selectGiftProduct(title) {
+  document.getElementById('bv-gift').value = title;
+  const label = document.getElementById('gift-dropdown-label');
+  if (label) { label.textContent = title; label.style.color = 'var(--white)'; }
+  closeGiftDropdown();
+}
+
+function toggleGiftDropdown() {
+  const list = document.getElementById('gift-dropdown-list');
+  const arrow = document.getElementById('gift-dropdown-arrow');
+  const btn   = document.getElementById('gift-dropdown-btn');
+  const open  = list.style.display === 'none';
+  list.style.display  = open ? 'block' : 'none';
+  arrow.style.transform = open ? 'rotate(180deg)' : '';
+  btn.style.borderColor = open ? 'var(--green)' : 'rgba(255,255,255,.12)';
+  if (open) {
+    setTimeout(() => document.getElementById('gift-search')?.focus(), 50);
+    document.addEventListener('click', closeGiftDropdownOutside);
+  }
+}
+
+function closeGiftDropdown() {
+  const list  = document.getElementById('gift-dropdown-list');
+  const arrow = document.getElementById('gift-dropdown-arrow');
+  const btn   = document.getElementById('gift-dropdown-btn');
+  if (list)  list.style.display = 'none';
+  if (arrow) arrow.style.transform = '';
+  if (btn)   btn.style.borderColor = 'rgba(255,255,255,.12)';
+  document.removeEventListener('click', closeGiftDropdownOutside);
+}
+
+function closeGiftDropdownOutside(e) {
+  const dd = document.getElementById('gift-dropdown');
+  if (dd && !dd.contains(e.target)) closeGiftDropdown();
+}
+
 async function cargarBeneficio() {
   try {
     const [benefitData, productsData] = await Promise.all([
@@ -2779,23 +2860,20 @@ async function cargarBeneficio() {
       fetch('/admin/api/products').then(r => r.json()),
     ]);
 
-    // Poblar select de productos para regalo
-    const giftSelect = document.getElementById('bv-gift');
-    if (giftSelect && productsData.products) {
-      giftSelect.innerHTML = '<option value="">Seleccioná un producto...</option>' +
-        productsData.products.map(p =>
-          `<option value="${p.title.replace(/"/g,'&quot;')}">${p.title}</option>`
-        ).join('');
+    // Poblar dropdown custom de productos para regalo
+    if (productsData.products) {
+      window._giftProducts = productsData.products;
+      renderGiftOptions(productsData.products);
     }
 
     seleccionarBeneficio(benefitData.benefitType || 'discount');
     const val = benefitData.benefitValue || '';
     const type = benefitData.benefitType || 'discount';
-    const inputMap = { discount: 'bv-discount', gift: 'bv-gift' };
-    const inputId = inputMap[type];
-    if (inputId) {
-      const el = document.getElementById(inputId);
+    if (type === 'discount') {
+      const el = document.getElementById('bv-discount');
       if (el) el.value = val;
+    } else if (type === 'gift' && val) {
+      selectGiftProduct(val);
     }
   } catch (_) {}
 }
