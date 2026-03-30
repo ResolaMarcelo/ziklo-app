@@ -25,6 +25,15 @@ const limiterVerificar = rateLimit({
   message: { error: 'Demasiados intentos. Esperá 15 minutos.' },
 });
 
+// Login / registro: 10 intentos cada 15 min por IP (evita fuerza bruta)
+const limiterAuth = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Esperá 15 minutos antes de volver a intentar.' },
+});
+
 // API pública general: 100 requests por minuto por IP (evita scraping)
 const limiterAPI = rateLimit({
   windowMs: 60 * 1000,
@@ -103,6 +112,8 @@ app.use('/webhooks', webhooksRoutes);
 app.use('/auth', authRoutes);
 
 // Auth de usuarios (email/pass + Google OAuth) — montado en /auth para compartir prefijo
+app.post('/auth/user/login',    limiterAuth);
+app.post('/auth/user/register', limiterAuth);
 app.use('/auth', userAuthRoutes);
 
 // Klaviyo OAuth — protegido por adminAuth (sólo merchants logueados)
@@ -119,6 +130,8 @@ app.use('/api/cliente', clienteAuthRoutes);
 // API pública — rate limiting general
 app.use('/api/planes', limiterAPI);
 app.use('/api/products', limiterAPI);
+app.use('/api/subscripciones', limiterAPI);
+app.use('/api/waitlist', limiterAPI);
 
 // Rutas de UI — admin protegido con auth
 app.use('/admin', adminAuth, adminRoutes);
