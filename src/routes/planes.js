@@ -37,6 +37,7 @@ router.get('/todos', async (req, res) => {
 
 // POST /api/planes — crear plan
 router.post('/', async (req, res) => {
+  if (!req.session?.adminLoggedIn) return res.status(401).json({ error: 'No autorizado' });
   try {
     const { nombre, descripcion, monto, frecuencia, tipoFrecuencia, beneficios } = req.body;
     if (!nombre || !monto) {
@@ -62,6 +63,7 @@ router.post('/', async (req, res) => {
 
 // PUT /api/planes/:id — actualizar plan
 router.put('/:id', async (req, res) => {
+  if (!req.session?.adminLoggedIn) return res.status(401).json({ error: 'No autorizado' });
   try {
     const shopDomain = getShopDomain(req);
     const existing = await prisma.plan.findFirst({
@@ -92,6 +94,7 @@ router.put('/:id', async (req, res) => {
 
 // DELETE /api/planes/:id — desactivar plan
 router.delete('/:id', async (req, res) => {
+  if (!req.session?.adminLoggedIn) return res.status(401).json({ error: 'No autorizado' });
   try {
     const shopDomain = getShopDomain(req);
     const existing = await prisma.plan.findFirst({

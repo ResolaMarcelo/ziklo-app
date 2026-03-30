@@ -18,10 +18,14 @@ router.get('/login', (req, res) => {
 
 // POST /admin/api/login — usuario + contraseña desde env vars
 router.post('/api/login', (req, res) => {
+  if (!process.env.ADMIN_PASSWORD) {
+    return res.status(503).json({ error: 'Login legacy no configurado' });
+  }
+
   const { username, password } = req.body;
 
   const validUser = process.env.ADMIN_USER || 'admin';
-  const validPass = process.env.ADMIN_PASSWORD || 'ziklo2024';
+  const validPass = process.env.ADMIN_PASSWORD;
 
   // Buffers de igual tamaño para timingSafeEqual
   const uBuf = Buffer.alloc(64); Buffer.from(username || '').copy(uBuf);
@@ -35,8 +39,8 @@ router.post('/api/login', (req, res) => {
   if (userOk && passOk) {
     req.session.adminLoggedIn = true;
     req.session.adminUser     = validUser;
-    // Para el flujo single-store, shopDomain viene del env var
-    req.session.shopDomain    = process.env.SHOPIFY_SHOP_DOMAIN || null;
+    // shopDomain se resuelve desde UserShop en /api/me (igual que otros logins)
+    req.session.shopDomain    = null;
     return res.json({ ok: true });
   }
 
@@ -170,7 +174,7 @@ router.post('/api/mp-token', async (req, res) => {
       update: { mpAccessToken: token },
       create: {
         domain:       shopDomain,
-        accessToken:  process.env.SHOPIFY_ACCESS_TOKEN || '',
+        accessToken:  '',
         mpAccessToken: token,
         shopName:     shopDomain,
       },
@@ -231,7 +235,7 @@ router.post('/api/subscription-benefit', async (req, res) => {
       },
       create: {
         domain:          shopDomain,
-        accessToken:     process.env.SHOPIFY_ACCESS_TOKEN || '',
+        accessToken:     '',
         subBenefitType:  benefitType,
         subBenefitValue: benefitValue  || '',
         widgetTitle:     widgetTitle   || null,
@@ -284,7 +288,7 @@ router.post('/api/retention-config', async (req, res) => {
       },
       create: {
         domain:                   shopDomain,
-        accessToken:              process.env.SHOPIFY_ACCESS_TOKEN || '',
+        accessToken:              '',
         retentionPauseEnabled:    !!pauseEnabled,
         retentionDiscountEnabled: !!discountEnabled,
         retentionDiscountPct:     discountPct ? parseInt(discountPct) : null,
@@ -313,7 +317,7 @@ router.get('/api/widget-code', (req, res) => {
 router.get('/api/products', async (req, res) => {
   try {
     const shopDomain   = req.session?.shopDomain;
-    const accessToken  = req.shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN;
+    const accessToken  = req.shop?.accessToken || null;
 
     if (!shopDomain || !accessToken) {
       return res.status(400).json({ error: 'No hay tienda en sesión' });

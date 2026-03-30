@@ -69,7 +69,7 @@ router.get('/callback', async (req, res) => {
       update: { mpAccessToken: tokenData.access_token },
       create: {
         domain:        shopDomain,
-        accessToken:   process.env.SHOPIFY_ACCESS_TOKEN || '',
+        accessToken:   '',
         mpAccessToken: tokenData.access_token,
         shopName:      shopDomain,
       },

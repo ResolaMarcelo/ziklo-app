@@ -102,6 +102,12 @@ app.use(express.urlencoded({ extended: true }));
 // Adjunta req.shop a todos los requests (usa sesión o ?shop= query param)
 app.use(shopContext);
 
+// API pública — rate limiting general (debe ir ANTES de registrar las rutas)
+app.use('/api/planes', limiterAPI);
+app.use('/api/products', limiterAPI);
+app.use('/api/subscripciones', limiterAPI);
+app.use('/api/waitlist', limiterAPI);
+
 // Rutas API
 app.use('/api/planes', planesRoutes);
 app.use('/api/products', productsRoutes);
@@ -126,12 +132,6 @@ app.use('/auth/mp', adminAuth, mpAuthRoutes);
 app.post('/api/cliente/solicitar', limiterMagicLink);
 app.post('/api/cliente/verificar', limiterVerificar);
 app.use('/api/cliente', clienteAuthRoutes);
-
-// API pública — rate limiting general
-app.use('/api/planes', limiterAPI);
-app.use('/api/products', limiterAPI);
-app.use('/api/subscripciones', limiterAPI);
-app.use('/api/waitlist', limiterAPI);
 
 // Rutas de UI — admin protegido con auth
 app.use('/admin', adminAuth, adminRoutes);

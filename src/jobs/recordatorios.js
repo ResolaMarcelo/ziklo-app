@@ -59,8 +59,17 @@ async function enviarRecordatorios() {
         ? await prisma.shop.findUnique({ where: { domain: sub.shopDomain } })
         : null;
 
-      const shopDomain = shop?.domain    || process.env.SHOPIFY_SHOP_DOMAIN || '';
-      const shopToken  = shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN || '';
+      if (!shop || !shop.domain) {
+        console.error(`[Recordatorios] Shop no encontrado para sub ${sub.id} (shopDomain: ${sub.shopDomain}) — saltando`);
+        continue;
+      }
+      if (!shop.accessToken) {
+        console.error(`[Recordatorios] Shop ${shop.domain} sin accessToken para sub ${sub.id} — saltando`);
+        continue;
+      }
+
+      const shopDomain = shop.domain;
+      const shopToken  = shop.accessToken;
       const storeName  = await getStoreName(shopDomain, shopToken);
 
       const nombre = sub.datosEnvio

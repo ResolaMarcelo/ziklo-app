@@ -21,11 +21,18 @@ const { registrarCobro } = require('../lib/billing');
 function verificarHMACMercadoPago(req) {
   const secret = process.env.MP_WEBHOOK_SECRET;
 
-  // Si no hay secret configurado, logueamos advertencia pero dejamos pasar
-  // (para no romper en desarrollo donde no está configurado)
-  if (!secret || secret === 'mi_clave_secreta_webhooks_123') {
-    console.warn('[webhook/mp] MP_WEBHOOK_SECRET no configurado — omitiendo verificación HMAC');
-    return true;
+  // En producción: rechazar si el secret es el default o está vacío
+  if (process.env.NODE_ENV === 'production') {
+    if (!secret || secret === 'mi_clave_secreta_webhooks_123') {
+      console.error('[webhook/mp] FATAL: MP_WEBHOOK_SECRET no configurado o es el valor por defecto en producción — rechazando request');
+      return false;
+    }
+  } else {
+    // En desarrollo: omitir verificación si no hay secret configurado
+    if (!secret || secret === 'mi_clave_secreta_webhooks_123') {
+      console.warn('[webhook/mp] MP_WEBHOOK_SECRET no configurado — omitiendo verificación HMAC');
+      return true;
+    }
   }
 
   const xSignature = req.headers['x-signature'];
@@ -139,8 +146,12 @@ router.post('/mp', async (req, res) => {
 
         // ── Pago aprobado ─────────────────────────────────────────────────────
         if (pago.status === 'approved') {
-          const shopifyToken = shop?.accessToken  || process.env.SHOPIFY_ACCESS_TOKEN;
-          const shopDomain   = shop?.domain       || process.env.SHOPIFY_SHOP_DOMAIN;
+          if (!shop || !shop.accessToken) {
+            console.error('[webhook/mp] Shop no encontrado o sin accessToken para sub:', sub.id, '— no se puede procesar pago aprobado');
+            return;
+          }
+          const shopifyToken = shop.accessToken;
+          const shopDomain   = shop.domain;
 
           // Registrar cobro en contador de billing (fire and forget)
           if (shopDomain) registrarCobro(prisma, shopDomain).catch(() => {});
@@ -211,10 +222,14 @@ router.post('/mp', async (req, res) => {
           });
 
           // Obtener nombre de la tienda para los emails
-          const shopDomain = shop?.domain || process.env.SHOPIFY_SHOP_DOMAIN;
-          const shopToken  = shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN;
-          const shopData   = await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null);
-          const storeName  = shopData?.shop?.name || process.env.STORE_NAME || shopDomain;
+          if (!shop || !shop.domain) {
+            console.error('[webhook/mp] Shop no encontrado para sub:', sub.id, '— no se puede obtener storeName para email de pago fallido');
+            return;
+          }
+          const shopDomain = shop.domain;
+          const shopToken  = shop.accessToken || null;
+          const shopData   = shopToken ? await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null) : null;
+          const storeName  = shopData?.shop?.name || shopDomain;
 
           // Email al cliente
           try {
@@ -278,10 +293,14 @@ router.post('/mp', async (req, res) => {
       if (preapproval.status === 'authorized' && subs.length > 0) {
         const sub = subs[0];
         try {
-          const shopDomain = shop?.domain || process.env.SHOPIFY_SHOP_DOMAIN;
-          const shopToken  = shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN;
-          const shopData   = await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null);
-          const storeName  = shopData?.shop?.name || process.env.STORE_NAME || shopDomain;
+          if (!shop || !shop.domain) {
+            console.error('[webhook/mp] Shop no encontrado para sub:', sub.id, '— no se puede enviar email de confirmación');
+            return;
+          }
+          const shopDomain = shop.domain;
+          const shopToken  = shop.accessToken || null;
+          const shopData   = shopToken ? await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null) : null;
+          const storeName  = shopData?.shop?.name || shopDomain;
           await email.enviarConfirmacionSuscripcion({
             email:      sub.shopifyCustomerEmail,
             nombre:     sub.datosEnvio ? JSON.parse(sub.datosEnvio).nombre : null,
