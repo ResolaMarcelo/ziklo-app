@@ -1,21 +1,10 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  connectionTimeout: 10000, // 10s — evita que cuelgue indefinidamente
-  greetingTimeout:   5000,
-  socketTimeout:     10000,
-  tls: {
-    rejectUnauthorized: false, // necesario para Outlook en algunos entornos
-    ciphers: 'SSLv3',
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Dirección de envío — con dominio verificado en Resend usá: "Ziklo <hola@ziklo.app>"
+// Sin dominio verificado, Resend permite: "Ziklo <onboarding@resend.dev>"
+const FROM = process.env.RESEND_FROM || 'Ziklo <onboarding@resend.dev>';
 
 function formatPrecio(num) {
   return '$' + Math.round(num).toLocaleString('es-AR');
@@ -24,7 +13,6 @@ function formatPrecio(num) {
 async function enviarConfirmacionSuscripcion({ email, nombre, planNombre, monto, storeName }) {
   const precioFormateado = formatPrecio(monto);
   const fromName = storeName || 'Tu tienda';
-  const from = `"${fromName}" <${process.env.SMTP_USER}>`;
 
   const html = `
 <!DOCTYPE html>
@@ -110,8 +98,8 @@ async function enviarConfirmacionSuscripcion({ email, nombre, planNombre, monto,
 </html>
   `.trim();
 
-  await transporter.sendMail({
-    from,
+  await resend.emails.send({
+    from: FROM,
     to: email,
     subject: `✅ Tu suscripción mensual está activa — ${fromName}`,
     html,
@@ -199,8 +187,8 @@ async function enviarVerificacionEmail({ email, code, name }) {
 </body>
 </html>`.trim();
 
-  await transporter.sendMail({
-    from: `"Ziklo" <${process.env.SMTP_USER}>`,
+  await resend.emails.send({
+    from: FROM,
     to: email,
     subject: `${code} es tu código de verificación de Ziklo`,
     html,
@@ -251,8 +239,8 @@ async function enviarResetPassword({ email, resetUrl }) {
 </body>
 </html>`.trim();
 
-  await transporter.sendMail({
-    from: `"Ziklo" <${process.env.SMTP_USER}>`,
+  await resend.emails.send({
+    from: FROM,
     to: email,
     subject: 'Restablecé tu contraseña de Ziklo',
     html,
