@@ -3808,7 +3808,7 @@ async function cargarIntegraciones() {
     },
   ];
 
-  // Tarjeta especial de Mercado Pago con formulario inline
+  // Tarjeta especial de Mercado Pago con OAuth
   const mpCard = `
     <div class="integ-card">
       <div class="integ-card-head">
@@ -3829,23 +3829,25 @@ async function cargarIntegraciones() {
       <div class="integ-detail">
         ${status.mercadopago
           ? 'Preapproval API activa. Cobros automáticos habilitados.'
-          : 'Ingresá tu Access Token de Mercado Pago para habilitar los cobros recurrentes.'}
-      </div>
-      ${status.mercadopago && mpHint ? `<div class="integ-hint">Token: ${mpHint}</div>` : ''}
-      <div class="integ-form">
-        <input id="mp-token-input" class="integ-input" type="password"
-          placeholder="${status.mercadopago ? 'Nuevo access token...' : 'APP_USR-...'}"
-          autocomplete="off" />
-        <button class="integ-save-btn" onclick="guardarMpToken()">
-          ${status.mercadopago ? 'Actualizar' : 'Guardar'}
-        </button>
+          : 'Autorizá tu cuenta de Mercado Pago para habilitar cobros recurrentes en tu tienda.'}
       </div>
       ${status.mercadopago ? `
-        <button class="integ-action" onclick="window.open('https://www.mercadopago.com.ar/developers','_blank')" style="margin-top:6px">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Panel MP
-        </button>
-      ` : ''}
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="integ-action" onclick="window.open('https://www.mercadopago.com.ar/developers','_blank')">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Panel MP
+          </button>
+          <a href="/auth/mp" class="integ-action" style="display:inline-flex;align-items:center;gap:5px;color:var(--muted);border-color:rgba(255,255,255,.12);text-decoration:none;">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Reconectar
+          </a>
+        </div>
+      ` : `
+        <a href="/auth/mp" class="integ-action" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:#009ee3;color:white;font-weight:600;padding:8px 16px;border-radius:7px;font-size:12px;text-decoration:none;border:none;">
+          <svg width="14" height="14" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="rgba(255,255,255,.25)"/><path d="M12 30c3-6 8-10 14-10s10 3 12 8" stroke="white" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="20" r="5" fill="white"/></svg>
+          Conectar con Mercado Pago
+        </a>
+      `}
     </div>
   `;
 
@@ -4244,6 +4246,21 @@ window.fetch = async function(...args) {
 
 // ===================== INIT =====================
 async function initApp() {
+  // Detectar redirects de OAuth (MP, etc.) y mostrar toast + navegar al tab correcto
+  const qp = new URLSearchParams(window.location.search);
+  const hash = window.location.hash.replace('#', '');
+  if (qp.has('mp_ok')) {
+    setTimeout(() => showToast('Mercado Pago conectado correctamente ✓'), 300);
+    history.replaceState(null, '', '/admin' + (hash ? '#' + hash : ''));
+  } else if (qp.has('mp_error')) {
+    setTimeout(() => showToast('No se pudo conectar Mercado Pago. Intentá de nuevo.', 'error'), 300);
+    history.replaceState(null, '', '/admin' + (hash ? '#' + hash : ''));
+  }
+  // Navegar al tab indicado por hash (ej: #integraciones después del OAuth)
+  if (hash && document.getElementById('tab-' + hash)) {
+    showTab(hash);
+  }
+
   const me = await fetch('/admin/api/me').then(r => r.json()).catch(() => ({}));
 
   if (!me.shopDomain) {

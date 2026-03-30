@@ -43,6 +43,7 @@ const clienteRoutes = require('./routes/cliente');
 const authRoutes = require('./routes/auth');
 const userAuthRoutes = require('./routes/userAuth');
 const klaviyoAuthRoutes = require('./routes/klaviyoAuth');
+const mpAuthRoutes      = require('./routes/mpAuth');
 const clienteAuthRoutes = require('./routes/clienteAuth');
 const adminAuth        = require('./middleware/adminAuth');
 const shopContext       = require('./middleware/shopContext');
@@ -95,6 +96,9 @@ app.use('/auth', userAuthRoutes);
 
 // Klaviyo OAuth — protegido por adminAuth (sólo merchants logueados)
 app.use('/auth/klaviyo', adminAuth, klaviyoAuthRoutes);
+
+// Mercado Pago OAuth — protegido por adminAuth
+app.use('/auth/mp', adminAuth, mpAuthRoutes);
 
 // Auth del portal cliente (magic link) — pública, con rate limiting
 app.post('/api/cliente/solicitar', limiterMagicLink);
