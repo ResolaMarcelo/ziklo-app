@@ -874,6 +874,11 @@
 
   // ── Errores de URL (Google OAuth) ─────────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
+
+  // Abrir tab directo si viene ?tab=register desde la landing
+  const tabParam = params.get('tab');
+  if (tabParam === 'register') switchTab('register');
+
   const errorParam = params.get('error');
   if (errorParam) {
     const msgs = {
