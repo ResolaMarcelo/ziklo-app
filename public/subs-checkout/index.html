@@ -457,8 +457,6 @@
     if (!validar()) return;
     if (!monto) { mostrarError('No se encontró el monto de la suscripción. Volvé a la tienda.'); return; }
 
-    // DEMO: simular MP caído (borrar esta línea en producción)
-    return mostrarError('', true);
 
     var btn = document.getElementById('btn-pagar');
     btn.disabled = true;
