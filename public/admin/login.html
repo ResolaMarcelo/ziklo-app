@@ -220,15 +220,34 @@
     .forgot-back:hover { color: var(--white); }
     .success-msg {
       display: none;
-      background: rgba(0,200,122,.08);
-      border: 1px solid rgba(0,200,122,.2);
-      border-radius: 9px;
-      padding: 10px 13px;
-      font-size: 13px; color: var(--green);
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      background: rgba(0,200,122,.06);
+      border: 1px solid rgba(0,200,122,.18);
+      border-radius: 16px;
+      padding: 32px 24px 28px;
       margin-bottom: 16px;
-      align-items: center; gap: 8px;
+      gap: 0;
     }
     .success-msg.show { display: flex; }
+    .success-msg .success-icon {
+      width: 56px; height: 56px;
+      background: rgba(0,200,122,.12);
+      border: 1.5px solid rgba(0,200,122,.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .success-msg .success-icon svg { width: 24px; height: 24px; }
+    .success-msg h3 {
+      font-size: 16px; font-weight: 700; color: var(--white);
+      margin: 0 0 8px; letter-spacing: -.2px;
+    }
+    .success-msg p {
+      font-size: 13px; color: var(--muted2); line-height: 1.6; margin: 0;
+    }
+    .success-msg p strong { color: var(--white); }
 
     /* Footer */
     .left-footer { font-size: 11px; color: var(--muted); margin-top: auto; padding-top: 24px; }
@@ -511,8 +530,11 @@
         <span id="forgotErrorText"></span>
       </div>
       <div class="success-msg" id="forgotSuccess">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        <span>Te enviamos un email con el enlace para restablecer tu contraseña.</span>
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>Revisá tu casilla</h3>
+        <p>Te enviamos un enlace para restablecer tu contraseña a<br><strong id="forgotEmailSent"></strong><br><br>Si no lo encontrás, revisá la carpeta de spam.</p>
       </div>
 
       <div id="forgotForm">
@@ -730,6 +752,7 @@
         body: JSON.stringify({ email }),
       });
       // Siempre mostrar éxito (no revelar si el email existe)
+      document.getElementById('forgotEmailSent').textContent = email;
       document.getElementById('forgotSuccess').classList.add('show');
       document.getElementById('forgotForm').style.display = 'none';
     } catch (_) {
