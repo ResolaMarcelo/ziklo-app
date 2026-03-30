@@ -176,13 +176,14 @@ router.get('/api/subscription-benefit', (req, res) => {
   res.json({
     benefitType:  shop?.subBenefitType  || 'discount',
     benefitValue: shop?.subBenefitValue || '10',
+    widgetTitle:  shop?.widgetTitle     || '',
   });
 });
 
 // POST /admin/api/subscription-benefit — guardar beneficio global del shop
 router.post('/api/subscription-benefit', async (req, res) => {
   try {
-    const { benefitType, benefitValue } = req.body;
+    const { benefitType, benefitValue, widgetTitle } = req.body;
     const shopDomain = req.session?.shopDomain;
     if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
 
@@ -193,12 +194,17 @@ router.post('/api/subscription-benefit', async (req, res) => {
 
     await prisma.shop.upsert({
       where:  { domain: shopDomain },
-      update: { subBenefitType: benefitType, subBenefitValue: benefitValue || '' },
-      create: {
-        domain:         shopDomain,
-        accessToken:    process.env.SHOPIFY_ACCESS_TOKEN || '',
+      update: {
         subBenefitType:  benefitType,
         subBenefitValue: benefitValue || '',
+        widgetTitle:     widgetTitle  || null,
+      },
+      create: {
+        domain:          shopDomain,
+        accessToken:     process.env.SHOPIFY_ACCESS_TOKEN || '',
+        subBenefitType:  benefitType,
+        subBenefitValue: benefitValue || '',
+        widgetTitle:     widgetTitle  || null,
       },
     });
 

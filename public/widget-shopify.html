@@ -373,6 +373,16 @@
   var shopDomain = window.location.hostname; // ej: mi-tienda.myshopify.com
   var productId  = getProductId();
 
+  function aplicarWidgetTitle(title) {
+    if (!title) return;
+    var tabBtn = document.getElementById('subs-tab-sub');
+    if (!tabBtn) return;
+    // Preservar el badge y cambiar solo el texto del label
+    var badge = tabBtn.querySelector('.subs-tab-badge');
+    tabBtn.textContent = title + ' ';
+    if (badge) tabBtn.appendChild(badge);
+  }
+
   function aplicarBeneficio(benefitType, benefitValue) {
     BENEFIT_TYPE  = benefitType  || 'discount';
     BENEFIT_VALUE = benefitValue || '10';
@@ -419,8 +429,9 @@
           var w = document.getElementById('subs-widget');
           if (w) w.style.display = 'none';
         } else {
-          // Habilitado: configurar beneficio e inicializar
+          // Habilitado: configurar beneficio y titular, luego inicializar
           aplicarBeneficio(data.benefitType, data.benefitValue);
+          if (data.widgetTitle) aplicarWidgetTitle(data.widgetTitle);
           if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
           } else {

@@ -1671,76 +1671,197 @@
 
     <!-- BENEFICIO -->
     <div id="tab-beneficio" class="page">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Beneficio de suscripción</div>
-            <div class="card-sub">Elegí qué reciben tus clientes al suscribirse. Podés personalizar el beneficio por producto desde la sección Productos.</div>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start">
+
+        <!-- Columna izquierda: configuración -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Beneficio de suscripción</div>
+                <div class="card-sub">Elegí qué reciben tus clientes al suscribirse. Podés personalizar el beneficio por producto desde la sección Productos.</div>
+              </div>
+            </div>
+            <div style="padding:20px 24px">
+
+              <!-- Radio cards -->
+              <div class="benefit-grid">
+                <label class="benefit-card" id="bc-discount" onclick="seleccionarBeneficio('discount')">
+                  <input type="radio" name="benefitType" value="discount">
+                  <span class="benefit-card-icon">%</span>
+                  <div class="benefit-card-body">
+                    <div class="benefit-card-title">Descuento</div>
+                    <div class="benefit-card-desc">El cliente paga menos en cada entrega</div>
+                  </div>
+                </label>
+                <label class="benefit-card" id="bc-gift" onclick="seleccionarBeneficio('gift')">
+                  <input type="radio" name="benefitType" value="gift">
+                  <span class="benefit-card-icon">🎁</span>
+                  <div class="benefit-card-body">
+                    <div class="benefit-card-title">Producto de regalo</div>
+                    <div class="benefit-card-desc">Incluís una muestra o producto extra</div>
+                  </div>
+                </label>
+                <label class="benefit-card" id="bc-free_shipping" onclick="seleccionarBeneficio('free_shipping')">
+                  <input type="radio" name="benefitType" value="free_shipping">
+                  <span class="benefit-card-icon">🚚</span>
+                  <div class="benefit-card-body">
+                    <div class="benefit-card-title">Envío gratis</div>
+                    <div class="benefit-card-desc">Cada entrega tiene envío sin costo</div>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Input de valor (condicional) -->
+              <div id="benefit-value-discount" class="benefit-value-row" style="display:none">
+                <label>Porcentaje de descuento</label>
+                <input type="number" id="bv-discount" min="1" max="100" placeholder="10" style="max-width:90px" oninput="actualizarPreviewBeneficio()">
+                <span style="font-size:13px;color:var(--muted2)">%</span>
+              </div>
+              <div id="benefit-value-gift" class="benefit-value-row" style="display:none;flex-direction:column;gap:8px;">
+                <label style="font-size:13px;font-weight:500;color:var(--white);">Producto de regalo</label>
+                <input type="hidden" id="bv-gift" value="">
+                <div id="gift-dropdown" style="position:relative;">
+                  <button type="button" id="gift-dropdown-btn" onclick="toggleGiftDropdown()"
+                    style="width:100%;background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px 14px;color:var(--white);font-family:Inter,sans-serif;font-size:14px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:border-color .15s;">
+                    <span id="gift-dropdown-label" style="color:var(--muted2);">Seleccioná un producto...</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;transition:transform .2s;" id="gift-dropdown-arrow"><path d="M6 9l6 6 6-6"/></svg>
+                  </button>
+                  <div id="gift-dropdown-list"
+                    style="display:none;position:fixed;background:#1e1e2a;border:1px solid rgba(255,255,255,.15);border-radius:10px;z-index:9999;max-height:240px;overflow-y:auto;box-shadow:0 12px 32px rgba(0,0,0,.6);">
+                    <div style="padding:8px 8px 4px;">
+                      <input type="text" id="gift-search" placeholder="Buscar producto..." oninput="filtrarGiftProducts()"
+                        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;"
+                      />
+                    </div>
+                    <div id="gift-options"></div>
+                  </div>
+                </div>
+              </div>
+              <div id="benefit-value-free_shipping" class="benefit-value-row" style="display:none">
+                <label style="color:var(--muted2);font-size:12px">El envío gratis se comunica automáticamente en el widget.</label>
+              </div>
+
+              <button class="btn btn-primary" onclick="guardarBeneficio()">Guardar beneficio</button>
+            </div>
+          </div>
+
+          <!-- Titular del widget -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Titular del widget</div>
+                <div class="card-sub">El texto que aparece en el botón de suscripción. Usar frases orientadas al hábito o la tranquilidad convierte hasta un 47% más.</div>
+              </div>
+            </div>
+            <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
+
+              <div>
+                <input type="text" id="widget-title-input"
+                  placeholder="Ej: Asegurate tu entrega mensual"
+                  maxlength="60"
+                  oninput="actualizarPreviewBeneficio()"
+                  style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px 14px;color:var(--white);font-family:Inter,sans-serif;font-size:14px;outline:none;transition:border-color .15s;"
+                  onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.12)'"
+                >
+                <div style="display:flex;justify-content:space-between;margin-top:5px;">
+                  <span style="font-size:11px;color:var(--muted2)">Dejalo vacío para usar el texto por defecto: "Suscribirse y ahorrar"</span>
+                  <span id="widget-title-chars" style="font-size:11px;color:var(--muted2)">0/60</span>
+                </div>
+              </div>
+
+              <!-- Sugerencias -->
+              <div>
+                <p style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px;">💡 Sugerencias comprobadas</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;" id="widget-title-suggestions">
+                  <button type="button" onclick="usarSugerencia('Asegurate tu entrega mensual')"
+                    style="padding:5px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:20px;color:var(--muted);font-family:Inter,sans-serif;font-size:12px;cursor:pointer;transition:all .15s;"
+                    onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='var(--muted)'">
+                    Asegurate tu entrega mensual
+                  </button>
+                  <button type="button" onclick="usarSugerencia('Nunca te quedes sin stock')"
+                    style="padding:5px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:20px;color:var(--muted);font-family:Inter,sans-serif;font-size:12px;cursor:pointer;transition:all .15s;"
+                    onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='var(--muted)'">
+                    Nunca te quedes sin stock
+                  </button>
+                  <button type="button" onclick="usarSugerencia('Tu rutina, sin interrupciones')"
+                    style="padding:5px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:20px;color:var(--muted);font-family:Inter,sans-serif;font-size:12px;cursor:pointer;transition:all .15s;"
+                    onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='var(--muted)'">
+                    Tu rutina, sin interrupciones
+                  </button>
+                  <button type="button" onclick="usarSugerencia('Precio fijo, siempre disponible')"
+                    style="padding:5px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:20px;color:var(--muted);font-family:Inter,sans-serif;font-size:12px;cursor:pointer;transition:all .15s;"
+                    onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='var(--muted)'">
+                    Precio fijo, siempre disponible
+                  </button>
+                  <button type="button" onclick="usarSugerencia('Recibilo cada mes automáticamente')"
+                    style="padding:5px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:20px;color:var(--muted);font-family:Inter,sans-serif;font-size:12px;cursor:pointer;transition:all .15s;"
+                    onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='var(--muted)'">
+                    Recibilo cada mes automáticamente
+                  </button>
+                </div>
+              </div>
+
+              <button class="btn btn-primary" onclick="guardarBeneficio()">Guardar cambios</button>
+            </div>
           </div>
         </div>
-        <div style="padding:20px 24px">
 
-          <!-- Radio cards -->
-          <div class="benefit-grid">
-            <label class="benefit-card" id="bc-discount" onclick="seleccionarBeneficio('discount')">
-              <input type="radio" name="benefitType" value="discount">
-              <span class="benefit-card-icon">%</span>
-              <div class="benefit-card-body">
-                <div class="benefit-card-title">Descuento</div>
-                <div class="benefit-card-desc">El cliente paga menos en cada entrega</div>
-              </div>
-            </label>
-            <label class="benefit-card" id="bc-gift" onclick="seleccionarBeneficio('gift')">
-              <input type="radio" name="benefitType" value="gift">
-              <span class="benefit-card-icon">🎁</span>
-              <div class="benefit-card-body">
-                <div class="benefit-card-title">Producto de regalo</div>
-                <div class="benefit-card-desc">Incluís una muestra o producto extra</div>
-              </div>
-            </label>
-            <label class="benefit-card" id="bc-free_shipping" onclick="seleccionarBeneficio('free_shipping')">
-              <input type="radio" name="benefitType" value="free_shipping">
-              <span class="benefit-card-icon">🚚</span>
-              <div class="benefit-card-body">
-                <div class="benefit-card-title">Envío gratis</div>
-                <div class="benefit-card-desc">Cada entrega tiene envío sin costo</div>
-              </div>
-            </label>
-          </div>
-
-          <!-- Input de valor (condicional) -->
-          <div id="benefit-value-discount" class="benefit-value-row" style="display:none">
-            <label>Porcentaje de descuento</label>
-            <input type="number" id="bv-discount" min="1" max="100" placeholder="10" style="max-width:90px">
-            <span style="font-size:13px;color:var(--muted2)">%</span>
-          </div>
-          <div id="benefit-value-gift" class="benefit-value-row" style="display:none;flex-direction:column;gap:8px;">
-            <label style="font-size:13px;font-weight:500;color:var(--white);">Producto de regalo</label>
-            <!-- Custom dropdown — valor real en #bv-gift hidden -->
-            <input type="hidden" id="bv-gift" value="">
-            <div id="gift-dropdown" style="position:relative;">
-              <button type="button" id="gift-dropdown-btn" onclick="toggleGiftDropdown()"
-                style="width:100%;background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px 14px;color:var(--white);font-family:Inter,sans-serif;font-size:14px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:border-color .15s;">
-                <span id="gift-dropdown-label" style="color:var(--muted2);">Seleccioná un producto...</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;transition:transform .2s;" id="gift-dropdown-arrow"><path d="M6 9l6 6 6-6"/></svg>
-              </button>
-              <div id="gift-dropdown-list"
-                style="display:none;position:fixed;background:#1e1e2a;border:1px solid rgba(255,255,255,.15);border-radius:10px;z-index:9999;max-height:240px;overflow-y:auto;box-shadow:0 12px 32px rgba(0,0,0,.6);">
-                <div style="padding:8px 8px 4px;">
-                  <input type="text" id="gift-search" placeholder="Buscar producto..." oninput="filtrarGiftProducts()"
-                    style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;"
-                  />
+        <!-- Columna derecha: vista previa -->
+        <div style="position:sticky;top:24px;">
+          <div class="card">
+            <div class="card-header" style="padding-bottom:12px;">
+              <div class="card-title" style="font-size:13px;">Vista previa del widget</div>
+            </div>
+            <div style="padding:0 20px 20px;">
+              <!-- Mock producto -->
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:14px;">
+                <div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.07);flex-shrink:0;"></div>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:var(--white);margin-bottom:3px;">Tu producto</div>
+                  <div style="font-size:11px;color:var(--muted2);">$5.990</div>
                 </div>
-                <div id="gift-options"></div>
+              </div>
+
+              <!-- Widget mock -->
+              <div style="font-family:Inter,sans-serif;">
+                <!-- Tabs -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(255,255,255,.15);border-radius:6px;overflow:hidden;margin-bottom:10px;">
+                  <div style="padding:10px 8px;font-size:11px;font-weight:600;text-align:center;color:var(--muted2);background:rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.1);">
+                    Compra única
+                  </div>
+                  <div style="padding:10px 8px;font-size:11px;font-weight:600;text-align:center;color:var(--white);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;">
+                    <span id="prev-tab-text">Suscribirse y ahorrar</span>
+                    <span id="prev-tab-badge" style="font-size:9px;font-weight:700;background:rgba(255,255,255,.9);color:#111;padding:1px 6px;border-radius:20px;">10% OFF</span>
+                  </div>
+                </div>
+
+                <!-- Panel de beneficio -->
+                <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                    <span id="prev-precio-original" style="font-size:11px;text-decoration:line-through;opacity:.4;color:var(--white);">$5.990</span>
+                    <span id="prev-precio-final" style="font-size:15px;font-weight:700;color:var(--white);">$5.391/mes</span>
+                    <span id="prev-ahorro-badge" style="font-size:10px;font-weight:700;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:20px;">Ahorrás $599</span>
+                  </div>
+                  <div style="font-size:11px;color:var(--muted2);margin-bottom:8px;">Tu pedido llega solo, cada mes.</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;">
+                    <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">📦 Entrega mensual</span>
+                    <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">🔒 Precio fijo</span>
+                    <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">✕ Cancelá cuando quieras</span>
+                  </div>
+                  <!-- Botón ATC mock -->
+                  <div style="width:100%;padding:10px;background:rgba(255,255,255,.85);border-radius:6px;text-align:center;font-size:12px;font-weight:700;color:#111;">
+                    🔄 Confirmar suscripción mensual
+                  </div>
+                </div>
+
+                <!-- Nota -->
+                <p style="margin:10px 0 0;font-size:10px;color:var(--muted2);text-align:center;line-height:1.5;">Así ve el cliente el widget en tu tienda Shopify</p>
               </div>
             </div>
           </div>
-          <div id="benefit-value-free_shipping" class="benefit-value-row" style="display:none">
-            <label style="color:var(--muted2);font-size:12px">El envío gratis se comunica automáticamente en el widget.</label>
-          </div>
-
-          <button class="btn btn-primary" onclick="guardarBeneficio()">Guardar beneficio</button>
         </div>
+
       </div>
     </div>
 
@@ -2880,6 +3001,7 @@ function seleccionarBeneficio(type) {
     const row = document.getElementById('benefit-value-' + t);
     if (row) row.style.display = (t === type) ? 'flex' : 'none';
   });
+  actualizarPreviewBeneficio();
 }
 
 // ── Gift product custom dropdown ─────────────────────────────────────────────
@@ -2978,7 +3100,82 @@ async function cargarBeneficio() {
     } else if (type === 'gift' && val) {
       selectGiftProduct(val);
     }
+
+    // Cargar titular del widget
+    const titleEl = document.getElementById('widget-title-input');
+    if (titleEl && benefitData.widgetTitle) {
+      titleEl.value = benefitData.widgetTitle;
+      actualizarContadorTitulo();
+    }
+
+    actualizarPreviewBeneficio();
   } catch (_) {}
+}
+
+function actualizarContadorTitulo() {
+  const titleEl = document.getElementById('widget-title-input');
+  const charsEl = document.getElementById('widget-title-chars');
+  if (titleEl && charsEl) {
+    const len = titleEl.value.length;
+    charsEl.textContent = `${len}/60`;
+    charsEl.style.color = len > 50 ? 'var(--warning, #f0b429)' : 'var(--muted2)';
+  }
+}
+
+function usarSugerencia(texto) {
+  const titleEl = document.getElementById('widget-title-input');
+  if (titleEl) {
+    titleEl.value = texto;
+    titleEl.focus();
+    actualizarContadorTitulo();
+    actualizarPreviewBeneficio();
+  }
+}
+
+function actualizarPreviewBeneficio() {
+  actualizarContadorTitulo();
+
+  const type  = _benefitSelected || 'discount';
+  const val   = document.getElementById('bv-discount')?.value || '10';
+  const title = document.getElementById('widget-title-input')?.value?.trim() || '';
+
+  // Tab text
+  const tabText = document.getElementById('prev-tab-text');
+  if (tabText) tabText.textContent = title || 'Suscribirse y ahorrar';
+
+  // Badge
+  const badge = document.getElementById('prev-tab-badge');
+  const precioRow = document.getElementById('prev-precio-original')?.parentElement;
+
+  if (type === 'discount') {
+    const pct = Math.min(Math.max(parseInt(val) || 10, 1), 100);
+    const precioBase = 5990;
+    const precioSub  = Math.round(precioBase * (1 - pct / 100));
+    const ahorro     = precioBase - precioSub;
+    if (badge) badge.textContent = `${pct}% OFF`;
+    const orig  = document.getElementById('prev-precio-original');
+    const final = document.getElementById('prev-precio-final');
+    const save  = document.getElementById('prev-ahorro-badge');
+    if (orig)  { orig.textContent = '$5.990'; orig.style.display = ''; }
+    if (final) final.textContent = `$${precioSub.toLocaleString('es-AR')}/mes`;
+    if (save)  { save.textContent = `Ahorrás $${ahorro.toLocaleString('es-AR')}`; save.style.display = ''; }
+  } else if (type === 'gift') {
+    if (badge) badge.textContent = 'REGALO';
+    const orig  = document.getElementById('prev-precio-original');
+    const final = document.getElementById('prev-precio-final');
+    const save  = document.getElementById('prev-ahorro-badge');
+    if (orig)  orig.style.display = 'none';
+    if (final) final.textContent = '$5.990/mes';
+    if (save)  { save.textContent = '🎁 Regalo incluido'; save.style.background = '#fff3e0'; save.style.color = '#e65100'; }
+  } else if (type === 'free_shipping') {
+    if (badge) badge.textContent = 'ENVÍO GRATIS';
+    const orig  = document.getElementById('prev-precio-original');
+    const final = document.getElementById('prev-precio-final');
+    const save  = document.getElementById('prev-ahorro-badge');
+    if (orig)  orig.style.display = 'none';
+    if (final) final.textContent = '$5.990/mes';
+    if (save)  { save.textContent = '🚚 Envío sin costo'; save.style.background = '#e3f2fd'; save.style.color = '#1565c0'; }
+  }
 }
 
 async function guardarBeneficio() {
@@ -3000,15 +3197,17 @@ async function guardarBeneficio() {
     }
   }
 
+  const widgetTitle = document.getElementById('widget-title-input')?.value?.trim() || '';
+
   try {
     const res = await fetch('/admin/api/subscription-benefit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ benefitType: type, benefitValue: value }),
+      body: JSON.stringify({ benefitType: type, benefitValue: value, widgetTitle }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error al guardar');
-    showToast('Beneficio guardado correctamente', 'success');
+    showToast('Configuración guardada correctamente', 'success');
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
   }

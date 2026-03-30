@@ -45,6 +45,7 @@ model Shop {
   email           String?                 // email del owner
   subBenefitType  String?                 // "discount" | "gift" | "free_shipping"
   subBenefitValue String?                 // "10" | "Muestra de crema"
+  widgetTitle     String?                 // Titular del tab de suscripción en el widget
   // Retención
   // Klaviyo OAuth
   klaviyoAccessToken  String?
