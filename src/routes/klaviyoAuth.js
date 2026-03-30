@@ -7,7 +7,16 @@ const prisma  = require('../lib/prisma');
 const CLIENT_ID     = process.env.KLAVIYO_CLIENT_ID;
 const CLIENT_SECRET = process.env.KLAVIYO_CLIENT_SECRET;
 const TOKEN_URL     = 'https://a.klaviyo.com/oauth/token';
-const SCOPES        = 'events:write';
+const SCOPES        = 'events:write profiles:write';
+
+// PKCE helpers — Klaviyo requiere PKCE para Authorization Code flow
+function generateCodeVerifier() {
+  return crypto.randomBytes(48).toString('base64url');
+}
+
+function generateCodeChallenge(verifier) {
+  return crypto.createHash('sha256').update(verifier).digest('base64url');
+}
 
 function redirectUri() {
   return `${process.env.APP_URL}/auth/klaviyo/callback`;
@@ -45,14 +54,20 @@ router.get('/', (req, res) => {
   const shopDomain = req.session?.shopDomain;
   if (!shopDomain) return res.redirect('/admin/?error=no_shop');
 
-  const state = crearState(shopDomain);
+  const state        = crearState(shopDomain);
+  const codeVerifier = generateCodeVerifier();
+
+  // Guardar el verifier en sesión para verificarlo en el callback
+  req.session.klaviyoCodeVerifier = codeVerifier;
 
   const params = new URLSearchParams({
-    client_id:     CLIENT_ID,
-    redirect_uri:  redirectUri(),
-    response_type: 'code',
-    scope:         SCOPES,
+    client_id:             CLIENT_ID,
+    redirect_uri:          redirectUri(),
+    response_type:         'code',
+    scope:                 SCOPES,
     state,
+    code_challenge:        generateCodeChallenge(codeVerifier),
+    code_challenge_method: 'S256',
   });
 
   res.redirect('https://www.klaviyo.com/oauth/authorize?' + params.toString());
@@ -76,8 +91,16 @@ router.get('/callback', async (req, res) => {
 
   if (!code) return res.redirect('/admin/?error=missing_code');
 
+  const codeVerifier = req.session?.klaviyoCodeVerifier;
+  if (!codeVerifier) {
+    console.error('Klaviyo OAuth: no hay code_verifier en sesión');
+    return res.redirect('/admin/?error=klaviyo_session_expired');
+  }
+  // Limpiar el verifier de la sesión
+  req.session.klaviyoCodeVerifier = null;
+
   try {
-    // Intercambiar código por tokens
+    // Intercambiar código por tokens (con PKCE code_verifier)
     const tokenRes = await fetch(TOKEN_URL, {
       method:  'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -87,6 +110,7 @@ router.get('/callback', async (req, res) => {
         redirect_uri:  redirectUri(),
         client_id:     CLIENT_ID,
         client_secret: CLIENT_SECRET,
+        code_verifier: codeVerifier,
       }).toString(),
     });
 
