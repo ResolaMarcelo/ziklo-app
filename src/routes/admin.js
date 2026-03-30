@@ -126,6 +126,7 @@ router.get('/api/status', async (req, res) => {
     mercadopago: !!(shop?.mpAccessToken || process.env.MP_ACCESS_TOKEN),
     email:       !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
     klaviyo:     !!(shop?.klaviyoAccessToken),
+    shopDomain:  shop?.domain || process.env.SHOPIFY_SHOP_DOMAIN || null,
   });
 });
 

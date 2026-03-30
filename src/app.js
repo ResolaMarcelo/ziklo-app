@@ -3,6 +3,36 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const cookieSession = require('cookie-session');
+const rateLimit = require('express-rate-limit');
+
+// ── Rate limiters ────────────────────────────────────────────────────────────
+
+// Magic link: 5 solicitudes cada 15 min por IP (evita spam de emails)
+const limiterMagicLink = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Esperá 15 minutos antes de volver a intentar.' },
+});
+
+// Verificación de token: 10 intentos cada 15 min por IP (evita fuerza bruta)
+const limiterVerificar = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Esperá 15 minutos.' },
+});
+
+// API pública general: 100 requests por minuto por IP (evita scraping)
+const limiterAPI = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes. Intentá de nuevo en un momento.' },
+});
 
 const planesRoutes = require('./routes/planes');
 const productsRoutes = require('./routes/products');
@@ -14,8 +44,9 @@ const authRoutes = require('./routes/auth');
 const userAuthRoutes = require('./routes/userAuth');
 const klaviyoAuthRoutes = require('./routes/klaviyoAuth');
 const clienteAuthRoutes = require('./routes/clienteAuth');
-const adminAuth   = require('./middleware/adminAuth');
-const shopContext = require('./middleware/shopContext');
+const adminAuth        = require('./middleware/adminAuth');
+const shopContext       = require('./middleware/shopContext');
+const recordatoriosJob = require('./jobs/recordatorios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -65,8 +96,14 @@ app.use('/auth', userAuthRoutes);
 // Klaviyo OAuth — protegido por adminAuth (sólo merchants logueados)
 app.use('/auth/klaviyo', adminAuth, klaviyoAuthRoutes);
 
-// Auth del portal cliente (magic link) — pública, sin adminAuth
+// Auth del portal cliente (magic link) — pública, con rate limiting
+app.post('/api/cliente/solicitar', limiterMagicLink);
+app.post('/api/cliente/verificar', limiterVerificar);
 app.use('/api/cliente', clienteAuthRoutes);
+
+// API pública — rate limiting general
+app.use('/api/planes', limiterAPI);
+app.use('/api/products', limiterAPI);
 
 // Rutas de UI — admin protegido con auth
 app.use('/admin', adminAuth, adminRoutes);
@@ -81,4 +118,7 @@ app.listen(PORT, () => {
   console.log(`\n🚀 App corriendo en http://localhost:${PORT}`);
   console.log(`📦 Panel admin: http://localhost:${PORT}/admin`);
   console.log(`👤 Portal cliente: http://localhost:${PORT}/cliente\n`);
+
+  // Iniciar job de recordatorios de cobro (48h antes)
+  recordatoriosJob.iniciarJob();
 });

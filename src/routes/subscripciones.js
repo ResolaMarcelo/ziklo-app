@@ -3,10 +3,12 @@ const router      = express.Router();
 const prisma      = require('../lib/prisma');
 const mp          = require('../services/mercadopago');
 const klaviyo     = require('../services/klaviyo');
+const email       = require('../services/email');
+const shopify     = require('../services/shopify');
 const clienteAuth = require('../middleware/clienteAuth');
 
 // Helpers
-const getShopDomain = (req) => req.shop?.domain || req.session?.shopDomain || null;
+const getShopDomain = (req) => req.shop?.domain || req.session?.shopDomain || req.session?.clienteShop || null;
 const getMpToken    = (req) => req.shop?.mpAccessToken || null;
 
 // Helper: determina si la request viene del panel admin
@@ -260,9 +262,27 @@ router.post('/:id/cancelar', clienteAuth, async (req, res) => {
     await mp.cancelarPreapproval(sub.mpPreapprovalId, mpToken);
     await prisma.subscription.update({ where: { id: req.params.id }, data: { status: 'cancelled' } });
 
-    // Klaviyo — fire and forget
+    // Klaviyo + email de confirmación — fire and forget
     const subWithPlan = await prisma.subscription.findUnique({ where: { id: req.params.id }, include: { plan: true } });
     klaviyo.subscriptionCancelled(req.shop, subWithPlan).catch(() => {});
+
+    // Email de confirmación de cancelación al cliente
+    try {
+      const shopDomain = req.shop?.domain || process.env.SHOPIFY_SHOP_DOMAIN;
+      const shopToken  = req.shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN;
+      const shopData   = await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null);
+      const storeName  = shopData?.shop?.name || process.env.STORE_NAME || shopDomain;
+      const nombre     = subWithPlan?.datosEnvio ? JSON.parse(subWithPlan.datosEnvio).nombre : null;
+      await email.enviarCancelacionConfirmacion({
+        email:      subWithPlan.shopifyCustomerEmail,
+        nombre,
+        planNombre: subWithPlan.plan?.nombre,
+        monto:      subWithPlan.plan?.monto,
+        storeName,
+      });
+    } catch (err) {
+      console.error('Error enviando email cancelación:', err.message);
+    }
 
     res.json({ ok: true });
   } catch (err) {

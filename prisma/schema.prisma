@@ -98,6 +98,7 @@ model Subscription {
   datosEnvio           String?  // JSON: nombre, apellido, telefono, direccion, ciudad, provincia, cp
   qty                  Int?     @default(1)
   retentionDiscountApplied Boolean @default(false)
+  nextChargeDate       DateTime?               // fecha estimada del próximo cobro (actualizada por webhook)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   pagos                Pago[]

@@ -1,0 +1,6 @@
+﻿Email;Nombre;Apellido;Ciudad;Provincia;CP;Teléfono;Plan;Monto (ARS);Estado;Fecha alta;Próximo cobro;ID Preapproval MP
+juan.perez@gmail.com;Juan;Pérez;Buenos Aires;Buenos Aires;1425;1154321234;Mensual Básico;4999;Activa;05/03/2026 10:32;05/04/2026 10:32;2c938084936035300193615f4f8d0013
+maria.lopez@hotmail.com;María;López;Córdoba;Córdoba;5000;3514567890;Mensual Premium;8999;Activa;10/03/2026 14:15;10/04/2026 14:15;2c938084936035300193615f4f8d0027
+carlos.gomez@gmail.com;Carlos;Gómez;Rosario;Santa Fe;2000;3415678901;Mensual Básico;4999;Pausada;01/02/2026 09:00;;2c938084936035300193615f4f8d0041
+ana.martinez@yahoo.com;Ana;Martínez;Mendoza;Mendoza;5500;2614321098;Mensual Premium;8999;Cancelada;15/01/2026 11:20;;2c938084936035300193615f4f8d0055
+lucas.fernandez@gmail.com;Lucas;Fernández;La Plata;Buenos Aires;1900;2214098765;Mensual Básico;4999;Pago fallido;20/02/2026 16:45;20/03/2026 16:45;2c938084936035300193615f4f8d0069

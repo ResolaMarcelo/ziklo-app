@@ -1,13 +1,88 @@
 const express = require('express');
 const router  = express.Router();
+const crypto  = require('crypto');
 const prisma = require('../lib/prisma');
 const mp = require('../services/mercadopago');
 const shopify = require('../services/shopify');
 const email = require('../services/email');
 const klaviyo = require('../services/klaviyo');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Verificación HMAC de webhooks de Mercado Pago
+//
+// MP envía en el header "x-signature":  ts=<timestamp>,v1=<hash>
+// y en "x-request-id": un UUID de la request.
+//
+// El mensaje a firmar es:  "id:<data.id>;request-id:<x-request-id>;ts:<ts>"
+// firmado con HMAC-SHA256 usando el "Secret key" del webhook configurado en
+// https://www.mercadopago.com.ar/developers → Tus integraciones → Webhooks
+// ─────────────────────────────────────────────────────────────────────────────
+function verificarHMACMercadoPago(req) {
+  const secret = process.env.MP_WEBHOOK_SECRET;
+
+  // Si no hay secret configurado, logueamos advertencia pero dejamos pasar
+  // (para no romper en desarrollo donde no está configurado)
+  if (!secret || secret === 'mi_clave_secreta_webhooks_123') {
+    console.warn('[webhook/mp] MP_WEBHOOK_SECRET no configurado — omitiendo verificación HMAC');
+    return true;
+  }
+
+  const xSignature = req.headers['x-signature'];
+  const xRequestId = req.headers['x-request-id'];
+
+  if (!xSignature) {
+    console.warn('[webhook/mp] Header x-signature ausente');
+    return false;
+  }
+
+  // Parsear "ts=...,v1=..."
+  const parts = {};
+  xSignature.split(',').forEach(part => {
+    const [k, v] = part.split('=');
+    if (k && v) parts[k.trim()] = v.trim();
+  });
+
+  const { ts, v1 } = parts;
+  if (!ts || !v1) {
+    console.warn('[webhook/mp] x-signature mal formado:', xSignature);
+    return false;
+  }
+
+  // Obtener data.id del body
+  let dataId = '';
+  try {
+    const body = req.body instanceof Buffer ? JSON.parse(req.body.toString()) : req.body;
+    dataId = body?.data?.id || '';
+  } catch { /* ignorar */ }
+
+  // Construir el mensaje a firmar
+  const manifest = `id:${dataId};request-id:${xRequestId || ''};ts:${ts}`;
+
+  const computed = crypto
+    .createHmac('sha256', secret)
+    .update(manifest)
+    .digest('hex');
+
+  const valid = crypto.timingSafeEqual(
+    Buffer.from(computed),
+    Buffer.from(v1)
+  );
+
+  if (!valid) {
+    console.warn('[webhook/mp] HMAC inválido — posible request falsa rechazada');
+    console.warn('  manifest:', manifest);
+  }
+
+  return valid;
+}
+
 // POST /webhooks/mp - recibir notificaciones de Mercado Pago
 router.post('/mp', async (req, res) => {
+  // Verificar firma HMAC antes de procesar cualquier cosa
+  if (!verificarHMACMercadoPago(req)) {
+    return res.sendStatus(401);
+  }
+
   // Responder 200 inmediatamente para que MP no reintente
   res.sendStatus(200);
 
@@ -35,7 +110,7 @@ router.post('/mp', async (req, res) => {
       const pago = await mp.getPago(data.id);
       console.log('Pago ID:', pago.id, '| Status:', pago.status, '| Preapproval:', pago.preapproval_id);
 
-      if (pago.status === 'approved' && pago.preapproval_id) {
+      if (pago.preapproval_id) {
         const sub = await prisma.subscription.findUnique({
           where: { mpPreapprovalId: pago.preapproval_id },
           include: { plan: true },
@@ -48,8 +123,6 @@ router.post('/mp', async (req, res) => {
 
         // Cargar el shop para usar sus tokens propios
         const shop = await getShopForSub(sub);
-        const shopifyToken = shop?.accessToken  || process.env.SHOPIFY_ACCESS_TOKEN;
-        const shopDomain   = shop?.domain       || process.env.SHOPIFY_SHOP_DOMAIN;
 
         // Registrar el pago en BD
         await prisma.pago.upsert({
@@ -63,38 +136,112 @@ router.post('/mp', async (req, res) => {
           },
         });
 
-        // Klaviyo: evento de pago aprobado
-        klaviyo.subscriptionRenewed(shop, sub, {
-          monto: pago.transaction_amount,
-          mpPaymentId: String(pago.id),
-        }).catch(() => {});
+        // ── Pago aprobado ─────────────────────────────────────────────────────
+        if (pago.status === 'approved') {
+          const shopifyToken = shop?.accessToken  || process.env.SHOPIFY_ACCESS_TOKEN;
+          const shopDomain   = shop?.domain       || process.env.SHOPIFY_SHOP_DOMAIN;
 
-        // Crear orden en Shopify usando el token del shop correcto
-        if (sub.variantId) {
+          // Marcar suscripción como activa y guardar fecha próximo cobro
           try {
-            const envio = sub.datosEnvio ? JSON.parse(sub.datosEnvio) : null;
-            const orden = await shopify.shopifyRequestForShop(
-              shopDomain, shopifyToken, '/orders.json', 'POST',
-              {
-                order: {
-                  customer:   { id: sub.shopifyCustomerId },
-                  email:      sub.shopifyCustomerEmail,
-                  line_items: [{ variant_id: sub.variantId, quantity: sub.qty || 1 }],
-                  financial_status: 'paid',
-                  note: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
-                  tags: 'suscripcion,mp-auto',
-                  ...(envio ? { shipping_address: {
-                    first_name: envio.nombre, last_name: envio.apellido,
-                    address1: envio.direccion, city: envio.ciudad,
-                    province: envio.provincia, zip: envio.cp, country: 'AR',
-                    phone: envio.telefono,
-                  }} : {}),
-                },
-              }
-            );
-            console.log('Orden Shopify creada:', orden?.order?.id);
+            const mpToken = shop?.mpAccessToken || null;
+            const preapproval = await mp.getPreapproval(sub.mpPreapprovalId, mpToken);
+            await prisma.subscription.update({
+              where: { id: sub.id },
+              data: {
+                status: 'authorized',
+                nextChargeDate: preapproval?.next_payment_date
+                  ? new Date(preapproval.next_payment_date)
+                  : null,
+              },
+            });
+          } catch {
+            // Si falla la consulta a MP, igual marcamos authorized
+            await prisma.subscription.update({
+              where: { id: sub.id },
+              data:  { status: 'authorized' },
+            });
+          }
+
+          // Klaviyo: evento de pago aprobado
+          klaviyo.subscriptionRenewed(shop, sub, {
+            monto: pago.transaction_amount,
+            mpPaymentId: String(pago.id),
+          }).catch(() => {});
+
+          // Crear orden en Shopify usando el token del shop correcto
+          if (sub.variantId) {
+            try {
+              const envio = sub.datosEnvio ? JSON.parse(sub.datosEnvio) : null;
+              const orden = await shopify.shopifyRequestForShop(
+                shopDomain, shopifyToken, '/orders.json', 'POST',
+                {
+                  order: {
+                    customer:   { id: sub.shopifyCustomerId },
+                    email:      sub.shopifyCustomerEmail,
+                    line_items: [{ variant_id: sub.variantId, quantity: sub.qty || 1 }],
+                    financial_status: 'paid',
+                    note: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
+                    tags: 'suscripcion,mp-auto',
+                    ...(envio ? { shipping_address: {
+                      first_name: envio.nombre, last_name: envio.apellido,
+                      address1: envio.direccion, city: envio.ciudad,
+                      province: envio.provincia, zip: envio.cp, country: 'AR',
+                      phone: envio.telefono,
+                    }} : {}),
+                  },
+                }
+              );
+              console.log('Orden Shopify creada:', orden?.order?.id);
+            } catch (err) {
+              console.error('Error al crear orden Shopify:', err.message);
+            }
+          }
+        }
+
+        // ── Pago rechazado / cancelado ────────────────────────────────────────
+        if (pago.status === 'rejected' || pago.status === 'cancelled') {
+          // Marcar suscripción como pago fallido
+          await prisma.subscription.update({
+            where: { id: sub.id },
+            data:  { status: 'payment_failed' },
+          });
+
+          // Obtener nombre de la tienda para los emails
+          const shopDomain = shop?.domain || process.env.SHOPIFY_SHOP_DOMAIN;
+          const shopToken  = shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN;
+          const shopData   = await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null);
+          const storeName  = shopData?.shop?.name || process.env.STORE_NAME || shopDomain;
+
+          // Email al cliente
+          try {
+            const nombre = sub.datosEnvio ? JSON.parse(sub.datosEnvio).nombre : null;
+            await email.enviarPagoFallido({
+              email:      sub.shopifyCustomerEmail,
+              nombre,
+              planNombre: sub.plan.nombre,
+              monto:      sub.plan.monto,
+              storeName,
+            });
+            console.log('Email pago fallido enviado al cliente:', sub.shopifyCustomerEmail);
           } catch (err) {
-            console.error('Error al crear orden Shopify:', err.message);
+            console.error('Error enviando email pago fallido al cliente:', err.message);
+          }
+
+          // Email al merchant
+          const merchantEmail = shop?.email || process.env.MERCHANT_EMAIL;
+          if (merchantEmail) {
+            try {
+              await email.enviarPagoFallidoMerchant({
+                merchantEmail,
+                clientEmail: sub.shopifyCustomerEmail,
+                planNombre:  sub.plan.nombre,
+                monto:       sub.plan.monto,
+                storeName,
+              });
+              console.log('Email pago fallido enviado al merchant:', merchantEmail);
+            } catch (err) {
+              console.error('Error enviando email pago fallido al merchant:', err.message);
+            }
           }
         }
       }
@@ -137,6 +284,7 @@ router.post('/mp', async (req, res) => {
             planNombre: sub.plan.nombre,
             monto:      sub.plan.monto,
             storeName,
+            shopDomain,
           });
           console.log('Email de confirmación enviado a:', sub.shopifyCustomerEmail);
         } catch (err) {
@@ -152,8 +300,6 @@ router.post('/mp', async (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════════
 // GDPR WEBHOOKS — obligatorios para Shopify App Store
 // ══════════════════════════════════════════════════════════════════════════════
-
-const crypto = require('crypto');
 
 /**
  * Verifica que el webhook venga realmente de Shopify usando HMAC-SHA256.

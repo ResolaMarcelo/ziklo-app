@@ -516,6 +516,9 @@
         <p style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5;">
           Te enviamos un link seguro a tu email. Sin contraseña.
         </p>
+        <div id="error-sin-shop" style="display:none;margin-top:12px;background:rgba(216,44,13,.06);border:1px solid rgba(216,44,13,.2);border-radius:8px;padding:12px 14px;font-size:13px;color:#d82c0d;line-height:1.5;">
+          ⚠️ Accedé desde el link que te envió la tienda. Si no lo tenés, pedílo al comercio donde te suscribiste.
+        </div>
       </div>
     </div>
   </div>
@@ -688,6 +691,14 @@ function mostrarErrorToken(msg) {
 
 // ── AUTH: solicitar magic link ─────────────────────────────────────────────────
 async function solicitarAcceso() {
+  // Sin ?shop= en la URL no podemos saber a qué tienda pertenece el cliente
+  if (!SHOP) {
+    const msgEl = document.getElementById('error-sin-shop');
+    if (msgEl) { msgEl.style.display = 'block'; }
+    else { alert('Accedé desde el link de tu tienda. Si no lo tenés, pedílo al comercio donde te suscribiste.'); }
+    return;
+  }
+
   const input = document.getElementById('input-email');
   const em    = input.value.trim();
   if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
@@ -820,6 +831,14 @@ function renderSubs(subs) {
           </div>
           ${badge(s.status)}
         </div>
+        ${s.status === 'payment_failed' ? `
+        <div style="margin:12px 0 4px;background:rgba(216,44,13,.06);border:1px solid rgba(216,44,13,.18);border-radius:8px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;">
+          <span style="font-size:16px;flex-shrink:0;">⚠️</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#d82c0d;margin-bottom:2px;">Tu último pago no pudo procesarse</div>
+            <div style="font-size:12px;color:#6d7175;line-height:1.5;">Actualizá tu método de pago en Mercado Pago para reactivar tu suscripción.</div>
+          </div>
+        </div>` : ''}
         <div class="sub-since">Activa desde ${fecha(s.createdAt)}</div>
         ${pagosHtml}
         <div class="sub-actions">${actions}</div>
@@ -835,6 +854,9 @@ function buildActions(s) {
   }
   if (s.status === 'paused') {
     html += `<button class="btn btn-success" onclick="accionConShop('${s.id}','reanudar')">▶ Reanudar</button>`;
+  }
+  if (s.status === 'payment_failed') {
+    html += `<a class="btn btn-primary" href="https://www.mercadopago.com.ar/subscriptions" target="_blank" rel="noopener" style="text-decoration:none;">Actualizar método de pago →</a>`;
   }
   if (s.status !== 'cancelled') {
     html += `<button class="btn btn-danger" onclick="iniciarCancelacion('${s.id}')">Cancelar suscripción</button>`;
@@ -1075,9 +1097,10 @@ function badge(status) {
     authorized: ['badge-green',  'Activa'],
     pending:    ['badge-yellow', 'Pendiente'],
     paused:     ['badge-yellow', 'Pausada'],
-    cancelled:  ['badge-red',    'Cancelada'],
-    approved:   ['badge-green',  'Aprobado'],
-    rejected:   ['badge-red',    'Rechazado'],
+    cancelled:      ['badge-red',    'Cancelada'],
+    payment_failed: ['badge-red',    'Pago fallido'],
+    approved:       ['badge-green',  'Aprobado'],
+    rejected:       ['badge-red',    'Rechazado'],
   };
   const [cls, lbl] = map[status] || ['badge-gray', status];
   return `<span class="badge ${cls}">${lbl}</span>`;

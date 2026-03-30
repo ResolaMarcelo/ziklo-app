@@ -14,9 +14,10 @@ module.exports = async function shopContext(req, res, next) {
   req.shop = null;
 
   const domain =
-    req.session?.shopDomain ||
-    req.query?.shop         ||
-    req.body?.shopDomain    ||
+    req.session?.shopDomain  ||
+    req.session?.clienteShop ||   // portal /cliente — sesión de cliente autenticado
+    req.query?.shop          ||
+    req.body?.shopDomain     ||
     null;
 
   if (!domain) return next();

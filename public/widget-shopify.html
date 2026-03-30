@@ -465,20 +465,15 @@
         }
       })
       .catch(function() {
-        // Si la llamada falla, no bloquear — inicializar con defaults
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', init);
-        } else {
-          init();
-        }
+        // API caída o inalcanzable: ocultar widget silenciosamente
+        // No romper la página, no mostrar nada al cliente
+        var w = document.getElementById('subs-widget');
+        if (w) w.style.display = 'none';
       });
   } else {
-    // Sin productId detectable: inicializar sin verificar (compatibilidad)
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
+    // Sin productId detectable: ocultar — no podemos verificar si está habilitado
+    var w = document.getElementById('subs-widget');
+    if (w) w.style.display = 'none';
   }
 })();
 </script>

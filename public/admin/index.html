@@ -190,6 +190,8 @@
     .stat-label { font-size: 11px; color: var(--muted2); font-weight: 500; }
     .stat-mrr .stat-value { color: var(--green); }
     .stat-mrr { border-color: var(--green-border); background: var(--green-dim); }
+    .stat-danger .stat-value { color: var(--danger); }
+    .stat-danger { border-color: rgba(239,68,68,.2); background: rgba(239,68,68,.04); }
 
     /* ── CARD ── */
     .card {
@@ -243,6 +245,37 @@
     .badge-yellow { background: rgba(245,158,11,.1); color: var(--warning); border: 1px solid rgba(245,158,11,.2); }
     .badge-yellow::before { background: var(--warning); }
     .badge-red { background: rgba(239,68,68,.1); color: var(--danger); border: 1px solid rgba(239,68,68,.2); }
+
+    /* ── CSV Export dropdown ── */
+    .csv-dropdown { position: relative; }
+    .csv-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 6px); z-index: 100;
+      background: var(--surface2); border: 1px solid var(--border-strong);
+      border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.25);
+      min-width: 210px; overflow: hidden;
+    }
+    .csv-menu.open { display: block; }
+    .csv-menu-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; font-size: 13px; color: var(--text);
+      cursor: pointer; transition: background .1s;
+    }
+    .csv-menu-item:hover { background: var(--hover); }
+    .csv-menu-item svg { opacity: .6; flex-shrink: 0; }
+
+    /* ── Toast ── */
+    #csv-toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      background: #1a2e1a; color: #4ade80;
+      border: 1px solid rgba(74,222,128,.25); border-radius: 10px;
+      padding: 12px 18px; font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.4);
+      transform: translateY(80px); opacity: 0;
+      transition: transform .25s ease, opacity .25s ease;
+      pointer-events: none;
+    }
+    #csv-toast.show { transform: translateY(0); opacity: 1; }
     .badge-red::before { background: var(--danger); }
     .badge-gray { background: rgba(255,255,255,.06); color: var(--muted2); border: 1px solid var(--border); }
     .badge-gray::before { background: var(--muted2); }
@@ -1506,6 +1539,18 @@
               <div class="stat-value" id="stat-pendientes">—</div>
               <div class="stat-label">Pendientes</div>
             </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-cobros-proximos">—</div>
+              <div class="stat-label">Cobros próximos (7d)</div>
+            </div>
+            <div class="stat stat-danger">
+              <div class="stat-value" id="stat-pago-fallido">—</div>
+              <div class="stat-label">Pagos fallidos</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-churn">—</div>
+              <div class="stat-label">Canceladas (30d)</div>
+            </div>
           </div>
 
           <!-- Period filter -->
@@ -1573,9 +1618,27 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Todos los suscriptores</span>
-          <div class="search-wrap">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input class="search-input" id="subs-search" placeholder="Buscar email o nombre..." oninput="filtrarSubs()" />
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="search-wrap">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="search-input" id="subs-search" placeholder="Buscar email o nombre..." oninput="filtrarSubs()" />
+            </div>
+            <div class="csv-dropdown" id="csv-subs-wrap">
+              <button class="btn btn-ghost btn-xs" onclick="toggleCsvMenu('subs')" style="display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar
+              </button>
+              <div class="csv-menu" id="csv-menu-subs">
+                <div class="csv-menu-item" onclick="exportarCSV('subs','filtered')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+                  Vista actual (filtrada)
+                </div>
+                <div class="csv-menu-item" onclick="exportarCSV('subs','all')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                  Todos los suscriptores
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <table>
@@ -1592,7 +1655,25 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Historial de cobros</span>
-          <span id="pagos-count" style="font-size:12px;color:var(--muted2)"></span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span id="pagos-count" style="font-size:12px;color:var(--muted2)"></span>
+            <div class="csv-dropdown" id="csv-pagos-wrap">
+              <button class="btn btn-ghost btn-xs" onclick="toggleCsvMenu('pagos')" style="display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar
+              </button>
+              <div class="csv-menu" id="csv-menu-pagos">
+                <div class="csv-menu-item" onclick="exportarCSV('pagos','filtered')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+                  Vista actual (filtrada)
+                </div>
+                <div class="csv-menu-item" onclick="exportarCSV('pagos','all')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                  Todos los cobros
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <!-- Filtros -->
         <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -2088,7 +2169,7 @@
           <div class="config-body">
             <div class="config-row">
               <span class="config-row-label">Email</span>
-              <span class="config-row-value">hola@ziklo.app</span>
+              <span class="config-row-value">contacto@zikloapp.com</span>
             </div>
             <div class="config-row">
               <span class="config-row-label">Respuesta</span>
@@ -2099,7 +2180,7 @@
               <span class="config-row-value">docs.ziklo.app</span>
             </div>
             <div class="config-btn-row">
-              <button class="btn-config primary" onclick="window.open('mailto:hola@ziklo.app','_blank')">
+              <button class="btn-config primary" onclick="window.open('mailto:contacto@zikloapp.com','_blank')">
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 Escribir a soporte
               </button>
@@ -2259,6 +2340,16 @@
 
           <div class="faq-item">
             <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Los clientes pueden ver y gestionar sus suscripciones?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Sí. Cada cliente tiene acceso a un <strong>portal de suscripciones</strong> en <code>/cliente?shop=tu-tienda.myshopify.com</code> donde puede ver el estado de sus suscripciones y cancelarlas. El acceso es por <strong>magic link</strong>: el cliente ingresa su email, recibe un link seguro de un solo uso y entra sin contraseña. Podés compartir el link del portal en tus emails de confirmación o en la página de tu tienda.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
               <span class="faq-question-text">¿Puede el cliente cancelar su suscripción por cuenta propia?</span>
               <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
@@ -2294,6 +2385,16 @@
       <div class="faq-section" data-cat="pagos">
         <div class="faq-section-title">Pagos & Mercado Pago</div>
         <div class="faq-list">
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="faq-question-text">¿Qué emails automáticos reciben los clientes?</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-answer">
+              Ziklo envía emails automáticos en los siguientes eventos: <strong>confirmación de suscripción</strong> (con link al portal), <strong>recordatorio 48hs antes del próximo cobro</strong>, <strong>pago fallido</strong> (con link para actualizar el método de pago en MP), y <strong>confirmación de cancelación</strong>. Vos también recibís un aviso cuando un pago falla. Todos los emails salen desde <code>contacto@zikloapp.com</code>.
+            </div>
+          </div>
 
           <div class="faq-item">
             <div class="faq-question" onclick="toggleFAQ(this)">
@@ -2397,7 +2498,7 @@
               <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             <div class="faq-answer">
-              Ziklo cobra una comisión sobre cada cobro exitoso procesado. El porcentaje exacto depende de tu plan. Podés ver los detalles de tu plan actual en la sección <strong>Configuración → Mi plan Ziklo</strong> o escribirnos a <a href="mailto:hola@ziklo.app">hola@ziklo.app</a>.
+              Ziklo cobra una comisión sobre cada cobro exitoso procesado. El porcentaje exacto depende de tu plan. Podés ver los detalles de tu plan actual en la sección <strong>Configuración → Mi plan Ziklo</strong> o escribirnos a <a href="mailto:contacto@zikloapp.com">contacto@zikloapp.com</a>.
             </div>
           </div>
 
@@ -2439,7 +2540,7 @@
         <div class="faq-contact-text">
           ¿No encontraste lo que buscabas? <span>Nuestro equipo te responde el mismo día hábil.</span>
         </div>
-        <a href="mailto:hola@ziklo.app" class="faq-contact-btn">
+        <a href="mailto:contacto@zikloapp.com" class="faq-contact-btn">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           Escribir a soporte
         </a>
@@ -2562,9 +2663,10 @@ function badge(status) {
     authorized: ['badge-green', 'Activo'],
     pending:    ['badge-yellow', 'Pendiente'],
     paused:     ['badge-yellow', 'Pausado'],
-    cancelled:  ['badge-red', 'Cancelado'],
-    approved:   ['badge-green', 'Aprobado'],
-    rejected:   ['badge-red', 'Rechazado'],
+    cancelled:      ['badge-red', 'Cancelado'],
+    payment_failed: ['badge-red', 'Pago fallido'],
+    approved:       ['badge-green', 'Aprobado'],
+    rejected:       ['badge-red', 'Rechazado'],
   };
   const [cls, lbl] = map[status] || ['badge-gray', status];
   return `<span class="badge ${cls}">${lbl}</span>`;
@@ -2808,6 +2910,20 @@ async function cargarDashboard() {
   const pagosMes = subs.flatMap(s => s.pagos || []).filter(p => p.status === 'approved' && new Date(p.createdAt) >= inicioMes);
   const ingresosMes = pagosMes.reduce((sum, p) => sum + (p.monto || 0), 0);
   document.getElementById('stat-ingresos-mes').textContent = ARS(ingresosMes);
+
+  // Cobros próximos (7 días) — usa nextChargeDate
+  const en7dias = new Date(ahora.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const cobrosProximos = activos.filter(s => s.nextChargeDate && new Date(s.nextChargeDate) <= en7dias).length;
+  document.getElementById('stat-cobros-proximos').textContent = cobrosProximos;
+
+  // Pagos fallidos
+  const pagosFallidos = subs.filter(s => s.status === 'payment_failed').length;
+  document.getElementById('stat-pago-fallido').textContent = pagosFallidos;
+
+  // Canceladas últimos 30 días (churn)
+  const hace30dias = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const churn30 = subs.filter(s => s.status === 'cancelled' && new Date(s.updatedAt) >= hace30dias).length;
+  document.getElementById('stat-churn').textContent = churn30;
 
   buildCharts(subs, _currentPeriodDays);
 
@@ -3520,7 +3636,9 @@ async function cargarIntegraciones() {
       name: 'Shopify',
       desc: 'Tienda online y gestión de pedidos',
       connected: status.shopify,
-      detail: status.shopify ? 'API conectada. Órdenes y clientes sincronizados.' : 'Configurá tu SHOPIFY_ACCESS_TOKEN en las variables de entorno.',
+      detail: status.shopify
+        ? `API conectada. Órdenes y clientes sincronizados.${status.shopDomain ? `<br><span style="font-size:11px;opacity:.7">${status.shopDomain}</span>` : ''}`
+        : 'Configurá tu SHOPIFY_ACCESS_TOKEN en las variables de entorno.',
       action: status.shopify ? null : { label: 'Ver guía', url: 'https://help.shopify.com' },
     },
     {
@@ -4047,6 +4165,178 @@ function showToast(msg, type = 'success') {
     el.style.animation = 'toastOut .3s ease forwards';
     el.addEventListener('animationend', () => el.remove());
   }, 3500);
+}
+
+// ===================== CSV EXPORT =====================
+
+/** Abre/cierra el menú desplegable del botón exportar */
+function toggleCsvMenu(tipo) {
+  const menu = document.getElementById(`csv-menu-${tipo}`);
+  // Cerrar el otro si estaba abierto
+  ['subs', 'pagos'].forEach(t => {
+    if (t !== tipo) document.getElementById(`csv-menu-${t}`)?.classList.remove('open');
+  });
+  menu.classList.toggle('open');
+}
+
+// Cerrar dropdowns al hacer click fuera
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.csv-dropdown')) {
+    document.querySelectorAll('.csv-menu.open').forEach(m => m.classList.remove('open'));
+  }
+});
+
+/** Escapa un valor para CSV: envuelve en comillas si contiene coma, comilla o salto de línea */
+function csvEscape(val) {
+  if (val === null || val === undefined) return '';
+  const str = String(val);
+  if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+/** Construye y descarga un archivo CSV */
+function descargarCSV(rows, headers, filename) {
+  const BOM = '\uFEFF'; // UTF-8 BOM para Excel
+  // Punto y coma: separador estándar en Excel con locale español/argentino
+  const SEP = ';';
+  const lineas = [
+    headers.map(csvEscape).join(SEP),
+    ...rows.map(r => r.map(csvEscape).join(SEP)),
+  ];
+  const blob = new Blob([BOM + lineas.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/** Formatea una fecha ISO a dd/mm/aaaa hh:mm */
+function csvFecha(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Obtiene los subs que coinciden con el filtro activo (igual lógica que filtrarSubs) */
+function getSubsFiltradas() {
+  const q = (document.getElementById('subs-search')?.value || '').toLowerCase();
+  if (!q) return _todosLosSubs;
+  return _todosLosSubs.filter(s =>
+    s.shopifyCustomerEmail.toLowerCase().includes(q) ||
+    (s.datosEnvio && s.datosEnvio.toLowerCase().includes(q))
+  );
+}
+
+/** Obtiene los pagos que coinciden con los filtros activos (igual lógica que filtrarPagos) */
+function getPagosFiltrados() {
+  const q      = (document.getElementById('pagos-search')?.value || '').toLowerCase();
+  const status = document.getElementById('pagos-status')?.value || '';
+  const desde  = document.getElementById('pagos-desde')?.value  || '';
+  const hasta  = document.getElementById('pagos-hasta')?.value  || '';
+
+  return _todosPagos.filter(p => {
+    if (q && !p.email.toLowerCase().includes(q) && !(p.nombre||'').toLowerCase().includes(q)) return false;
+    if (status && p.status !== status) return false;
+    if (desde && new Date(p.createdAt) < new Date(desde)) return false;
+    if (hasta && new Date(p.createdAt) > new Date(hasta + 'T23:59:59')) return false;
+    return true;
+  });
+}
+
+/** Mapeo de status a texto legible */
+const STATUS_LABELS = {
+  authorized:     'Activa',
+  paused:         'Pausada',
+  cancelled:      'Cancelada',
+  payment_failed: 'Pago fallido',
+  pending:        'Pendiente',
+  rejected:       'Rechazado',
+  approved:       'Aprobado',
+};
+
+/**
+ * Genera y descarga el CSV.
+ * @param {'subs'|'pagos'} tipo
+ * @param {'filtered'|'all'} scope
+ */
+function exportarCSV(tipo, scope) {
+  // Cerrar el menú
+  document.getElementById(`csv-menu-${tipo}`)?.classList.remove('open');
+
+  const hoy = new Date();
+  const fechaStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
+
+  if (tipo === 'subs') {
+    const data = scope === 'filtered' ? getSubsFiltradas() : _todosLosSubs;
+
+    if (!data.length) {
+      showToast('No hay suscriptores para exportar', 'error');
+      return;
+    }
+
+    const headers = [
+      'Email', 'Nombre', 'Apellido', 'Ciudad', 'Provincia', 'CP', 'Teléfono',
+      'Plan', 'Monto (ARS)', 'Estado', 'Fecha alta', 'Próximo cobro', 'ID Preapproval MP',
+    ];
+
+    const rows = data.map(s => {
+      let envio = {};
+      try { envio = s.datosEnvio ? JSON.parse(s.datosEnvio) : {}; } catch {}
+      return [
+        s.shopifyCustomerEmail,
+        envio.nombre    || '',
+        envio.apellido  || '',
+        envio.ciudad    || '',
+        envio.provincia || '',
+        envio.cp        || '',
+        envio.telefono  || '',
+        s.plan?.nombre  || '',
+        s.plan?.monto   != null ? s.plan.monto : '',
+        STATUS_LABELS[s.status] || s.status || '',
+        csvFecha(s.createdAt),
+        csvFecha(s.nextChargeDate),
+        s.mpPreapprovalId || '',
+      ];
+    });
+
+    const scopeLabel = scope === 'filtered' ? 'filtrados' : 'todos';
+    descargarCSV(rows, headers, `suscriptores_${scopeLabel}_${fechaStr}.csv`);
+    showToast(`CSV exportado: ${data.length} suscriptor${data.length !== 1 ? 'es' : ''}`);
+
+  } else if (tipo === 'pagos') {
+    const data = scope === 'filtered' ? getPagosFiltrados() : _todosPagos;
+
+    if (!data.length) {
+      showToast('No hay cobros para exportar', 'error');
+      return;
+    }
+
+    const headers = [
+      'Fecha', 'Email', 'Nombre', 'Plan', 'Producto', 'Monto (ARS)', 'Estado', 'ID Pago MP',
+    ];
+
+    const rows = data.map(p => [
+      csvFecha(p.createdAt),
+      p.email            || '',
+      p.nombre           || '',
+      p.planNombre       || '',
+      p.productTitle     || p.productId || '',
+      p.monto            != null ? p.monto : '',
+      STATUS_LABELS[p.status] || p.status || '',
+      p.mpPaymentId      || '',
+    ]);
+
+    const scopeLabel = scope === 'filtered' ? 'filtrados' : 'todos';
+    descargarCSV(rows, headers, `cobros_${scopeLabel}_${fechaStr}.csv`);
+    showToast(`CSV exportado: ${data.length} cobro${data.length !== 1 ? 's' : ''}`);
+  }
 }
 </script>
 </body>

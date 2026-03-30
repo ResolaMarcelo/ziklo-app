@@ -1,0 +1,1 @@
+ALTER TABLE "Subscription" ADD COLUMN IF NOT EXISTS "nextChargeDate" TIMESTAMP(3);
