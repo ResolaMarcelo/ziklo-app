@@ -3055,9 +3055,10 @@ const CHECKLIST_STEPS = [
   {
     id: 'shopify',
     name: 'Conectar tu tienda Shopify',
-    desc: 'Tu tienda está vinculada y lista para cobrar.',
-    action: null,
-    check: () => true, // siempre ok si están en el admin
+    desc: 'Vinculá tu tienda para ver datos reales de suscripciones.',
+    action: 'Conectar ahora →',
+    actionTab: '__shopify_focus__',
+    check: (data) => !!data.shopify,
   },
   {
     id: 'mp',
@@ -3124,7 +3125,7 @@ async function renderChecklist(data) {
 
   body.innerHTML = steps.map(step => `
     <div class="checklist-step ${step.optional ? 'optional' : ''} ${step.done ? 'done' : ''} ${(!step.done && step === firstPending) ? 'active-step' : ''}"
-         ${step.actionTab && !step.done ? `onclick="showTab('${step.actionTab}')"` : ''}>
+         ${step.actionTab && !step.done ? (step.actionTab === '__shopify_focus__' ? `onclick="document.getElementById('onb-domain')?.focus();document.getElementById('onb-domain')?.scrollIntoView({behavior:'smooth',block:'center'})"` : `onclick="showTab('${step.actionTab}')"`) : ''}>
       <div class="step-icon ${step.done ? 'done' : 'pending'}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
         <div class="step-dot"></div>
@@ -3166,6 +3167,7 @@ async function cargarDashboard() {
     fetch(API + '/admin/api/status').then(r => r.json()).catch(() => ({})),
   ]);
   renderChecklist({
+    shopify:   !!statusData.shopify,
     subs:      subs.length,
     productos: productosData.count || 0,
     mp:        !!statusData.mercadopago,
@@ -4571,7 +4573,7 @@ async function initApp() {
     document.getElementById('connect-shop-banner').style.display = 'flex';
     document.getElementById('shopName').textContent = 'Sin tienda';
     initWelcomeBanner(null);
-    renderChecklist({ subs: 0, productos: 0, mp: false, klaviyo: false });
+    renderChecklist({ shopify: false, subs: 0, productos: 0, mp: false, klaviyo: false });
     cargarDashboard();
     return;
   }
