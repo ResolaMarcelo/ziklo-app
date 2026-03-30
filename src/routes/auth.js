@@ -44,10 +44,32 @@ function normalizarDominio(input) {
   return d;
 }
 
+// ── State firmado (no depende de sesión para soportar cross-site redirect) ──
+function crearState(shop) {
+  const payload = Buffer.from(JSON.stringify({ shop, ts: Date.now() })).toString('base64url');
+  const sig     = crypto.createHmac('sha256', CLIENT_SECRET).update(payload).digest('hex');
+  return `${payload}.${sig}`;
+}
+
+function verificarState(state, shop) {
+  if (!state) return false;
+  const dot = state.lastIndexOf('.');
+  if (dot < 0) return false;
+  const payload = state.slice(0, dot);
+  const sig     = state.slice(dot + 1);
+  const expected = crypto.createHmac('sha256', CLIENT_SECRET).update(payload).digest('hex');
+  if (!crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig))) return false;
+  try {
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    if (data.shop !== shop) return false;           // shop no coincide
+    if (Date.now() - data.ts > 10 * 60 * 1000) return false; // expiró (10 min)
+    return true;
+  } catch { return false; }
+}
+
 // ── Iniciar OAuth ──────────────────────────────────────────────────────────
 
 // GET /auth?shop=mi-tienda.myshopify.com
-// Redirige a Shopify para pedir autorización
 router.get('/', (req, res) => {
   if (!CLIENT_ID || !CLIENT_SECRET) {
     return res.status(500).send(
@@ -56,20 +78,17 @@ router.get('/', (req, res) => {
   }
 
   const shop = normalizarDominio(req.query.shop);
-  if (!shop) {
-    return res.redirect('/admin/login?error=missing_shop');
-  }
+  if (!shop) return res.redirect('/admin/?error=missing_shop');
 
-  // Validar formato de dominio
   if (!/^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/.test(shop)) {
-    return res.redirect('/admin/login?error=invalid_shop');
+    return res.redirect('/admin/?error=invalid_shop');
   }
 
   const redirectUri = `${process.env.APP_URL}/auth/callback`;
-  const nonce = crypto.randomBytes(16).toString('hex');
+  const state       = crearState(shop);
 
-  // Guardamos el nonce en la sesión para verificarlo en el callback
-  req.session.oauthNonce = nonce;
+  // Guardar userId en sesión por si no estaba (para vincularlo al volver)
+  // No guardamos nonce — el state firmado es suficiente
   req.session.oauthShop = shop;
 
   const authUrl =
@@ -77,7 +96,7 @@ router.get('/', (req, res) => {
     `?client_id=${CLIENT_ID}` +
     `&scope=${encodeURIComponent(SCOPES)}` +
     `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-    `&state=${nonce}`;
+    `&state=${encodeURIComponent(state)}`;
 
   res.redirect(authUrl);
 });
@@ -90,16 +109,16 @@ router.get('/callback', async (req, res) => {
 
   // 1. Verificar HMAC (autenticidad del request)
   if (!verificarHMAC(req.query)) {
-    return res.redirect('/admin/login?error=invalid_hmac');
+    return res.redirect('/admin/?error=invalid_hmac');
   }
 
-  // 2. Verificar nonce (previene CSRF)
-  if (state !== req.session.oauthNonce) {
-    return res.redirect('/admin/login?error=invalid_state');
+  // 2. Verificar state firmado (no depende de sesión)
+  if (!verificarState(state, shop)) {
+    return res.redirect('/admin/?error=invalid_state');
   }
 
   if (!shop || !code) {
-    return res.redirect('/admin/login?error=missing_params');
+    return res.redirect('/admin/?error=missing_params');
   }
 
   try {
