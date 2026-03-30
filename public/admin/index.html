@@ -1580,9 +1580,9 @@
               <span class="card-title">Últimas suscripciones</span>
             </div>
             <table>
-              <thead><tr><th>Cliente</th><th>Monto/mes</th><th>Estado</th><th>Fecha</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Producto</th><th>Monto/mes</th><th>Estado</th><th>Fecha</th></tr></thead>
               <tbody id="tabla-recientes">
-                <tr><td colspan="4" class="empty"><div class="spinner"></div></td></tr>
+                <tr><td colspan="5" class="empty"><div class="spinner"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -1638,9 +1638,9 @@
           </div>
         </div>
         <table>
-          <thead><tr><th>Cliente</th><th>Monto/mes</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+          <thead><tr><th>Cliente</th><th>Producto</th><th>Monto/mes</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
           <tbody id="tabla-subs">
-            <tr><td colspan="5" class="empty"><div class="spinner"></div></td></tr>
+            <tr><td colspan="6" class="empty"><div class="spinner"></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -2940,11 +2940,12 @@ async function cargarDashboard() {
         ${nombre ? `<span style="font-weight:600">${nombre}</span><br>` : ''}
         <span style="color:var(--muted2)">${s.shopifyCustomerEmail}</span>
       </td>
+      <td style="color:var(--muted2);font-size:13px">${s.plan?.nombre || '—'}</td>
       <td class="mono" style="color:var(--white)">${ARS(s.plan?.monto||0)}<span style="color:var(--muted2)">/mes</span></td>
       <td>${badge(s.status)}</td>
       <td style="color:var(--muted2)">${fecha(s.createdAt)}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="4" class="empty">Sin suscripciones aún</td></tr>';
+  }).join('') || '<tr><td colspan="5" class="empty">Sin suscripciones aún</td></tr>';
 }
 
 // ===================== PLANES =====================
@@ -3092,6 +3093,7 @@ function renderSubs(subs) {
             <span style="color:var(--muted2)">${s.shopifyCustomerEmail}</span>
             ${ciudad ? `<br><span style="color:var(--muted);font-size:11px">📍 ${ciudad}</span>` : ''}
           </td>
+          <td style="color:var(--muted2);font-size:13px">${s.plan?.nombre || '—'}</td>
           <td class="mono" style="color:var(--white)">${ARS(s.plan?.monto||0)}<span style="color:var(--muted2)">/mes</span></td>
           <td>${badge(s.status)}</td>
           <td style="color:var(--muted2)">${fecha(s.createdAt)}</td>
@@ -3102,7 +3104,7 @@ function renderSubs(subs) {
           </div></td>
         </tr>`;
       }).join('')
-    : '<tr><td colspan="5" class="empty">Sin suscriptores aún</td></tr>';
+    : '<tr><td colspan="6" class="empty">Sin suscriptores aún</td></tr>';
 }
 
 async function accionSub(id, accion) {
