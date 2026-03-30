@@ -2049,28 +2049,30 @@
       <div class="card" style="margin-bottom:16px">
         <div class="card-header">
           <span class="card-title">Cómo instalar el widget</span>
+          <span class="badge" style="background:var(--green-dim);color:var(--green);border:1px solid var(--green);font-size:11px;">Auto-actualizable</span>
         </div>
         <div style="padding:20px">
-          <p style="font-size:13px;color:var(--muted2);margin-bottom:20px;line-height:1.7">
-            Copiá el siguiente código y pegalo como un bloque <strong style="color:var(--white)">Custom Liquid</strong> en la página de producto de tu tienda Shopify, antes del botón "Agregar al carrito".
+          <p style="font-size:13px;color:var(--muted2);margin-bottom:6px;line-height:1.7">
+            Pegá estas <strong style="color:var(--white)">2 líneas</strong> como bloque <strong style="color:var(--white)">Custom Liquid</strong> en la página de producto, antes del botón "Agregar al carrito".
           </p>
-          <div style="display:flex;flex-direction:column;gap:10px">
+          <p style="font-size:12px;color:var(--green);margin-bottom:20px;">✓ Una sola vez — cualquier actualización futura se aplica automáticamente sin tocar el tema.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
             <div class="info-row" style="border:1px solid var(--border);border-radius:8px;padding:12px 16px">
-              <span class="info-row-label">Shopify Admin → Tienda online → Temas → Editar código</span>
+              <span class="info-row-label">Shopify Admin → Tienda online → Temas → <strong style="color:var(--white)">Personalizar</strong></span>
               <span class="badge badge-gray">Paso 1</span>
             </div>
             <div class="info-row" style="border:1px solid var(--border);border-radius:8px;padding:12px 16px">
-              <span class="info-row-label">Abrí <span class="mono">sections/main-product.liquid</span></span>
+              <span class="info-row-label">Abrir página de producto → Agregar bloque → <strong style="color:var(--white)">Custom Liquid</strong></span>
               <span class="badge badge-gray">Paso 2</span>
             </div>
             <div class="info-row" style="border:1px solid var(--border);border-radius:8px;padding:12px 16px">
-              <span class="info-row-label">Pegá el código antes del botón de agregar al carrito</span>
+              <span class="info-row-label">Pegar el código y posicionar antes del botón ATC</span>
               <span class="badge badge-gray">Paso 3</span>
             </div>
           </div>
-          <div style="margin-top:20px">
+          <div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-              <span style="font-size:11px;color:var(--muted2);font-family:'JetBrains Mono',monospace">widget-shopify.html</span>
+              <span style="font-size:11px;color:var(--muted2);font-family:'JetBrains Mono',monospace">snippet — copiar una sola vez</span>
               <button class="btn btn-ghost" onclick="copiarCodigo()">
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 Copiar código
@@ -3411,12 +3413,9 @@ function renderPagos(pagos) {
 // ===================== WIDGET =====================
 async function cargarWidget() {
   document.getElementById('link-directo').textContent = `${window.location.origin}/cliente`;
-  try {
-    const code = await fetch('/admin/api/widget-code').then(r => r.text());
-    document.getElementById('widget-code').textContent = code;
-  } catch {
-    document.getElementById('widget-code').textContent = 'Error al cargar el código.';
-  }
+  // Nuevo snippet auto-actualizable (2 líneas)
+  const snippet = `<div id="ziklo-widget"></div>\n<script src="https://app.zikloapp.com/widget.js" defer><\/script>`;
+  document.getElementById('widget-code').textContent = snippet;
 }
 
 function copiarCodigo() {

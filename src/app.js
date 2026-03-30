@@ -127,6 +127,16 @@ app.use('/cliente', clienteRoutes);
 // Waitlist beta — solo el endpoint público POST /api/waitlist
 app.use('/api/waitlist', waitlistRoutes);
 
+// Widget JS — servido con cache de 5 minutos para actualizaciones rápidas
+app.get('/widget.js', (req, res) => {
+  res.set({
+    'Content-Type':  'application/javascript',
+    'Cache-Control': 'public, max-age=300', // 5 minutos
+    'X-Widget-Version': '1.1.0',
+  });
+  res.sendFile(path.join(__dirname, '../public/widget.js'));
+});
+
 // Landing page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
