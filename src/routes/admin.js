@@ -96,20 +96,25 @@ router.get('/api/me', async (req, res) => {
 
 // GET /admin/api/shop — nombre e info de la tienda (desde Shopify API)
 router.get('/api/shop', async (req, res) => {
+  const domain = req.session.shopDomain || null;
+
+  if (!domain) {
+    return res.status(400).json({ error: 'No hay tienda conectada en esta sesión' });
+  }
+
   try {
-    // Usar el token del shop en sesión si está disponible
-    const token = req.session.shopToken || null;
-    const domain = req.session.shopDomain || null;
+    // Buscar el access token en la DB para este dominio específico
+    const shopRecord = await prisma.shop.findUnique({ where: { domain } });
+    const token = req.session.shopToken || shopRecord?.accessToken || null;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Token de acceso no encontrado para esta tienda' });
+    }
+
     const data = await shopify.shopifyRequestForShop(domain, token, '/shop.json');
     res.json({ name: data.shop.name, domain: data.shop.domain, email: data.shop.email });
   } catch (err) {
-    // Fallback: usar credenciales de env vars
-    try {
-      const data = await shopify.shopifyRequest('/shop.json');
-      res.json({ name: data.shop.name, domain: data.shop.domain, email: data.shop.email });
-    } catch (e) {
-      res.status(500).json({ error: e.message });
-    }
+    res.status(500).json({ error: err.message });
   }
 });
 
