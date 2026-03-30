@@ -177,13 +177,15 @@ router.get('/api/subscription-benefit', (req, res) => {
     benefitType:  shop?.subBenefitType  || 'discount',
     benefitValue: shop?.subBenefitValue || '10',
     widgetTitle:  shop?.widgetTitle     || '',
+    widgetChips:  shop?.widgetChips     || '',
+    widgetBtnText: shop?.widgetBtnText  || '',
   });
 });
 
 // POST /admin/api/subscription-benefit — guardar beneficio global del shop
 router.post('/api/subscription-benefit', async (req, res) => {
   try {
-    const { benefitType, benefitValue, widgetTitle } = req.body;
+    const { benefitType, benefitValue, widgetTitle, widgetChips, widgetBtnText } = req.body;
     const shopDomain = req.session?.shopDomain;
     if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
 
@@ -196,15 +198,19 @@ router.post('/api/subscription-benefit', async (req, res) => {
       where:  { domain: shopDomain },
       update: {
         subBenefitType:  benefitType,
-        subBenefitValue: benefitValue || '',
-        widgetTitle:     widgetTitle  || null,
+        subBenefitValue: benefitValue  || '',
+        widgetTitle:     widgetTitle   || null,
+        widgetChips:     widgetChips   || null,
+        widgetBtnText:   widgetBtnText || null,
       },
       create: {
         domain:          shopDomain,
         accessToken:     process.env.SHOPIFY_ACCESS_TOKEN || '',
         subBenefitType:  benefitType,
-        subBenefitValue: benefitValue || '',
-        widgetTitle:     widgetTitle  || null,
+        subBenefitValue: benefitValue  || '',
+        widgetTitle:     widgetTitle   || null,
+        widgetChips:     widgetChips   || null,
+        widgetBtnText:   widgetBtnText || null,
       },
     });
 

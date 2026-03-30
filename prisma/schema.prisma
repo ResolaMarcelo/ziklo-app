@@ -46,6 +46,8 @@ model Shop {
   subBenefitType  String?                 // "discount" | "gift" | "free_shipping"
   subBenefitValue String?                 // "10" | "Muestra de crema"
   widgetTitle     String?                 // Titular del tab de suscripción en el widget
+  widgetChips     String?                 // JSON array de chips (["📦 Entrega mensual", ...])
+  widgetBtnText   String?                 // Texto del botón ATC en modo suscripción
   // Retención
   // Klaviyo OAuth
   klaviyoAccessToken  String?

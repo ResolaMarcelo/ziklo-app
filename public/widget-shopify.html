@@ -268,7 +268,7 @@
     var btn = getAtcBtn();
     if (!btn) return;
     if (!atcOriginalHTML) atcOriginalHTML = btn.innerHTML;
-    btn.innerHTML = '🔄 Confirmar suscripción mensual';
+    btn.innerHTML = _widgetBtnText;
   }
 
   function setAtcModeNormal() {
@@ -377,10 +377,33 @@
     if (!title) return;
     var tabBtn = document.getElementById('subs-tab-sub');
     if (!tabBtn) return;
-    // Preservar el badge y cambiar solo el texto del label
     var badge = tabBtn.querySelector('.subs-tab-badge');
     tabBtn.textContent = title + ' ';
     if (badge) tabBtn.appendChild(badge);
+  }
+
+  var CHIP_DEFAULTS = ['📦 Entrega mensual', '🔒 Precio fijo', '🚚 Envío incluido', '✕ Cancelá cuando quieras'];
+
+  function aplicarWidgetChips(chipsJson) {
+    var chips;
+    try { chips = JSON.parse(chipsJson); } catch(e) { return; }
+    if (!Array.isArray(chips) || chips.length === 0) return;
+    var container = document.querySelector('#subs-widget .subs-chips');
+    if (!container) return;
+    container.innerHTML = '';
+    for (var i = 0; i < 4; i++) {
+      var text = (chips[i] && chips[i].trim()) ? chips[i].trim() : CHIP_DEFAULTS[i];
+      var span = document.createElement('span');
+      span.className = 'subs-chip';
+      span.textContent = text;
+      container.appendChild(span);
+    }
+  }
+
+  var _widgetBtnText = 'Confirmar suscripción mensual';
+
+  function aplicarWidgetBtnText(text) {
+    if (text && text.trim()) _widgetBtnText = text.trim();
   }
 
   function aplicarBeneficio(benefitType, benefitValue) {
@@ -429,9 +452,11 @@
           var w = document.getElementById('subs-widget');
           if (w) w.style.display = 'none';
         } else {
-          // Habilitado: configurar beneficio y titular, luego inicializar
+          // Habilitado: configurar beneficio, titular, chips y botón
           aplicarBeneficio(data.benefitType, data.benefitValue);
-          if (data.widgetTitle) aplicarWidgetTitle(data.widgetTitle);
+          if (data.widgetTitle)   aplicarWidgetTitle(data.widgetTitle);
+          if (data.widgetChips)   aplicarWidgetChips(data.widgetChips);
+          if (data.widgetBtnText) aplicarWidgetBtnText(data.widgetBtnText);
           if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
           } else {

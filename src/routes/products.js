@@ -24,10 +24,12 @@ router.get('/check', async (req, res) => {
     ]);
 
     res.json({
-      enabled:      record?.enabled ?? false,
-      benefitType:  record?.benefitType  || shopRecord?.subBenefitType  || 'discount',
-      benefitValue: record?.benefitValue || shopRecord?.subBenefitValue || '10',
-      widgetTitle:  shopRecord?.widgetTitle || '',
+      enabled:       record?.enabled ?? false,
+      benefitType:   record?.benefitType  || shopRecord?.subBenefitType  || 'discount',
+      benefitValue:  record?.benefitValue || shopRecord?.subBenefitValue || '10',
+      widgetTitle:   shopRecord?.widgetTitle  || '',
+      widgetChips:   shopRecord?.widgetChips  || '',
+      widgetBtnText: shopRecord?.widgetBtnText || '',
     });
   } catch (err) {
     // En caso de error, no bloquear el widget — devolver enabled: false

@@ -1802,6 +1802,39 @@
                 </div>
               </div>
 
+              <!-- Chips de beneficios -->
+              <div>
+                <p style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px;">Chips de beneficios</p>
+                <p style="font-size:11px;color:var(--muted2);margin:0 0 10px;">Los 4 puntos que aparecen debajo del precio. Podés incluir emojis.</p>
+                <div style="display:flex;flex-direction:column;gap:6px;" id="widget-chips-inputs">
+                  <input type="text" id="wc-1" maxlength="40" placeholder="📦 Entrega mensual" oninput="actualizarPreviewBeneficio()"
+                    style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;"
+                    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+                  <input type="text" id="wc-2" maxlength="40" placeholder="🔒 Precio fijo" oninput="actualizarPreviewBeneficio()"
+                    style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;"
+                    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+                  <input type="text" id="wc-3" maxlength="40" placeholder="🚚 Envío incluido" oninput="actualizarPreviewBeneficio()"
+                    style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;"
+                    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+                  <input type="text" id="wc-4" maxlength="40" placeholder="✕ Cancelá cuando quieras" oninput="actualizarPreviewBeneficio()"
+                    style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;"
+                    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+                </div>
+                <p style="font-size:11px;color:var(--muted2);margin:5px 0 0;">Dejá vacío para usar el texto por defecto de cada chip.</p>
+              </div>
+
+              <!-- Texto del botón -->
+              <div>
+                <p style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px;">Texto del botón de suscripción</p>
+                <input type="text" id="widget-btn-input"
+                  placeholder="Confirmar suscripción mensual"
+                  maxlength="60"
+                  oninput="actualizarPreviewBeneficio()"
+                  style="width:100%;box-sizing:border-box;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;"
+                  onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+                <p style="font-size:11px;color:var(--muted2);margin:5px 0 0;">Dejalo vacío para usar: "Confirmar suscripción mensual"</p>
+              </div>
+
               <button class="btn btn-primary" onclick="guardarBeneficio()">Guardar cambios</button>
             </div>
           </div>
@@ -1844,14 +1877,15 @@
                     <span id="prev-ahorro-badge" style="font-size:10px;font-weight:700;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:20px;">Ahorrás $599</span>
                   </div>
                   <div style="font-size:11px;color:var(--muted2);margin-bottom:8px;">Tu pedido llega solo, cada mes.</div>
-                  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;">
+                  <div id="prev-chips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;">
                     <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">📦 Entrega mensual</span>
                     <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">🔒 Precio fijo</span>
+                    <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">🚚 Envío incluido</span>
                     <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">✕ Cancelá cuando quieras</span>
                   </div>
                   <!-- Botón ATC mock -->
-                  <div style="width:100%;padding:10px;background:rgba(255,255,255,.85);border-radius:6px;text-align:center;font-size:12px;font-weight:700;color:#111;">
-                    🔄 Confirmar suscripción mensual
+                  <div id="prev-btn-text" style="width:100%;padding:10px;background:rgba(255,255,255,.85);border-radius:6px;text-align:center;font-size:12px;font-weight:700;color:#111;">
+                    Confirmar suscripción mensual
                   </div>
                 </div>
 
@@ -3108,6 +3142,21 @@ async function cargarBeneficio() {
       actualizarContadorTitulo();
     }
 
+    // Cargar chips personalizados
+    if (benefitData.widgetChips) {
+      try {
+        const chips = JSON.parse(benefitData.widgetChips);
+        [1,2,3,4].forEach((i, idx) => {
+          const el = document.getElementById(`wc-${i}`);
+          if (el && chips[idx]) el.value = chips[idx];
+        });
+      } catch (_) {}
+    }
+
+    // Cargar texto del botón
+    const btnEl = document.getElementById('widget-btn-input');
+    if (btnEl && benefitData.widgetBtnText) btnEl.value = benefitData.widgetBtnText;
+
     actualizarPreviewBeneficio();
   } catch (_) {}
 }
@@ -3143,10 +3192,8 @@ function actualizarPreviewBeneficio() {
   const tabText = document.getElementById('prev-tab-text');
   if (tabText) tabText.textContent = title || 'Suscribirse y ahorrar';
 
-  // Badge
+  // Badge + precios
   const badge = document.getElementById('prev-tab-badge');
-  const precioRow = document.getElementById('prev-precio-original')?.parentElement;
-
   if (type === 'discount') {
     const pct = Math.min(Math.max(parseInt(val) || 10, 1), 100);
     const precioBase = 5990;
@@ -3158,7 +3205,7 @@ function actualizarPreviewBeneficio() {
     const save  = document.getElementById('prev-ahorro-badge');
     if (orig)  { orig.textContent = '$5.990'; orig.style.display = ''; }
     if (final) final.textContent = `$${precioSub.toLocaleString('es-AR')}/mes`;
-    if (save)  { save.textContent = `Ahorrás $${ahorro.toLocaleString('es-AR')}`; save.style.display = ''; }
+    if (save)  { save.textContent = `Ahorrás $${ahorro.toLocaleString('es-AR')}`; save.style.background = '#e8f5e9'; save.style.color = '#2e7d32'; save.style.display = ''; }
   } else if (type === 'gift') {
     if (badge) badge.textContent = 'REGALO';
     const orig  = document.getElementById('prev-precio-original');
@@ -3166,7 +3213,7 @@ function actualizarPreviewBeneficio() {
     const save  = document.getElementById('prev-ahorro-badge');
     if (orig)  orig.style.display = 'none';
     if (final) final.textContent = '$5.990/mes';
-    if (save)  { save.textContent = '🎁 Regalo incluido'; save.style.background = '#fff3e0'; save.style.color = '#e65100'; }
+    if (save)  { save.textContent = '🎁 Regalo incluido'; save.style.background = '#fff3e0'; save.style.color = '#e65100'; save.style.display = ''; }
   } else if (type === 'free_shipping') {
     if (badge) badge.textContent = 'ENVÍO GRATIS';
     const orig  = document.getElementById('prev-precio-original');
@@ -3174,8 +3221,26 @@ function actualizarPreviewBeneficio() {
     const save  = document.getElementById('prev-ahorro-badge');
     if (orig)  orig.style.display = 'none';
     if (final) final.textContent = '$5.990/mes';
-    if (save)  { save.textContent = '🚚 Envío sin costo'; save.style.background = '#e3f2fd'; save.style.color = '#1565c0'; }
+    if (save)  { save.textContent = '🚚 Envío sin costo'; save.style.background = '#e3f2fd'; save.style.color = '#1565c0'; save.style.display = ''; }
   }
+
+  // Chips en el preview
+  const CHIP_DEFAULTS = ['📦 Entrega mensual', '🔒 Precio fijo', '🚚 Envío incluido', '✕ Cancelá cuando quieras'];
+  const chipsContainer = document.getElementById('prev-chips');
+  if (chipsContainer) {
+    const chipValues = [1,2,3,4].map(i => {
+      const v = document.getElementById(`wc-${i}`)?.value?.trim();
+      return v || CHIP_DEFAULTS[i - 1];
+    });
+    chipsContainer.innerHTML = chipValues.map(c =>
+      `<span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">${c}</span>`
+    ).join('');
+  }
+
+  // Botón en el preview
+  const btnEl = document.getElementById('prev-btn-text');
+  const btnVal = document.getElementById('widget-btn-input')?.value?.trim() || '';
+  if (btnEl) btnEl.textContent = btnVal || 'Confirmar suscripción mensual';
 }
 
 async function guardarBeneficio() {
@@ -3197,13 +3262,22 @@ async function guardarBeneficio() {
     }
   }
 
-  const widgetTitle = document.getElementById('widget-title-input')?.value?.trim() || '';
+  const widgetTitle   = document.getElementById('widget-title-input')?.value?.trim() || '';
+  const widgetBtnText = document.getElementById('widget-btn-input')?.value?.trim() || '';
+
+  // Chips: serializar como JSON, omitir vacíos (se usará el default en el widget)
+  const CHIP_DEFAULTS = ['📦 Entrega mensual', '🔒 Precio fijo', '🚚 Envío incluido', '✕ Cancelá cuando quieras'];
+  const chips = [1,2,3,4].map((i, idx) => {
+    const v = document.getElementById(`wc-${i}`)?.value?.trim() || '';
+    return v || CHIP_DEFAULTS[idx];
+  });
+  const widgetChips = JSON.stringify(chips);
 
   try {
     const res = await fetch('/admin/api/subscription-benefit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ benefitType: type, benefitValue: value, widgetTitle }),
+      body: JSON.stringify({ benefitType: type, benefitValue: value, widgetTitle, widgetChips, widgetBtnText }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error al guardar');
