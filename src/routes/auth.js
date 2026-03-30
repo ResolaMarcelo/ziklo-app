@@ -145,7 +145,16 @@ router.get('/callback', async (req, res) => {
       },
     });
 
-    // 6. Crear sesión de admin
+    // 6. Si hay un usuario logueado, vincularlo a esta tienda
+    if (req.session.userId) {
+      await prisma.userShop.upsert({
+        where:  { userId_shopDomain: { userId: req.session.userId, shopDomain: shop } },
+        update: {},
+        create: { userId: req.session.userId, shopDomain: shop },
+      });
+    }
+
+    // 7. Crear sesión de admin
     req.session.oauthNonce = null;
     req.session.oauthShop = null;
     req.session.adminLoggedIn = true;
