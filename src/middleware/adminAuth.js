@@ -1,19 +1,15 @@
 /**
  * Middleware de autenticación para el panel admin.
  *
- * Flujo Shopify OAuth:
- *   - Rutas públicas: GET /login, POST /api/login (legacy), GET /api/login-status
- *   - Si hay sesión válida (adminLoggedIn + shopDomain) → next()
- *   - Si no → redirige a /admin/login (o 401 para rutas /api/)
+ * Rutas públicas (sin auth):
+ *   GET  /login
+ *   POST /api/login        (login legacy por env vars — se mantiene por compatibilidad)
+ *   GET  /api/login-status
  *
- * req.session después de login:
- *   - adminLoggedIn: true
- *   - shopDomain:    "mi-tienda.myshopify.com"
- *   - shopId:        cuid del registro Shop en DB
- *   - shopName:      nombre de la tienda
+ * Sesión válida si:
+ *   - req.session.adminLoggedIn === true  (setteado por email/pass, Google OAuth o login legacy)
  */
 function adminAuth(req, res, next) {
-  // Rutas públicas (relativas al mount point /admin)
   const isPublic =
     req.path === '/login' ||
     (req.path === '/api/login' && req.method === 'POST') ||
@@ -21,12 +17,10 @@ function adminAuth(req, res, next) {
 
   if (isPublic) return next();
 
-  // Sesión válida
   if (req.session && req.session.adminLoggedIn === true) {
     return next();
   }
 
-  // Sin sesión → API devuelve 401, resto redirige al login
   if (req.path.startsWith('/api/')) {
     return res.status(401).json({ error: 'No autorizado', redirect: '/admin/login' });
   }

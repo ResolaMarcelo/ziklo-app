@@ -56,7 +56,7 @@ router.get('/api/login-status', (req, res) => {
 // POST /admin/api/logout
 router.post('/api/logout', (req, res) => {
   req.session = null;
-  res.json({ ok: true });
+  res.json({ ok: true, redirect: '/admin/login' });
 });
 
 // GET /admin/api/me — info de la sesión actual
@@ -65,6 +65,9 @@ router.get('/api/me', (req, res) => {
     shopDomain: req.session.shopDomain || null,
     shopName:   req.session.shopName   || null,
     shopId:     req.session.shopId     || null,
+    userEmail:  req.session.userEmail  || null,
+    userName:   req.session.userName   || null,
+    userRole:   req.session.userRole   || null,
   });
 });
 

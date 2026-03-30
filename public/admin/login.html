@@ -149,7 +149,7 @@
       margin-bottom: 7px;
     }
     .input-wrap { position: relative; }
-    .input-wrap svg {
+    .input-wrap > svg:first-child {
       position: absolute;
       left: 13px; top: 50%;
       transform: translateY(-50%);
@@ -174,19 +174,6 @@
       box-shadow: 0 0 0 3px rgba(0,200,122,.12);
     }
     .field input::placeholder { color: var(--muted); }
-
-    /* Domain input suffix */
-    .domain-wrap { position: relative; }
-    .domain-wrap input { padding-right: 130px; }
-    .domain-suffix {
-      position: absolute;
-      right: 13px; top: 50%;
-      transform: translateY(-50%);
-      font-size: 12px;
-      color: var(--muted2);
-      pointer-events: none;
-      font-family: 'Inter', sans-serif;
-    }
 
     /* Toggle pass */
     .toggle-pass {
@@ -216,11 +203,12 @@
       transition: opacity .15s, transform .1s;
       margin-top: 6px;
     }
-    .btn-shopify {
-      background: #96BF48;
-      color: #fff;
+    .btn-google {
+      background: #fff;
+      color: #1f1f1f;
+      border: 1px solid rgba(0,0,0,.12);
     }
-    .btn-admin {
+    .btn-ziklo {
       background: var(--green);
       color: #000;
     }
@@ -236,7 +224,8 @@
       animation: spin .6s linear infinite;
       display: none;
     }
-    .btn-admin .spinner { border-color: rgba(0,0,0,.2); border-top-color: #000; }
+    .btn-ziklo .spinner  { border-color: rgba(0,0,0,.2); border-top-color: #000; }
+    .btn-google .spinner { border-color: rgba(0,0,0,.12); border-top-color: #555; }
     .btn-primary.loading .spinner { display: block; }
     .btn-primary.loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -254,19 +243,6 @@
       height: 1px;
       background: var(--border-s);
     }
-
-    /* Info box */
-    .info-box {
-      background: rgba(150,191,72,.07);
-      border: 1px solid rgba(150,191,72,.2);
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 12px;
-      color: var(--muted2);
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-    .info-box strong { color: var(--white); }
 
     /* Footer */
     .login-footer {
@@ -299,86 +275,65 @@
 
     <!-- Tabs -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('merchant')" id="tab-merchant">
-        <svg width="16" height="18" viewBox="0 0 109.5 124.5" style="display:inline;vertical-align:middle;margin-right:5px" xmlns="http://www.w3.org/2000/svg"><path fill="#96BF48" d="M74.7 14.8s-1.4.4-3.7 1.1c-.4-1.3-1-2.8-1.9-4.3-2.8-5.3-6.9-8.1-11.8-8.1-.3 0-.7 0-1 .1-.1-.2-.3-.3-.4-.5-2.1-2.3-4.9-3.4-8.2-3.3-6.4.2-12.8 4.8-17.9 13-3.6 5.7-6.3 12.9-7.1 18.4-7.3 2.3-12.4 3.8-12.5 3.9C7.2 37.5 7 37.6 7 40.5c0 2.2 27.5 84.5 27.5 84.5l56.2-9.6L74.7 14.8z"/><path fill="#5E8E3E" d="M74.7 14.8l-3.8 79.7-21.1 15.9 7.2 .2 40.9-7-3.9-88.3-.7-.2z"/><path fill="#fff" d="M57 22.6l-2.5 7.3s-2.5-1.3-5.4-1.1c-4.4.3-4.4 3-4.4 3.7.2 3.9 10.7 4.8 11.3 14 .5 7.3-3.8 12.2-10 12.6-7.3.4-11-3.9-11-3.9l1.5-6.5s3.8 2.9 6.9 2.7c2-.1 2.7-1.8 2.7-2.9-.3-5.1-8.8-4.8-9.4-13.2-.5-7.1 4.2-14.2 14.4-14.9 4.2-.2 6.3.2 6.9.2z"/></svg>
-        Shopify
+      <button class="tab-btn active" onclick="switchTab('google')" id="tab-google">
+        <svg width="13" height="13" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;margin-right:5px" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/></svg>
+        Google
       </button>
-      <button class="tab-btn" onclick="switchTab('admin')" id="tab-admin">
+      <button class="tab-btn" onclick="switchTab('email')" id="tab-email">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:5px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Equipo Ziklo
+        Email
       </button>
     </div>
 
-    <!-- Panel: Merchant OAuth -->
-    <div class="panel active" id="panel-merchant">
-      <div class="panel-title">Accedé a tu panel</div>
-      <div class="panel-sub">Ingresá el dominio de tu tienda Shopify para continuar.</div>
+    <!-- Panel: Google OAuth -->
+    <div class="panel active" id="panel-google">
+      <div class="panel-title">Bienvenido</div>
+      <div class="panel-sub">Ingresá con tu cuenta de Google para acceder al panel.</div>
 
-      <div class="info-box">
-        Si es tu <strong>primera vez</strong>, se te pedirá que instales Ziklo en tu tienda. Solo tarda 30 segundos.
-      </div>
-
-      <div class="error-msg" id="errorMsgMerchant">
+      <div class="error-msg" id="errorMsgGoogle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/>
           <line x1="12" y1="8" x2="12" y2="12"/>
           <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        <span id="errorTextMerchant">Dominio inválido</span>
+        <span id="errorTextGoogle">Error al iniciar sesión con Google</span>
       </div>
 
-      <form id="merchantForm" onsubmit="submitMerchant(event)">
-        <div class="field">
-          <label>Dominio de tu tienda</label>
-          <div class="input-wrap domain-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-            <input type="text" id="shopDomain"
-              placeholder="mi-tienda"
-              autocomplete="off"
-              autocorrect="off"
-              autocapitalize="off"
-              spellcheck="false" />
-            <span class="domain-suffix">.myshopify.com</span>
-          </div>
-        </div>
-
-        <button type="submit" class="btn-primary btn-shopify" id="btnMerchant">
-          <div class="spinner"></div>
-          <span class="btn-text">
-            <svg width="16" height="18" viewBox="0 0 109.5 124.5" style="display:inline;vertical-align:middle;margin-right:6px" xmlns="http://www.w3.org/2000/svg"><path fill="rgba(255,255,255,0.9)" d="M74.7 14.8s-1.4.4-3.7 1.1c-.4-1.3-1-2.8-1.9-4.3-2.8-5.3-6.9-8.1-11.8-8.1-.3 0-.7 0-1 .1-.1-.2-.3-.3-.4-.5-2.1-2.3-4.9-3.4-8.2-3.3-6.4.2-12.8 4.8-17.9 13-3.6 5.7-6.3 12.9-7.1 18.4-7.3 2.3-12.4 3.8-12.5 3.9C7.2 37.5 7 37.6 7 40.5c0 2.2 27.5 84.5 27.5 84.5l56.2-9.6L74.7 14.8z"/><path fill="rgba(255,255,255,0.6)" d="M74.7 14.8l-3.8 79.7-21.1 15.9 7.2 .2 40.9-7-3.9-88.3-.7-.2z"/></svg>
-            Continuar con Shopify
-          </span>
-        </button>
-      </form>
+      <a href="/auth/google" id="btnGoogle" class="btn-primary btn-google" style="text-decoration:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
+        </svg>
+        <span class="btn-text">Continuar con Google</span>
+        <div class="spinner"></div>
+      </a>
     </div>
 
-    <!-- Panel: Admin clásico -->
-    <div class="panel" id="panel-admin">
-      <div class="panel-title">Acceso de administrador</div>
-      <div class="panel-sub">Solo para el equipo de Ziklo.</div>
+    <!-- Panel: Email + Contraseña -->
+    <div class="panel" id="panel-email">
+      <div class="panel-title">Ingresá con tu cuenta</div>
+      <div class="panel-sub">Usá el email y contraseña de tu cuenta Ziklo.</div>
 
-      <div class="error-msg" id="errorMsgAdmin">
+      <div class="error-msg" id="errorMsgEmail">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/>
           <line x1="12" y1="8" x2="12" y2="12"/>
           <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        <span id="errorTextAdmin">Credenciales incorrectas</span>
+        <span id="errorTextEmail">Credenciales incorrectas</span>
       </div>
 
-      <form id="adminForm" onsubmit="submitAdmin(event)">
+      <form id="emailForm" onsubmit="submitEmail(event)">
         <div class="field">
-          <label>Usuario</label>
+          <label>Email</label>
           <div class="input-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
             </svg>
-            <input type="text" id="username" placeholder="admin" autocomplete="username" />
+            <input type="email" id="emailInput" placeholder="vos@tutienda.com" autocomplete="email" />
           </div>
         </div>
 
@@ -389,7 +344,7 @@
               <rect x="3" y="11" width="18" height="11" rx="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+            <input type="password" id="passInput" placeholder="••••••••" autocomplete="current-password" />
             <button type="button" class="toggle-pass" id="togglePass" tabindex="-1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eyeIcon">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -399,7 +354,7 @@
           </div>
         </div>
 
-        <button type="submit" class="btn-primary btn-admin" id="btnAdmin">
+        <button type="submit" class="btn-primary btn-ziklo" id="btnEmail">
           <div class="spinner"></div>
           <span class="btn-text">Ingresar al panel</span>
         </button>
@@ -422,38 +377,9 @@
     document.getElementById('panel-' + tab).classList.add('active');
   }
 
-  // ── Merchant OAuth ────────────────────────────────────────────────────────
-  function submitMerchant(e) {
-    e.preventDefault();
-    const errorMsg  = document.getElementById('errorMsgMerchant');
-    const errorText = document.getElementById('errorTextMerchant');
-    const btn       = document.getElementById('btnMerchant');
-    errorMsg.classList.remove('show');
-
-    let domain = document.getElementById('shopDomain').value.trim().toLowerCase();
-    // Limpiar protocolo y slashes
-    domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
-    // Quitar .myshopify.com si lo pegaron completo
-    domain = domain.replace(/\.myshopify\.com$/, '');
-
-    if (!domain) {
-      errorText.textContent = 'Ingresá el nombre de tu tienda.';
-      errorMsg.classList.add('show');
-      return;
-    }
-    if (!/^[a-zA-Z0-9][a-zA-Z0-9\-]*$/.test(domain)) {
-      errorText.textContent = 'El dominio solo puede contener letras, números y guiones.';
-      errorMsg.classList.add('show');
-      return;
-    }
-
-    btn.classList.add('loading');
-    window.location.href = `/auth?shop=${domain}.myshopify.com`;
-  }
-
-  // ── Admin clásico ─────────────────────────────────────────────────────────
+  // ── Toggle contraseña ─────────────────────────────────────────────────────
   document.getElementById('togglePass').addEventListener('click', () => {
-    const input = document.getElementById('password');
+    const input = document.getElementById('passInput');
     const icon  = document.getElementById('eyeIcon');
     const show  = input.type === 'password';
     input.type  = show ? 'text' : 'password';
@@ -462,21 +388,22 @@
       : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
   });
 
-  async function submitAdmin(e) {
+  // ── Login con email/contraseña ────────────────────────────────────────────
+  async function submitEmail(e) {
     e.preventDefault();
-    const errorMsg  = document.getElementById('errorMsgAdmin');
-    const errorText = document.getElementById('errorTextAdmin');
-    const btn       = document.getElementById('btnAdmin');
+    const errorMsg  = document.getElementById('errorMsgEmail');
+    const errorText = document.getElementById('errorTextEmail');
+    const btn       = document.getElementById('btnEmail');
     errorMsg.classList.remove('show');
     btn.classList.add('loading');
 
     try {
-      const res = await fetch('/admin/api/login', {
+      const res = await fetch('/auth/user/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: document.getElementById('username').value.trim(),
-          password: document.getElementById('password').value,
+          email:    document.getElementById('emailInput').value.trim(),
+          password: document.getElementById('passInput').value,
         }),
       });
 
@@ -487,8 +414,8 @@
         errorText.textContent = data.error || 'Credenciales incorrectas';
         errorMsg.classList.add('show');
         btn.classList.remove('loading');
-        document.getElementById('password').value = '';
-        document.getElementById('password').focus();
+        document.getElementById('passInput').value = '';
+        document.getElementById('passInput').focus();
       }
     } catch (_) {
       errorText.textContent = 'Error de conexión. Intentá de nuevo.';
@@ -497,27 +424,33 @@
     }
   }
 
-  // ── Si ya hay sesión activa → redirigir ───────────────────────────────────
+  // ── Google loading state ──────────────────────────────────────────────────
+  document.getElementById('btnGoogle').addEventListener('click', function() {
+    this.querySelector('.btn-text').style.display = 'none';
+    this.querySelector('.spinner').style.display  = 'block';
+  });
+
+  // ── Si ya hay sesión → redirigir ──────────────────────────────────────────
   fetch('/admin/api/login-status')
     .then(r => r.json())
     .then(d => { if (d.loggedIn) window.location.href = '/admin/'; })
     .catch(() => {});
 
-  // ── Mostrar error de URL si viene de un redirect fallido ──────────────────
+  // ── Mostrar errores de URL ────────────────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
   const errorParam = params.get('error');
   if (errorParam) {
     const msgs = {
-      missing_shop:  'No se especificó ninguna tienda.',
-      invalid_shop:  'El dominio ingresado no es válido.',
-      invalid_hmac:  'Error de seguridad al conectar con Shopify. Intentá de nuevo.',
-      invalid_state: 'Error de sesión. Intentá de nuevo.',
-      token_failed:  'No se pudo obtener acceso a tu tienda. Verificá que la app esté instalada.',
-      server_error:  'Error interno. Contactá a soporte si el problema persiste.',
+      google_denied:   'Cancelaste el inicio de sesión con Google.',
+      google_token:    'Error al obtener acceso con Google. Intentá de nuevo.',
+      google_no_email: 'No se pudo obtener el email de tu cuenta Google.',
+      google_error:    'Error inesperado con Google. Intentá de nuevo.',
     };
     const msg = msgs[errorParam] || 'Ocurrió un error. Intentá de nuevo.';
-    document.getElementById('errorTextMerchant').textContent = msg;
-    document.getElementById('errorMsgMerchant').classList.add('show');
+    document.getElementById('errorTextGoogle').textContent = msg;
+    document.getElementById('errorMsgGoogle').classList.add('show');
+    // Asegurarse de que el tab de Google esté activo
+    switchTab('google');
   }
 </script>
 </body>

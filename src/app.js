@@ -11,6 +11,7 @@ const webhooksRoutes = require('./routes/webhooks');
 const adminRoutes = require('./routes/admin');
 const clienteRoutes = require('./routes/cliente');
 const authRoutes = require('./routes/auth');
+const userAuthRoutes = require('./routes/userAuth');
 const adminAuth  = require('./middleware/adminAuth');
 const shopContext = require('./middleware/shopContext');
 
@@ -55,6 +56,9 @@ app.use('/webhooks', webhooksRoutes);
 
 // OAuth Shopify (para obtener el access token)
 app.use('/auth', authRoutes);
+
+// Auth de usuarios (email/pass + Google OAuth) — montado en /auth para compartir prefijo
+app.use('/auth', userAuthRoutes);
 
 // Rutas de UI — admin protegido con auth
 app.use('/admin', adminAuth, adminRoutes);

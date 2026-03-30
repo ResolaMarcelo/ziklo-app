@@ -7,6 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Usuarios del panel admin (merchants + superadmins)
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String?    // null si solo usa Google
+  googleId     String?    @unique
+  name         String?
+  role         String     @default("merchant") // "merchant" | "superadmin"
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  shops        UserShop[]
+}
+
+// Relación muchos-a-muchos entre User y Shop
+model UserShop {
+  userId     String
+  shopDomain String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop       Shop   @relation(fields: [shopDomain], references: [domain], onDelete: Cascade)
+
+  @@id([userId, shopDomain])
+}
+
 // Tiendas Shopify autenticadas via OAuth
 model Shop {
   id            String         @id @default(cuid())
@@ -15,10 +38,11 @@ model Shop {
   mpAccessToken   String?                 // token de Mercado Pago de esta tienda
   shopName        String?                 // nombre de la tienda (cacheado)
   email           String?                 // email del owner
-  subBenefitType  String?                 // "discount" | "gift" | "free_shipping" | "points"
-  subBenefitValue String?                 // "10" | "Muestra de crema" | "150 puntos"
+  subBenefitType  String?                 // "discount" | "gift" | "free_shipping"
+  subBenefitValue String?                 // "10" | "Muestra de crema"
   installedAt   DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  users         UserShop[]
   plans         Plan[]
   subscriptions Subscription[]
 }
