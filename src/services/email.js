@@ -111,6 +111,95 @@ async function enviarConfirmacionSuscripcion({ email, nombre, planNombre, monto,
   });
 }
 
+async function enviarVerificacionEmail({ email, code, name }) {
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Verificá tu cuenta de Ziklo</title>
+</head>
+<body style="margin:0;padding:0;background:#0A0A0F;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;">
+
+  <!-- Wrapper -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0F;padding:48px 0;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#16161F;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.08);">
+
+        <!-- Header -->
+        <tr>
+          <td style="padding:32px 40px 24px;text-align:center;border-bottom:1px solid rgba(255,255,255,.06);">
+            <div style="display:inline-flex;align-items:center;gap:10px;">
+              <div style="width:38px;height:38px;background:rgba(0,200,122,.12);border:1px solid rgba(0,200,122,.3);border-radius:10px;display:inline-flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 6h14L7 18h12" stroke="#00C87A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span style="font-size:20px;font-weight:800;color:#F8FAFC;letter-spacing:-.3px;">Ziklo<span style="color:#00C87A">.</span></span>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:40px 48px;">
+            <p style="margin:0 0 6px;font-size:22px;font-weight:700;color:#F8FAFC;letter-spacing:-.3px;">
+              Verificá tu correo${name ? ', ' + name.split(' ')[0] : ''}
+            </p>
+            <p style="margin:0 0 36px;font-size:14px;color:#6B7280;line-height:1.6;">
+              Usá el código de abajo para confirmar tu dirección de correo y activar tu cuenta en Ziklo. El código expira en <strong style="color:#F8FAFC;">15 minutos</strong>.
+            </p>
+
+            <!-- Código -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:36px;">
+              <tr><td align="center">
+                <div style="background:#111118;border:1px solid rgba(0,200,122,.2);border-radius:14px;padding:28px 40px;display:inline-block;">
+                  <p style="margin:0 0 8px;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.1em;">Tu código de verificación</p>
+                  <div style="letter-spacing:12px;font-size:40px;font-weight:800;color:#00C87A;font-family:'Courier New',monospace;">${code}</div>
+                </div>
+              </td></tr>
+            </table>
+
+            <!-- Separador -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+              <tr>
+                <td style="border-top:1px solid rgba(255,255,255,.06);"></td>
+              </tr>
+            </table>
+
+            <p style="margin:0;font-size:12px;color:#4B5563;line-height:1.7;">
+              Si no creaste una cuenta en Ziklo, podés ignorar este email con seguridad.<br>
+              Nadie más puede ver este código.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 48px;border-top:1px solid rgba(255,255,255,.06);text-align:center;">
+            <p style="margin:0;font-size:11px;color:#374151;">
+              Ziklo · Suscripciones para Shopify &nbsp;·&nbsp;
+              <a href="mailto:hola@ziklo.app" style="color:#6B7280;text-decoration:none;">hola@ziklo.app</a>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+
+</body>
+</html>`.trim();
+
+  await transporter.sendMail({
+    from: `"Ziklo" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: `${code} es tu código de verificación de Ziklo`,
+    html,
+  });
+}
+
 async function enviarResetPassword({ email, resetUrl }) {
   const html = `
 <!DOCTYPE html>
@@ -163,4 +252,4 @@ async function enviarResetPassword({ email, resetUrl }) {
   });
 }
 
-module.exports = { enviarConfirmacionSuscripcion, enviarResetPassword };
+module.exports = { enviarConfirmacionSuscripcion, enviarVerificacionEmail, enviarResetPassword };

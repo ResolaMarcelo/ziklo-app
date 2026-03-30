@@ -235,6 +235,55 @@
     .left-footer a { color: var(--muted2); text-decoration: none; }
     .left-footer a:hover { color: var(--white); }
 
+    /* Verification code inputs */
+    .verify-header { text-align: center; margin-bottom: 28px; }
+    .verify-header .verify-icon {
+      width: 56px; height: 56px;
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .verify-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .verify-header p { font-size: 13px; color: var(--muted2); line-height: 1.5; }
+    .verify-header p strong { color: var(--white); }
+
+    .code-inputs {
+      display: flex; gap: 10px; justify-content: center;
+      margin-bottom: 24px;
+    }
+    .code-input {
+      width: 48px; height: 58px;
+      background: var(--card);
+      border: 1.5px solid var(--border-s);
+      border-radius: 10px;
+      text-align: center;
+      font-size: 24px; font-weight: 700; color: var(--white);
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      caret-color: var(--green);
+      transition: border-color .15s, box-shadow .15s;
+      -moz-appearance: textfield;
+    }
+    .code-input::-webkit-outer-spin-button,
+    .code-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .code-input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(0,200,122,.12);
+    }
+    .code-input.filled { border-color: var(--green-border); }
+
+    .resend-row {
+      text-align: center; margin-bottom: 20px;
+      font-size: 13px; color: var(--muted2);
+    }
+    .resend-link {
+      color: var(--green); cursor: pointer; text-decoration: none;
+      font-weight: 500;
+    }
+    .resend-link:hover { opacity: .8; }
+
     /* ── PANEL DERECHO ───────────────────────────────────────────────────── */
     .right {
       flex: 1;
@@ -407,6 +456,49 @@
       </a>
     </div>
 
+    <!-- ─ Panel: Verificar email ─────────────────────────────────────── -->
+    <div class="panel" id="panel-verify">
+      <button class="forgot-back" onclick="switchTab('register')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Volver
+      </button>
+
+      <div class="verify-header">
+        <div class="verify-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <h2>Verificá tu correo</h2>
+        <p>Enviamos un código de 6 dígitos a<br><strong id="verifyEmailDisplay"></strong></p>
+      </div>
+
+      <div class="error-msg" id="verifyError">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="verifyErrorText"></span>
+      </div>
+
+      <div class="code-inputs" id="codeInputs">
+        <input class="code-input" type="number" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="0" />
+        <input class="code-input" type="number" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="1" />
+        <input class="code-input" type="number" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="2" />
+        <input class="code-input" type="number" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="3" />
+        <input class="code-input" type="number" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="4" />
+        <input class="code-input" type="number" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="5" />
+      </div>
+
+      <button type="button" class="btn-submit" id="btnVerify" onclick="submitVerify()">
+        <div class="spinner"></div>
+        <span class="btn-text">Verificar código</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+
+      <div class="resend-row">
+        ¿No recibiste el código? <a class="resend-link" onclick="resendCode()" id="resendLink">Reenviar</a>
+      </div>
+    </div>
+
     <!-- ─ Panel: Olvidé contraseña ─────────────────────────────────────── -->
     <div class="panel" id="panel-forgot">
       <button class="forgot-back" onclick="switchTab('login')">
@@ -506,7 +598,7 @@
 
     // tabs solo visibles en login/register
     const tabs = document.getElementById('mainTabs');
-    tabs.style.display = (tab === 'forgot') ? 'none' : 'flex';
+    tabs.style.display = (tab === 'login' || tab === 'register') ? 'flex' : 'none';
 
     if (tab === 'login' || tab === 'register') {
       const idx = tab === 'login' ? 0 : 1;
@@ -544,8 +636,17 @@
           password: document.getElementById('loginPass').value,
         }),
       });
-      if (res.ok) { window.location.href = '/admin/'; return; }
       const data = await res.json().catch(() => ({}));
+      if (res.ok) { window.location.href = '/admin/'; return; }
+      if (data.error === 'verify_email') {
+        // Cuenta sin verificar — ir al panel de verificación
+        verifyEmail = data.email || document.getElementById('loginEmail').value.trim();
+        document.getElementById('verifyEmailDisplay').textContent = verifyEmail;
+        switchTab('verify');
+        setTimeout(() => document.querySelector('.code-input')?.focus(), 100);
+        btn.classList.remove('loading');
+        return;
+      }
       errTx.textContent = data.error || 'Credenciales incorrectas';
       errEl.classList.add('show');
       document.getElementById('loginPass').value = '';
@@ -588,8 +689,16 @@
           name:     document.getElementById('regName').value.trim(),
         }),
       });
-      if (res.ok) { window.location.href = '/admin/'; return; }
       const data = await res.json().catch(() => ({}));
+      if (res.ok && data.needsVerification) {
+        verifyEmail = data.email || document.getElementById('regEmail').value.trim();
+        document.getElementById('verifyEmailDisplay').textContent = verifyEmail;
+        switchTab('verify');
+        setTimeout(() => document.querySelector('.code-input')?.focus(), 100);
+        btn.classList.remove('loading');
+        return;
+      }
+      if (res.ok) { window.location.href = '/admin/'; return; }
       errTx.textContent = data.error || 'Error al crear la cuenta';
       errEl.classList.add('show');
     } catch (_) {
@@ -627,6 +736,103 @@
       errTx.textContent = 'Error de conexión. Intentá de nuevo.';
       errEl.classList.add('show');
       btn.classList.remove('loading');
+    }
+  }
+
+  // ── Estado de verificación ────────────────────────────────────────────────
+  let verifyEmail = '';
+
+  // ── Inputs de código — auto-avance ────────────────────────────────────────
+  document.querySelectorAll('.code-input').forEach((input, i, all) => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Backspace') {
+        if (!input.value && i > 0) { all[i - 1].focus(); all[i - 1].value = ''; all[i - 1].classList.remove('filled'); }
+        else { input.value = ''; input.classList.remove('filled'); }
+        e.preventDefault();
+      }
+    });
+    input.addEventListener('input', () => {
+      const val = input.value.replace(/\D/g, '');
+      input.value = val ? val[val.length - 1] : '';
+      if (input.value) {
+        input.classList.add('filled');
+        if (i < all.length - 1) all[i + 1].focus();
+        else submitVerify(); // auto-submit cuando completa el último
+      } else {
+        input.classList.remove('filled');
+      }
+    });
+    input.addEventListener('paste', e => {
+      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      if (text.length >= 6) {
+        [...all].forEach((inp, j) => {
+          inp.value = text[j] || '';
+          inp.classList.toggle('filled', !!inp.value);
+        });
+        all[all.length - 1].focus();
+        e.preventDefault();
+        submitVerify();
+      }
+    });
+  });
+
+  // ── Verificar código ──────────────────────────────────────────────────────
+  async function submitVerify() {
+    const inputs = document.querySelectorAll('.code-input');
+    const code   = [...inputs].map(i => i.value).join('');
+    if (code.length < 6) return;
+
+    const errEl = document.getElementById('verifyError');
+    const errTx = document.getElementById('verifyErrorText');
+    errEl.classList.remove('show');
+
+    const btn = document.getElementById('btnVerify');
+    btn.classList.add('loading');
+
+    try {
+      const res = await fetch('/auth/user/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verifyEmail, code }),
+      });
+      if (res.ok) { window.location.href = '/admin/'; return; }
+      const data = await res.json().catch(() => ({}));
+      errTx.textContent = data.error || 'Código incorrecto';
+      errEl.classList.add('show');
+      // Limpiar inputs
+      inputs.forEach(inp => { inp.value = ''; inp.classList.remove('filled'); });
+      inputs[0].focus();
+    } catch (_) {
+      errTx.textContent = 'Error de conexión. Intentá de nuevo.';
+      errEl.classList.add('show');
+    }
+    btn.classList.remove('loading');
+  }
+
+  // ── Reenviar código ───────────────────────────────────────────────────────
+  async function resendCode() {
+    if (!verifyEmail) return;
+    const link = document.getElementById('resendLink');
+    link.textContent = 'Enviando...';
+    link.style.pointerEvents = 'none';
+
+    try {
+      await fetch('/auth/user/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verifyEmail }),
+      });
+      link.textContent = '¡Enviado!';
+      setTimeout(() => {
+        link.textContent = 'Reenviar';
+        link.style.pointerEvents = '';
+      }, 5000);
+    } catch (_) {
+      link.textContent = 'Error, intentá de nuevo';
+      setTimeout(() => {
+        link.textContent = 'Reenviar';
+        link.style.pointerEvents = '';
+      }, 3000);
     }
   }
 

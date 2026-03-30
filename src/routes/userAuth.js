@@ -3,7 +3,7 @@ const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 const crypto  = require('crypto');
 const prisma  = require('../lib/prisma');
-const { enviarResetPassword } = require('../services/email');
+const { enviarResetPassword, enviarVerificacionEmail } = require('../services/email');
 
 // ── POST /auth/user/login — login con email + contraseña ─────────────────────
 router.post('/user/login', async (req, res) => {
@@ -26,6 +26,10 @@ router.post('/user/login', async (req, res) => {
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
+    }
+
+    if (!user.emailVerified) {
+      return res.status(403).json({ error: 'verify_email', email: user.email });
     }
 
     req.session.userId        = user.id;
@@ -62,11 +66,61 @@ router.post('/user/register', async (req, res) => {
       return res.status(400).json({ error: 'Ya existe una cuenta con ese email' });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash       = await bcrypt.hash(password, 10);
+    const verificationCode   = String(Math.floor(100000 + Math.random() * 900000));
+    const verificationExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 min
+
     const user = await prisma.user.create({
-      data: { email: email.toLowerCase().trim(), passwordHash, name: name || null },
+      data: {
+        email: email.toLowerCase().trim(),
+        passwordHash,
+        name: name || null,
+        emailVerified: false,
+        verificationCode,
+        verificationExpiry,
+      },
+    });
+
+    try {
+      await enviarVerificacionEmail({ email: user.email, code: verificationCode, name: user.name });
+    } catch (emailErr) {
+      console.error('Error enviando email de verificación:', emailErr.message);
+      // No bloquear el registro si el email falla
+    }
+
+    return res.json({ ok: true, needsVerification: true, email: user.email });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /auth/user/verify-email — validar código de 6 dígitos ───────────────
+router.post('/user/verify-email', async (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) return res.status(400).json({ error: 'Email y código requeridos' });
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
       include: { shops: true },
     });
+
+    if (!user) return res.status(400).json({ error: 'Código inválido' });
+    if (user.emailVerified) {
+      // Ya verificado — crear sesión directamente
+    } else {
+      if (!user.verificationCode || user.verificationCode !== code.trim()) {
+        return res.status(400).json({ error: 'Código incorrecto' });
+      }
+      if (!user.verificationExpiry || user.verificationExpiry < new Date()) {
+        return res.status(400).json({ error: 'El código expiró. Solicitá uno nuevo.' });
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data:  { emailVerified: true, verificationCode: null, verificationExpiry: null },
+      });
+    }
 
     req.session.userId        = user.id;
     req.session.userEmail     = user.email;
@@ -74,9 +128,40 @@ router.post('/user/register', async (req, res) => {
     req.session.userRole      = user.role;
     req.session.adminLoggedIn = true;
 
+    const firstShop = user.shops[0];
+    if (firstShop) req.session.shopDomain = firstShop.shopDomain;
+
     return res.json({ ok: true });
   } catch (err) {
     return res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /auth/user/resend-verification — reenviar código ────────────────────
+router.post('/user/resend-verification', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    if (!user) return res.json({ ok: true }); // no revelar si existe
+
+    if (user.emailVerified) return res.json({ ok: true });
+
+    const verificationCode   = String(Math.floor(100000 + Math.random() * 900000));
+    const verificationExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data:  { verificationCode, verificationExpiry },
+    });
+
+    await enviarVerificacionEmail({ email: user.email, code: verificationCode, name: user.name });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('resend-verification error:', err.message);
+    return res.json({ ok: true });
   }
 });
 
@@ -212,13 +297,13 @@ router.get('/google/callback', async (req, res) => {
 
     if (!user) {
       user = await prisma.user.create({
-        data: { email: emailNorm, googleId: userInfo.sub, name: userInfo.name || null },
+        data: { email: emailNorm, googleId: userInfo.sub, name: userInfo.name || null, emailVerified: true },
         include: { shops: true },
       });
     } else if (!user.googleId) {
       user = await prisma.user.update({
         where: { id: user.id },
-        data:  { googleId: userInfo.sub },
+        data:  { googleId: userInfo.sub, emailVerified: true },
         include: { shops: true },
       });
     }
