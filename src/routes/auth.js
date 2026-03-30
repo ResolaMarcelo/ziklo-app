@@ -146,11 +146,25 @@ router.get('/callback', async (req, res) => {
     });
 
     // 6. Si hay un usuario logueado, vincularlo a esta tienda
-    if (req.session.userId) {
+    let linkUserId = req.session.userId || null;
+
+    // Fallback: si no hay userId en sesión pero sí email, buscarlo en la DB
+    if (!linkUserId && req.session.userEmail) {
+      const foundUser = await prisma.user.findUnique({
+        where: { email: req.session.userEmail },
+      });
+      if (foundUser) {
+        linkUserId = foundUser.id;
+        req.session.userId   = foundUser.id;
+        req.session.userRole = foundUser.role;
+      }
+    }
+
+    if (linkUserId) {
       await prisma.userShop.upsert({
-        where:  { userId_shopDomain: { userId: req.session.userId, shopDomain: shop } },
+        where:  { userId_shopDomain: { userId: linkUserId, shopDomain: shop } },
         update: {},
-        create: { userId: req.session.userId, shopDomain: shop },
+        create: { userId: linkUserId, shopDomain: shop },
       });
     }
 

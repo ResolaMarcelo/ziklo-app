@@ -60,11 +60,34 @@ router.post('/api/logout', (req, res) => {
 });
 
 // GET /admin/api/me — info de la sesión actual
-router.get('/api/me', (req, res) => {
+// También sincroniza el shopDomain desde UserShop si falta en sesión
+router.get('/api/me', async (req, res) => {
+  let shopDomain = req.session.shopDomain || null;
+  let shopName   = req.session.shopName   || null;
+  let shopId     = req.session.shopId     || null;
+
+  // Si hay userId pero no shopDomain, intentar recuperarlo desde UserShop
+  if (req.session.userId && !shopDomain) {
+    try {
+      const link = await prisma.userShop.findFirst({
+        where: { userId: req.session.userId },
+        include: { shop: true },
+      });
+      if (link?.shop) {
+        shopDomain = link.shop.domain;
+        shopName   = link.shop.shopName || link.shop.domain;
+        shopId     = link.shop.id;
+        req.session.shopDomain = shopDomain;
+        req.session.shopName   = shopName;
+        req.session.shopId     = shopId;
+      }
+    } catch (_) {}
+  }
+
   res.json({
-    shopDomain: req.session.shopDomain || null,
-    shopName:   req.session.shopName   || null,
-    shopId:     req.session.shopId     || null,
+    shopDomain: shopDomain,
+    shopName:   shopName,
+    shopId:     shopId,
     userEmail:  req.session.userEmail  || null,
     userName:   req.session.userName   || null,
     userRole:   req.session.userRole   || null,

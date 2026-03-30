@@ -187,12 +187,14 @@ router.post('/user/forgot-password', async (req, res) => {
     const appUrl   = process.env.APP_URL || 'http://localhost:3000';
     const resetUrl = `${appUrl}/admin/reset-password.html?token=${token}`;
 
-    await enviarResetPassword({ email: user.email, resetUrl });
+    // Fire-and-forget: no bloquear la respuesta esperando al SMTP
+    enviarResetPassword({ email: user.email, resetUrl }).catch(e =>
+      console.error('forgot-password email error:', e.message)
+    );
 
     return res.json({ ok: true });
   } catch (err) {
     console.error('forgot-password error:', err.message);
-    // No exponer el error al cliente
     return res.json({ ok: true });
   }
 });
