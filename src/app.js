@@ -56,17 +56,11 @@ const PORT = process.env.PORT || 3000;
 // y para que las cookies con secure:true se setteen correctamente
 app.set('trust proxy', 1);
 
-// Forzar HTTPS y eliminar www en producción
+// Forzar HTTPS en producción (solo si viene del proxy externo de Railway)
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
-    const host = req.headers.host || '';
-    // Redirigir www.app.zikloapp.com → app.zikloapp.com
-    if (host.startsWith('www.')) {
-      return res.redirect(301, 'https://' + host.slice(4) + req.url);
-    }
-    // Redirigir HTTP → HTTPS
     if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
-      return res.redirect(301, 'https://' + host + req.url);
+      return res.redirect(301, 'https://' + req.headers.host + req.url);
     }
     next();
   });
