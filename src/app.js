@@ -124,9 +124,8 @@ app.use('/api/products', limiterAPI);
 app.use('/admin', adminAuth, adminRoutes);
 app.use('/cliente', clienteRoutes);
 
-// Waitlist beta — pública (POST) + admin (GET/POST protegidos dentro del router)
+// Waitlist beta — solo el endpoint público POST /api/waitlist
 app.use('/api/waitlist', waitlistRoutes);
-app.use('/', waitlistRoutes); // para los endpoints /admin/api/waitlist/*
 
 // Landing page
 app.get('/', (req, res) => {
