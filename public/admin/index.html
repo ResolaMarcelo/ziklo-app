@@ -1514,22 +1514,44 @@
             </div>
           </div>
 
+          <!-- Period filter — arriba de todo -->
+          <div class="period-bar">
+            <span class="period-label">Período</span>
+            <div class="period-pills">
+              <button class="period-pill" onclick="setPeriod(7)">7D</button>
+              <button class="period-pill active" onclick="setPeriod(30)">30D</button>
+              <button class="period-pill" onclick="setPeriod(90)">3M</button>
+              <button class="period-pill" onclick="setPeriod(0)">Todo</button>
+            </div>
+          </div>
+
+          <!-- Stats del período seleccionado -->
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted2);text-transform:uppercase;margin-bottom:6px">En el período</div>
+          <div class="stats" style="margin-bottom:16px">
+            <div class="stat stat-mrr">
+              <div class="stat-value" id="stat-ingresos-mes">—</div>
+              <div class="stat-label">Ingresos</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-total">—</div>
+              <div class="stat-label">Nuevas suscripciones</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-churn">—</div>
+              <div class="stat-label">Canceladas</div>
+            </div>
+          </div>
+
+          <!-- Stats actuales (snapshot) -->
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted2);text-transform:uppercase;margin-bottom:6px">Ahora</div>
           <div class="stats">
             <div class="stat stat-mrr">
               <div class="stat-value" id="stat-mrr">—</div>
               <div class="stat-label">MRR estimado</div>
             </div>
             <div class="stat">
-              <div class="stat-value" id="stat-ingresos-mes">—</div>
-              <div class="stat-label">Ingresos este mes</div>
-            </div>
-            <div class="stat">
               <div class="stat-value" id="stat-activos">—</div>
               <div class="stat-label">Suscriptores activos</div>
-            </div>
-            <div class="stat">
-              <div class="stat-value" id="stat-total">—</div>
-              <div class="stat-label">Total histórico</div>
             </div>
             <div class="stat">
               <div class="stat-value" id="stat-pendientes">—</div>
@@ -1542,21 +1564,6 @@
             <div class="stat stat-danger">
               <div class="stat-value" id="stat-pago-fallido">—</div>
               <div class="stat-label">Pagos fallidos</div>
-            </div>
-            <div class="stat">
-              <div class="stat-value" id="stat-churn">—</div>
-              <div class="stat-label">Canceladas (30d)</div>
-            </div>
-          </div>
-
-          <!-- Period filter -->
-          <div class="period-bar">
-            <span class="period-label">Gráficos</span>
-            <div class="period-pills">
-              <button class="period-pill" onclick="setPeriod(7)">7D</button>
-              <button class="period-pill active" onclick="setPeriod(30)">30D</button>
-              <button class="period-pill" onclick="setPeriod(90)">3M</button>
-              <button class="period-pill" onclick="setPeriod(0)">Todo</button>
             </div>
           </div>
 
@@ -2808,6 +2815,30 @@ function buildCharts(subs, days = 0) {
 let _currentPeriodDays = 30;
 let _allSubs = [];
 
+function updatePeriodStats(subs, days) {
+  const ahora = new Date();
+  const desde = days > 0 ? new Date(ahora.getTime() - days * 24 * 60 * 60 * 1000) : null;
+
+  // Nuevas suscripciones en el período
+  const nuevas = desde
+    ? subs.filter(s => new Date(s.createdAt) >= desde).length
+    : subs.length;
+  document.getElementById('stat-total').textContent = nuevas;
+
+  // Ingresos en el período
+  const pagosEnPeriodo = subs.flatMap(s => s.pagos || []).filter(p =>
+    p.status === 'approved' && (!desde || new Date(p.createdAt) >= desde)
+  );
+  const ingresos = pagosEnPeriodo.reduce((sum, p) => sum + (p.monto || 0), 0);
+  document.getElementById('stat-ingresos-mes').textContent = ARS(ingresos);
+
+  // Canceladas en el período
+  const canceladas = desde
+    ? subs.filter(s => s.status === 'cancelled' && new Date(s.updatedAt) >= desde).length
+    : subs.filter(s => s.status === 'cancelled').length;
+  document.getElementById('stat-churn').textContent = canceladas;
+}
+
 function setPeriod(days) {
   _currentPeriodDays = days;
   document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
@@ -2815,7 +2846,10 @@ function setPeriod(days) {
   document.querySelectorAll('.period-pill').forEach(p => {
     if (p.textContent === labels[days]) p.classList.add('active');
   });
-  if (_allSubs.length) buildCharts(_allSubs, days);
+  if (_allSubs.length) {
+    buildCharts(_allSubs, days);
+    updatePeriodStats(_allSubs, days);
+  }
 }
 
 // ===================== ONBOARDING CHECKLIST =====================
@@ -2899,32 +2933,23 @@ async function cargarDashboard() {
   const activos = subs.filter(s => s.status === 'authorized');
   const pendientes = subs.filter(s => s.status === 'pending');
 
+  // Stats "Ahora" — snapshot actual
   document.getElementById('stat-activos').textContent = activos.length;
-  document.getElementById('stat-total').textContent = subs.length;
   document.getElementById('stat-pendientes').textContent = pendientes.length;
 
   const mrr = activos.reduce((sum, s) => sum + (s.plan?.tipoFrecuencia === 'months' ? s.plan?.monto || 0 : 0), 0);
   document.getElementById('stat-mrr').textContent = ARS(mrr);
 
   const ahora = new Date();
-  const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
-  const pagosMes = subs.flatMap(s => s.pagos || []).filter(p => p.status === 'approved' && new Date(p.createdAt) >= inicioMes);
-  const ingresosMes = pagosMes.reduce((sum, p) => sum + (p.monto || 0), 0);
-  document.getElementById('stat-ingresos-mes').textContent = ARS(ingresosMes);
-
-  // Cobros próximos (7 días) — usa nextChargeDate
   const en7dias = new Date(ahora.getTime() + 7 * 24 * 60 * 60 * 1000);
   const cobrosProximos = activos.filter(s => s.nextChargeDate && new Date(s.nextChargeDate) <= en7dias).length;
   document.getElementById('stat-cobros-proximos').textContent = cobrosProximos;
 
-  // Pagos fallidos
   const pagosFallidos = subs.filter(s => s.status === 'payment_failed').length;
   document.getElementById('stat-pago-fallido').textContent = pagosFallidos;
 
-  // Canceladas últimos 30 días (churn)
-  const hace30dias = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const churn30 = subs.filter(s => s.status === 'cancelled' && new Date(s.updatedAt) >= hace30dias).length;
-  document.getElementById('stat-churn').textContent = churn30;
+  // Stats "En el período" — filtradas por período seleccionado
+  updatePeriodStats(subs, _currentPeriodDays);
 
   buildCharts(subs, _currentPeriodDays);
 
