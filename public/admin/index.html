@@ -1721,10 +1721,10 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;transition:transform .2s;" id="gift-dropdown-arrow"><path d="M6 9l6 6 6-6"/></svg>
               </button>
               <div id="gift-dropdown-list"
-                style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:10px;overflow:hidden;z-index:100;max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);">
-                <div style="padding:8px;">
+                style="display:none;position:fixed;background:#1e1e2a;border:1px solid rgba(255,255,255,.15);border-radius:10px;z-index:9999;max-height:240px;overflow-y:auto;box-shadow:0 12px 32px rgba(0,0,0,.6);">
+                <div style="padding:8px 8px 4px;">
                   <input type="text" id="gift-search" placeholder="Buscar producto..." oninput="filtrarGiftProducts()"
-                    style="width:100%;background:var(--surface);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;margin-bottom:4px;"
+                    style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;"
                   />
                 </div>
                 <div id="gift-options"></div>
@@ -2825,16 +2825,24 @@ function selectGiftProduct(title) {
 }
 
 function toggleGiftDropdown() {
-  const list = document.getElementById('gift-dropdown-list');
+  const list  = document.getElementById('gift-dropdown-list');
   const arrow = document.getElementById('gift-dropdown-arrow');
   const btn   = document.getElementById('gift-dropdown-btn');
   const open  = list.style.display === 'none';
-  list.style.display  = open ? 'block' : 'none';
-  arrow.style.transform = open ? 'rotate(180deg)' : '';
-  btn.style.borderColor = open ? 'var(--green)' : 'rgba(255,255,255,.12)';
+
   if (open) {
+    // Posicionar debajo del botón usando coordenadas de viewport
+    const rect = btn.getBoundingClientRect();
+    list.style.top    = (rect.bottom + 4) + 'px';
+    list.style.left   = rect.left + 'px';
+    list.style.width  = rect.width + 'px';
+    list.style.display = 'block';
+    arrow.style.transform = 'rotate(180deg)';
+    btn.style.borderColor = 'var(--green)';
     setTimeout(() => document.getElementById('gift-search')?.focus(), 50);
     document.addEventListener('click', closeGiftDropdownOutside);
+  } else {
+    closeGiftDropdown();
   }
 }
 
