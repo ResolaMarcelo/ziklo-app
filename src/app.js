@@ -12,6 +12,7 @@ const adminRoutes = require('./routes/admin');
 const clienteRoutes = require('./routes/cliente');
 const authRoutes = require('./routes/auth');
 const userAuthRoutes = require('./routes/userAuth');
+const klaviyoAuthRoutes = require('./routes/klaviyoAuth');
 const adminAuth  = require('./middleware/adminAuth');
 const shopContext = require('./middleware/shopContext');
 
@@ -59,6 +60,9 @@ app.use('/auth', authRoutes);
 
 // Auth de usuarios (email/pass + Google OAuth) — montado en /auth para compartir prefijo
 app.use('/auth', userAuthRoutes);
+
+// Klaviyo OAuth — protegido por adminAuth (sólo merchants logueados)
+app.use('/auth/klaviyo', adminAuth, klaviyoAuthRoutes);
 
 // Rutas de UI — admin protegido con auth
 app.use('/admin', adminAuth, adminRoutes);

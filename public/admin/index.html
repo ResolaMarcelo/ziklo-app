@@ -3229,7 +3229,7 @@ async function toggleProducto(inputEl) {
 // ===================== INTEGRACIONES =====================
 async function cargarIntegraciones() {
   const grid = document.getElementById('integ-grid');
-  let status = { shopify: false, mercadopago: false, email: false };
+  let status = { shopify: false, mercadopago: false, email: false, klaviyo: false };
   let mpHint = null;
   try {
     [status] = await Promise.all([
@@ -3338,8 +3338,70 @@ async function cargarIntegraciones() {
     `;
   }
 
-  // Orden final: Shopify | Mercado Pago | Email | Webhooks
-  grid.innerHTML = renderCard(integraciones[0]) + mpCard + integraciones.slice(1).map(renderCard).join('');
+  // Tarjeta Klaviyo
+  const klaviyoCard = `
+    <div class="integ-card">
+      <div class="integ-card-head">
+        <div class="integ-logo" style="background:#0a0a14;border:1px solid rgba(255,255,255,.08);">
+          <svg width="22" height="14" viewBox="0 0 150 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 0h24v90H0z" fill="white"/>
+            <path d="M24 45L60 0h28L52 45l36 45H60z" fill="white"/>
+            <path d="M80 15h20v15H80zm0 55h20v15H80z" fill="white"/>
+            <path d="M80 40h40c0 8.3-6.7 15-15 15H80V40z" fill="white"/>
+          </svg>
+        </div>
+        <div>
+          <div class="integ-name">Klaviyo</div>
+          <div class="integ-desc">Email flows de suscripción</div>
+        </div>
+      </div>
+      <div class="integ-status">
+        <div class="integ-status-dot ${status.klaviyo ? 'green' : 'red'}"></div>
+        <span class="integ-status-text ${status.klaviyo ? 'green' : 'red'}">
+          ${status.klaviyo ? 'Conectado' : 'No conectado'}
+        </span>
+      </div>
+      <div class="integ-detail">
+        ${status.klaviyo
+          ? 'Eventos de suscripción enviados automáticamente a Klaviyo.'
+          : 'Conectá Klaviyo para activar flows de email automáticos (bienvenida, renovación, cancelación).'}
+      </div>
+      ${status.klaviyo ? `
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="integ-action" onclick="window.open('https://www.klaviyo.com/flows','_blank')">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Ver Flows
+          </button>
+          <button class="integ-action" style="color:var(--danger);border-color:var(--danger);" onclick="desconectarKlaviyo()">Desconectar</button>
+        </div>
+        <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:8px;font-size:11px;color:var(--muted2);line-height:1.6;">
+          <strong style="color:var(--muted);">Eventos disponibles en Klaviyo:</strong><br>
+          <code style="color:var(--green);">Subscription Created</code> · <code style="color:var(--green);">Subscription Renewed</code> · <code style="color:var(--green);">Subscription Paused</code> · <code style="color:var(--green);">Subscription Resumed</code> · <code style="color:var(--green);">Subscription Cancelled</code>
+        </div>
+      ` : `
+        <a href="/auth/klaviyo" class="integ-action" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:white;color:#0a0a14;font-weight:600;padding:8px 14px;border-radius:7px;font-size:12px;text-decoration:none;">
+          <svg width="12" height="8" viewBox="0 0 150 90" fill="none"><path d="M0 0h24v90H0z" fill="#0a0a14"/><path d="M24 45L60 0h28L52 45l36 45H60z" fill="#0a0a14"/></svg>
+          Conectar con Klaviyo
+        </a>
+      `}
+    </div>
+  `;
+
+  // Orden final: Shopify | Mercado Pago | Klaviyo | Email | Webhooks
+  grid.innerHTML = renderCard(integraciones[0]) + mpCard + klaviyoCard + integraciones.slice(1).map(renderCard).join('');
+}
+
+// ===================== KLAVIYO =====================
+async function desconectarKlaviyo() {
+  if (!confirm('¿Desconectar Klaviyo? Se dejarán de enviar eventos.')) return;
+  try {
+    const r = await fetch('/auth/klaviyo/disconnect', { method: 'POST' });
+    if (!r.ok) throw new Error('Error al desconectar');
+    showToast('Klaviyo desconectado');
+    await cargarIntegraciones();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
 }
 
 // ===================== MP TOKEN =====================

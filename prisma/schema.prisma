@@ -46,6 +46,11 @@ model Shop {
   subBenefitType  String?                 // "discount" | "gift" | "free_shipping"
   subBenefitValue String?                 // "10" | "Muestra de crema"
   // Retención
+  // Klaviyo OAuth
+  klaviyoAccessToken  String?
+  klaviyoRefreshToken String?
+  klaviyoTokenExpiry  DateTime?
+  // Retención
   retentionPauseEnabled    Boolean @default(false)
   retentionDiscountEnabled Boolean @default(false)
   retentionDiscountPct     Int?

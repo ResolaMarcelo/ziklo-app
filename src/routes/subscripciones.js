@@ -2,6 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const prisma  = require('../lib/prisma');
 const mp      = require('../services/mercadopago');
+const klaviyo = require('../services/klaviyo');
 
 // Helpers
 const getShopDomain = (req) => req.shop?.domain || req.session?.shopDomain || null;
@@ -248,6 +249,11 @@ router.post('/:id/cancelar', async (req, res) => {
     const mpToken = req.shop?.mpAccessToken || null;
     await mp.cancelarPreapproval(sub.mpPreapprovalId, mpToken);
     await prisma.subscription.update({ where: { id: req.params.id }, data: { status: 'cancelled' } });
+
+    // Klaviyo — fire and forget
+    const subWithPlan = await prisma.subscription.findUnique({ where: { id: req.params.id }, include: { plan: true } });
+    klaviyo.subscriptionCancelled(req.shop, subWithPlan).catch(() => {});
+
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -264,6 +270,11 @@ router.post('/:id/pausar', async (req, res) => {
     const mpToken = req.shop?.mpAccessToken || null;
     await mp.pausarPreapproval(sub.mpPreapprovalId, mpToken);
     await prisma.subscription.update({ where: { id: req.params.id }, data: { status: 'paused' } });
+
+    // Klaviyo — fire and forget
+    const subWithPlan = await prisma.subscription.findUnique({ where: { id: req.params.id }, include: { plan: true } });
+    klaviyo.subscriptionPaused(req.shop, subWithPlan).catch(() => {});
+
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -280,6 +291,11 @@ router.post('/:id/reanudar', async (req, res) => {
     const mpToken = req.shop?.mpAccessToken || null;
     await mp.reanudarPreapproval(sub.mpPreapprovalId, mpToken);
     await prisma.subscription.update({ where: { id: req.params.id }, data: { status: 'authorized' } });
+
+    // Klaviyo — fire and forget
+    const subWithPlan = await prisma.subscription.findUnique({ where: { id: req.params.id }, include: { plan: true } });
+    klaviyo.subscriptionResumed(req.shop, subWithPlan).catch(() => {});
+
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

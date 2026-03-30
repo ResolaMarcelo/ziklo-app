@@ -120,12 +120,12 @@ router.get('/api/shop', async (req, res) => {
 
 // GET /admin/api/status — integraciones del shop logueado
 router.get('/api/status', async (req, res) => {
-  // Si el shop está en DB, usar sus tokens; si no, fallback a env vars
   const shop = req.shop;
   res.json({
     shopify:     !!(shop?.accessToken || (process.env.SHOPIFY_ACCESS_TOKEN && process.env.SHOPIFY_SHOP_DOMAIN)),
     mercadopago: !!(shop?.mpAccessToken || process.env.MP_ACCESS_TOKEN),
     email:       !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+    klaviyo:     !!(shop?.klaviyoAccessToken),
   });
 });
 

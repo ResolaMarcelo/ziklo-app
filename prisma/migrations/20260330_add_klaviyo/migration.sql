@@ -1,0 +1,3 @@
+ALTER TABLE "Shop" ADD COLUMN IF NOT EXISTS "klaviyoAccessToken"  TEXT;
+ALTER TABLE "Shop" ADD COLUMN IF NOT EXISTS "klaviyoRefreshToken" TEXT;
+ALTER TABLE "Shop" ADD COLUMN IF NOT EXISTS "klaviyoTokenExpiry"  TIMESTAMP(3);

@@ -4,6 +4,7 @@ const prisma = require('../lib/prisma');
 const mp = require('../services/mercadopago');
 const shopify = require('../services/shopify');
 const email = require('../services/email');
+const klaviyo = require('../services/klaviyo');
 
 // POST /webhooks/mp - recibir notificaciones de Mercado Pago
 router.post('/mp', async (req, res) => {
@@ -62,6 +63,12 @@ router.post('/mp', async (req, res) => {
           },
         });
 
+        // Klaviyo: evento de pago aprobado
+        klaviyo.subscriptionRenewed(shop, sub, {
+          monto: pago.transaction_amount,
+          mpPaymentId: String(pago.id),
+        }).catch(() => {});
+
         // Crear orden en Shopify usando el token del shop correcto
         if (sub.variantId) {
           try {
@@ -110,6 +117,11 @@ router.post('/mp', async (req, res) => {
         where: { mpPreapprovalId: data.id },
         data:  { status: preapproval.status },
       });
+
+      // Klaviyo: suscripción creada/activada
+      if (preapproval.status === 'authorized' && subs.length > 0) {
+        klaviyo.subscriptionCreated(shop, { ...subs[0], plan: subs[0].plan }).catch(() => {});
+      }
 
       // Email de confirmación cuando se activa
       if (preapproval.status === 'authorized' && subs.length > 0) {
