@@ -82,6 +82,15 @@ if (process.env.SETUP_SECRET) {
       const count = await prisma.user.count();
       if (count > 0) return res.send('Ya existen usuarios. Endpoint deshabilitado.');
       const shopDomain = process.env.SHOPIFY_SHOP_DOMAIN;
+      const accessToken = process.env.SHOPIFY_ACCESS_TOKEN || '';
+      // Asegurar que el Shop exista antes de vincularlo
+      if (shopDomain) {
+        await prisma.shop.upsert({
+          where:  { domain: shopDomain },
+          update: {},
+          create: { domain: shopDomain, accessToken, shopName: shopDomain },
+        });
+      }
       const hash = await bcrypt.hash(req.query.password || 'Ziklo2024!', 10);
       const user = await prisma.user.create({
         data: {
