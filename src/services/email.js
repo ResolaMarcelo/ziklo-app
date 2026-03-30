@@ -749,6 +749,13 @@ async function enviarRecordatorioCobro({ email: toEmail, nombre, planNombre, mon
   });
 }
 
+// ── Envío genérico (para notificaciones internas) ──────────────────────────
+async function enviarEmail({ to, subject, html }) {
+  const resend = getResend();
+  if (!resend) return;
+  await resend.emails.send({ from: FROM, to, subject, html });
+}
+
 module.exports = {
   enviarConfirmacionSuscripcion,
   enviarVerificacionEmail,
@@ -758,4 +765,5 @@ module.exports = {
   enviarPagoFallidoMerchant,
   enviarCancelacionConfirmacion,
   enviarRecordatorioCobro,
+  enviarEmail,
 };

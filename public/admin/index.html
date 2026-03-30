@@ -1384,6 +1384,11 @@
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     Retención
   </div>
+  <div class="nav-item" onclick="showTab('waitlist')">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Lista de espera
+    <span id="wl-badge" style="display:none;background:#39e07a;color:#000;font-size:10px;font-weight:700;border-radius:99px;padding:1px 7px;margin-left:auto;">0</span>
+  </div>
   <div class="nav-item" onclick="showTab('configuracion')">
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     Configuración
@@ -2332,6 +2337,44 @@
       </div>
     </div><!-- /tab-retencion -->
 
+    <!-- Lista de espera beta -->
+    <div id="tab-waitlist" class="page">
+      <div class="page-header" style="margin-bottom:24px;">
+        <div>
+          <div class="page-title">Lista de espera</div>
+          <div class="page-sub">Solicitudes de acceso beta recibidas desde la landing.</div>
+        </div>
+        <button onclick="cargarWaitlist()" class="btn-sm" style="background:var(--green-dim);color:var(--green);border:1px solid var(--green);border-radius:8px;padding:8px 16px;cursor:pointer;font-size:13px;">↻ Actualizar</button>
+      </div>
+
+      <!-- Estadísticas rápidas -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-val" id="wl-total">—</div><div class="stat-label">Total solicitudes</div></div>
+        <div class="stat-card"><div class="stat-val" id="wl-pending-count" style="color:var(--yellow,#f0a500)">—</div><div class="stat-label">Pendientes</div></div>
+        <div class="stat-card"><div class="stat-val" id="wl-approved-count" style="color:var(--green)">—</div><div class="stat-label">Aprobadas</div></div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="table-wrap">
+        <table class="data-table" id="wl-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Tienda</th>
+              <th>Mensaje</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="wl-tbody">
+            <tr><td colspan="7" style="text-align:center;color:var(--muted);">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /tab-waitlist -->
+
     <!-- FAQs -->
     <div id="tab-faqs" class="page">
 
@@ -2657,6 +2700,7 @@ const TITLES = {
   integraciones:  ['Integraciones', 'Servicios conectados a tu cuenta'],
   widget:         ['Instalar Widget', 'Instrucciones de integración'],
   retencion:      ['Retención', 'Flujo para retener suscriptores antes de que cancelen'],
+  waitlist:       ['Lista de espera', 'Solicitudes de acceso beta pendientes de aprobación'],
   configuracion:  ['Configuración', 'Ajustes de la cuenta y la app'],
   faqs:           ['Ayuda & FAQs', 'Preguntas frecuentes sobre Ziklo'],
 };
@@ -2679,6 +2723,7 @@ function showTab(name) {
   if (name === 'beneficio') cargarBeneficio();
   if (name === 'integraciones') cargarIntegraciones();
   if (name === 'retencion') cargarRetencion();
+  if (name === 'waitlist') cargarWaitlist();
   if (name === 'configuracion') cargarConfiguracion();
   // Cerrar sidebar en mobile al navegar
   if (window.innerWidth <= 768) closeSidebar();
@@ -4075,6 +4120,72 @@ async function guardarMpToken() {
   }
 }
 
+// ===================== WAITLIST =====================
+async function cargarWaitlist() {
+  const tbody = document.getElementById('wl-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);">Cargando...</td></tr>';
+  try {
+    const res  = await fetch('/admin/api/waitlist');
+    const data = await res.json();
+
+    const total    = data.length;
+    const pending  = data.filter(e => e.status === 'pending').length;
+    const approved = data.filter(e => e.status === 'approved').length;
+
+    document.getElementById('wl-total').textContent         = total;
+    document.getElementById('wl-pending-count').textContent = pending;
+    document.getElementById('wl-approved-count').textContent = approved;
+
+    // Badge en nav
+    const badge = document.getElementById('wl-badge');
+    if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline'; }
+    else               badge.style.display = 'none';
+
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);">No hay solicitudes todavía.</td></tr>';
+      return;
+    }
+
+    const statusLabel = { pending: '⏳ Pendiente', approved: '✅ Aprobada', rejected: '❌ Rechazada' };
+    const statusColor = { pending: '#f0a500', approved: '#39e07a', rejected: '#f87171' };
+
+    tbody.innerHTML = data.map(e => `
+      <tr>
+        <td>${e.nombre}</td>
+        <td>${e.email}</td>
+        <td style="color:var(--muted);font-size:13px;">${e.tienda || '—'}</td>
+        <td style="color:var(--muted);font-size:13px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${(e.mensaje||'').replace(/"/g,'&quot;')}">${e.mensaje || '—'}</td>
+        <td style="font-size:13px;color:var(--muted);">${new Date(e.createdAt).toLocaleDateString('es-AR')}</td>
+        <td><span style="color:${statusColor[e.status]||'#aaa'};font-size:13px;">${statusLabel[e.status]||e.status}</span></td>
+        <td style="white-space:nowrap;">
+          ${e.status === 'pending' ? `
+            <button onclick="aprobarWaitlist('${e.id}')" style="background:var(--green-dim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;margin-right:6px;">Aprobar</button>
+            <button onclick="rechazarWaitlist('${e.id}')" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:13px;">✕</button>
+          ` : '—'}
+        </td>
+      </tr>
+    `).join('');
+  } catch(err) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#f87171;">Error: ${err.message}</td></tr>`;
+  }
+}
+
+async function aprobarWaitlist(id) {
+  if (!confirm('¿Aprobar esta solicitud? Se enviará un email con el link de registro.')) return;
+  const res = await fetch(`/admin/api/waitlist/${id}/aprobar`, { method: 'POST' });
+  const data = await res.json();
+  if (data.ok) cargarWaitlist();
+  else alert(data.error || 'Error al aprobar');
+}
+
+async function rechazarWaitlist(id) {
+  if (!confirm('¿Rechazar esta solicitud?')) return;
+  const res = await fetch(`/admin/api/waitlist/${id}/rechazar`, { method: 'POST' });
+  const data = await res.json();
+  if (data.ok) cargarWaitlist();
+  else alert(data.error || 'Error al rechazar');
+}
+
 // ===================== CONFIGURACIÓN =====================
 async function cargarConfiguracion() {
   // Datos de la tienda Shopify
@@ -4381,6 +4492,8 @@ async function initApp() {
     });
 
   cargarDashboard();
+  // Cargar badge de waitlist al iniciar
+  cargarWaitlist().catch(() => {});
 }
 
 function conectarShopify() {

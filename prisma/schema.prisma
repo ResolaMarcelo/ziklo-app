@@ -139,6 +139,18 @@ model CancelReason {
   subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 }
 
+// Lista de espera para acceso beta
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  nombre    String
+  email     String   @unique
+  tienda    String?  // URL de su tienda Shopify (opcional)
+  mensaje   String?  // mensaje libre del solicitante
+  status    String   @default("pending") // pending | approved | rejected
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Productos de Shopify con suscripciones activadas por el merchant
 model ProductSubscription {
   id           String   @id @default(cuid())

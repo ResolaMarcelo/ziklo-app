@@ -45,6 +45,7 @@ const userAuthRoutes = require('./routes/userAuth');
 const klaviyoAuthRoutes = require('./routes/klaviyoAuth');
 const mpAuthRoutes      = require('./routes/mpAuth');
 const clienteAuthRoutes = require('./routes/clienteAuth');
+const waitlistRoutes    = require('./routes/waitlist');
 const adminAuth        = require('./middleware/adminAuth');
 const shopContext       = require('./middleware/shopContext');
 const recordatoriosJob = require('./jobs/recordatorios');
@@ -122,6 +123,10 @@ app.use('/api/products', limiterAPI);
 // Rutas de UI — admin protegido con auth
 app.use('/admin', adminAuth, adminRoutes);
 app.use('/cliente', clienteRoutes);
+
+// Waitlist beta — pública (POST) + admin (GET/POST protegidos dentro del router)
+app.use('/api/waitlist', waitlistRoutes);
+app.use('/', waitlistRoutes); // para los endpoints /admin/api/waitlist/*
 
 // Landing page
 app.get('/', (req, res) => {
