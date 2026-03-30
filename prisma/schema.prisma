@@ -68,8 +68,8 @@ model Shop {
 
 model Plan {
   id             String         @id @default(cuid())
-  shopDomain     String?                // tienda a la que pertenece este plan
-  shop           Shop?          @relation(fields: [shopDomain], references: [domain])
+  shopDomain     String                 // tienda a la que pertenece este plan
+  shop           Shop           @relation(fields: [shopDomain], references: [domain])
   nombre         String
   descripcion    String?
   monto          Float
@@ -86,8 +86,8 @@ model Plan {
 
 model Subscription {
   id                   String   @id @default(cuid())
-  shopDomain           String?           // tienda a la que pertenece
-  shop                 Shop?    @relation(fields: [shopDomain], references: [domain])
+  shopDomain           String            // tienda a la que pertenece
+  shop                 Shop     @relation(fields: [shopDomain], references: [domain])
   shopifyCustomerId    String
   shopifyCustomerEmail String
   variantId            String?

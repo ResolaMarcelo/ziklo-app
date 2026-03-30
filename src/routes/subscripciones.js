@@ -50,8 +50,12 @@ router.get('/cliente/:email', clienteAuth, async (req, res) => {
 // GET /api/subscripciones/por-preapproval/:preapprovalId
 router.get('/por-preapproval/:preapprovalId', async (req, res) => {
   try {
-    const sub = await prisma.subscription.findUnique({
-      where: { mpPreapprovalId: req.params.preapprovalId },
+    const shopDomain = getShopDomain(req);
+    const sub = await prisma.subscription.findFirst({
+      where: {
+        mpPreapprovalId: req.params.preapprovalId,
+        ...(shopDomain ? { shopDomain } : {}),
+      },
       include: { plan: true },
     });
     if (!sub) return res.status(404).json({ error: 'No encontrada' });
