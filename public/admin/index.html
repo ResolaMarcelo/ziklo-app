@@ -3374,9 +3374,15 @@ async function cargarIntegraciones() {
           </button>
           <button class="integ-action" style="color:var(--danger);border-color:var(--danger);" onclick="desconectarKlaviyo()">Desconectar</button>
         </div>
-        <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:8px;font-size:11px;color:var(--muted2);line-height:1.6;">
-          <strong style="color:var(--muted);">Eventos disponibles en Klaviyo:</strong><br>
-          <code style="color:var(--green);">Subscription Created</code> · <code style="color:var(--green);">Subscription Renewed</code> · <code style="color:var(--green);">Subscription Paused</code> · <code style="color:var(--green);">Subscription Resumed</code> · <code style="color:var(--green);">Subscription Cancelled</code>
+        <div style="margin-top:12px;padding:10px 14px;background:rgba(255,255,255,.04);border-radius:8px;">
+          <p style="margin:0 0 8px;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;">Eventos activos en Klaviyo</p>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(76,217,100,.1);border:1px solid rgba(76,217,100,.2);border-radius:20px;font-size:11px;color:#4cd964;white-space:nowrap;"><span style="width:5px;height:5px;border-radius:50%;background:#4cd964;flex-shrink:0;"></span>Subscription Created</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(76,217,100,.1);border:1px solid rgba(76,217,100,.2);border-radius:20px;font-size:11px;color:#4cd964;white-space:nowrap;"><span style="width:5px;height:5px;border-radius:50%;background:#4cd964;flex-shrink:0;"></span>Subscription Renewed</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(76,217,100,.1);border:1px solid rgba(76,217,100,.2);border-radius:20px;font-size:11px;color:#4cd964;white-space:nowrap;"><span style="width:5px;height:5px;border-radius:50%;background:#4cd964;flex-shrink:0;"></span>Subscription Paused</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(76,217,100,.1);border:1px solid rgba(76,217,100,.2);border-radius:20px;font-size:11px;color:#4cd964;white-space:nowrap;"><span style="width:5px;height:5px;border-radius:50%;background:#4cd964;flex-shrink:0;"></span>Subscription Resumed</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(76,217,100,.1);border:1px solid rgba(76,217,100,.2);border-radius:20px;font-size:11px;color:#4cd964;white-space:nowrap;"><span style="width:5px;height:5px;border-radius:50%;background:#4cd964;flex-shrink:0;"></span>Subscription Cancelled</span>
+          </div>
         </div>
       ` : `
         <a href="/auth/klaviyo" class="integ-action" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:white;color:#0a0a14;font-weight:600;padding:8px 14px;border-radius:7px;font-size:12px;text-decoration:none;">
