@@ -130,6 +130,31 @@ router.get('/api/status', async (req, res) => {
   });
 });
 
+// POST /admin/api/disconnect-shop — desvincula la tienda actual del usuario
+router.post('/api/disconnect-shop', async (req, res) => {
+  const userId     = req.session?.userId;
+  const shopDomain = req.session?.shopDomain;
+
+  if (!userId || !shopDomain) {
+    return res.status(400).json({ error: 'No hay tienda activa en sesión' });
+  }
+
+  try {
+    await prisma.userShop.delete({
+      where: { userId_shopDomain: { userId, shopDomain } },
+    });
+
+    // Limpiar shopDomain de la sesión
+    req.session.shopDomain = null;
+    req.session.shopId     = null;
+    req.session.shopName   = null;
+
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /admin/api/mp-token — guardar token de Mercado Pago del shop
 router.post('/api/mp-token', async (req, res) => {
   try {
