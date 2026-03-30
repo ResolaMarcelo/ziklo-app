@@ -8,6 +8,13 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  connectionTimeout: 10000, // 10s — evita que cuelgue indefinidamente
+  greetingTimeout:   5000,
+  socketTimeout:     10000,
+  tls: {
+    rejectUnauthorized: false, // necesario para Outlook en algunos entornos
+    ciphers: 'SSLv3',
+  },
 });
 
 function formatPrecio(num) {
