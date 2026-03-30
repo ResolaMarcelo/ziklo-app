@@ -108,7 +108,7 @@
     /* ─── HERO ─── */
     .hero {
       position: relative; overflow: hidden;
-      padding: 100px 0 80px; text-align: center;
+      padding: 100px 0 0; text-align: center;
     }
     .hero::before {
       content: '';
@@ -168,6 +168,14 @@
       border-radius: 16px; overflow: hidden;
       border: 1px solid rgba(255,255,255,.1);
       box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+    }
+    .hero-mockup::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 55%;
+      background: linear-gradient(to bottom, transparent 0%, var(--black) 100%);
+      pointer-events: none;
+      z-index: 2;
     }
     .mockup-topbar {
       background: var(--surface); padding: 10px 16px;
@@ -524,7 +532,7 @@
       text-align: center; text-decoration: none; display: block;
       margin-top: auto;
     }
-    .btn-pricing.primary { background: var(--green); color: #000; border: none; }
+    .btn-pricing.primary { background: var(--green); color: #000; border: 1px solid var(--green); }
     .btn-pricing.primary:hover { opacity: .88; }
     .btn-pricing.ghost { background: transparent; color: var(--muted3); border: 1px solid var(--border-s); }
     .btn-pricing.ghost:hover { color: var(--white); border-color: rgba(255,255,255,.25); }
