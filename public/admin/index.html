@@ -1273,36 +1273,6 @@
 <body>
 <div id="toast-container"></div>
 
-<!-- ── ONBOARDING: conectar tienda Shopify ────────────────────────────────── -->
-<div id="onboarding-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--black);display:flex;align-items:center;justify-content:center;flex-direction:column;">
-  <div style="position:relative;z-index:1;width:100%;max-width:460px;padding:24px;">
-    <div style="text-align:center;margin-bottom:32px;">
-      <div style="width:48px;height:48px;background:rgba(0,200,122,.12);border:1px solid rgba(0,200,122,.3);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 6h14L7 18h12" stroke="#00C87A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div style="font-size:22px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px;">Conectá tu tienda Shopify</div>
-      <div style="font-size:14px;color:var(--muted2);line-height:1.5;">Para usar Ziklo necesitás autorizar el acceso a tu tienda.<br>Solo tarda 30 segundos.</div>
-    </div>
-    <div style="background:var(--card);border:1px solid var(--border-strong);border-radius:16px;padding:28px;">
-      <div id="onb-error" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 13px;font-size:13px;color:#EF4444;margin-bottom:16px;"></div>
-      <label style="display:block;font-size:13px;font-weight:500;margin-bottom:7px;">Dominio de tu tienda</label>
-      <div style="position:relative;margin-bottom:16px;">
-        <input id="onb-domain" type="text" placeholder="mi-tienda"
-          style="width:100%;background:var(--surface);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:11px 130px 11px 14px;color:var(--white);font-family:Inter,sans-serif;font-size:14px;outline:none;"
-          onfocus="this.style.borderColor='#00C87A';this.style.boxShadow='0 0 0 3px rgba(0,200,122,.1)'"
-          onblur="this.style.borderColor='rgba(255,255,255,.1)';this.style.boxShadow='none'"
-        />
-        <span style="position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted2);pointer-events:none;">.myshopify.com</span>
-      </div>
-      <button onclick="conectarShopify()" style="width:100%;background:#00C87A;border:none;border-radius:9px;padding:12px;font-family:Inter,sans-serif;font-size:14px;font-weight:700;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;" id="onb-btn">
-        <svg width="16" height="18" viewBox="0 0 109.5 124.5" xmlns="http://www.w3.org/2000/svg"><path fill="rgba(0,0,0,0.7)" d="M74.7 14.8s-1.4.4-3.7 1.1c-.4-1.3-1-2.8-1.9-4.3-2.8-5.3-6.9-8.1-11.8-8.1-.3 0-.7 0-1 .1-.1-.2-.3-.3-.4-.5-2.1-2.3-4.9-3.4-8.2-3.3-6.4.2-12.8 4.8-17.9 13-3.6 5.7-6.3 12.9-7.1 18.4-7.3 2.3-12.4 3.8-12.5 3.9C7.2 37.5 7 37.6 7 40.5c0 2.2 27.5 84.5 27.5 84.5l56.2-9.6L74.7 14.8z"/></svg>
-        Continuar con Shopify
-      </button>
-      <button onclick="onbLogout()" style="width:100%;background:none;border:none;margin-top:12px;font-family:Inter,sans-serif;font-size:13px;color:var(--muted2);cursor:pointer;padding:6px;">Cerrar sesión</button>
-    </div>
-  </div>
-</div>
-
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">
@@ -1399,6 +1369,36 @@
         <div class="topbar-title" id="page-title">Dashboard</div>
         <div class="topbar-sub" id="page-sub">Resumen de tu negocio</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Banner: conectar Shopify (no bloquea el panel) -->
+  <div id="connect-shop-banner" style="display:none;align-items:center;gap:16px;background:rgba(0,200,122,.07);border-bottom:1px solid rgba(0,200,122,.15);padding:12px 28px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;">
+      <div style="width:32px;height:32px;background:rgba(0,200,122,.12);border:1px solid rgba(0,200,122,.25);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 6h14L7 18h12" stroke="#00C87A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);">Conectá tu tienda Shopify</div>
+        <div style="font-size:12px;color:var(--muted2);">Vinculá tu tienda para ver datos reales de suscripciones.</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+      <div id="onb-error" style="display:none;font-size:12px;color:#EF4444;width:100%;"></div>
+      <div style="position:relative;">
+        <input id="onb-domain" type="text" placeholder="mi-tienda"
+          style="background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px 110px 8px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;width:210px;"
+          onfocus="this.style.borderColor='#00C87A'"
+          onblur="this.style.borderColor='rgba(255,255,255,.12)'"
+          onkeydown="if(event.key==='Enter') conectarShopify()"
+        />
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted2);pointer-events:none;">.myshopify.com</span>
+      </div>
+      <button onclick="conectarShopify()" id="onb-btn"
+        style="background:#00C87A;border:none;border-radius:8px;padding:8px 16px;font-family:Inter,sans-serif;font-size:13px;font-weight:700;color:#000;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;">
+        <svg width="14" height="16" viewBox="0 0 109.5 124.5"><path fill="rgba(0,0,0,0.7)" d="M74.7 14.8s-1.4.4-3.7 1.1c-.4-1.3-1-2.8-1.9-4.3-2.8-5.3-6.9-8.1-11.8-8.1-.3 0-.7 0-1 .1-.1-.2-.3-.3-.4-.5-2.1-2.3-4.9-3.4-8.2-3.3-6.4.2-12.8 4.8-17.9 13-3.6 5.7-6.3 12.9-7.1 18.4-7.3 2.3-12.4 3.8-12.5 3.9C7.2 37.5 7 37.6 7 40.5c0 2.2 27.5 84.5 27.5 84.5l56.2-9.6L74.7 14.8z"/></svg>
+        Conectar
+      </button>
     </div>
   </div>
 
@@ -3285,16 +3285,19 @@ window.fetch = async function(...args) {
 
 // ===================== INIT =====================
 async function initApp() {
-  // 1. Verificar si el usuario tiene una tienda conectada
   const me = await fetch('/admin/api/me').then(r => r.json()).catch(() => ({}));
 
   if (!me.shopDomain) {
-    // Sin tienda → mostrar onboarding
-    document.getElementById('onboarding-overlay').style.display = 'flex';
+    // Sin tienda → mostrar banner no bloqueante y cargar panel igualmente
+    document.getElementById('connect-shop-banner').style.display = 'flex';
+    document.getElementById('shopName').textContent = 'Sin tienda';
+    cargarDashboard();
     return;
   }
 
-  // 2. Con tienda → cargar nombre y dashboard normalmente
+  // Con tienda → ocultar banner y cargar normalmente
+  document.getElementById('connect-shop-banner').style.display = 'none';
+
   fetch('/admin/api/shop')
     .then(r => r.json())
     .then(d => {
