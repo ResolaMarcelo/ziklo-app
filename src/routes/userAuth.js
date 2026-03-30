@@ -39,9 +39,7 @@ router.post('/user/login', async (req, res) => {
     req.session.adminLoggedIn = true;
 
     const firstShop = user.shops[0];
-    if (firstShop) {
-      req.session.shopDomain = firstShop.shopDomain;
-    }
+    req.session.shopDomain = firstShop ? firstShop.shopDomain : null;
 
     return res.json({ ok: true });
   } catch (err) {
@@ -138,7 +136,7 @@ router.post('/user/verify-email', async (req, res) => {
     req.session.adminLoggedIn = true;
 
     const firstShop = user.shops[0];
-    if (firstShop) req.session.shopDomain = firstShop.shopDomain;
+    req.session.shopDomain = firstShop ? firstShop.shopDomain : null;
 
     return res.json({ ok: true });
   } catch (err) {
@@ -327,9 +325,7 @@ router.get('/google/callback', async (req, res) => {
     req.session.adminLoggedIn = true;
 
     const firstShop = user.shops[0];
-    if (firstShop) {
-      req.session.shopDomain = firstShop.shopDomain;
-    }
+    req.session.shopDomain = firstShop ? firstShop.shopDomain : null;
 
     return res.redirect('/admin/');
   } catch (err) {
