@@ -5,17 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ziklo — Ingresar</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
     :root {
       --green:        #00C87A;
       --green-dim:    rgba(0,200,122,.12);
+      --green-mid:    rgba(0,200,122,.25);
       --green-border: rgba(0,200,122,.3);
       --black:        #0A0A0F;
       --surface:      #111118;
       --card:         #16161F;
       --border:       rgba(255,255,255,.07);
-      --border-s:     rgba(255,255,255,.11);
+      --border-s:     rgba(255,255,255,.10);
       --white:        #F8FAFC;
       --muted:        #4B5563;
       --muted2:       #6B7280;
@@ -31,72 +32,76 @@
       color: var(--white);
       min-height: 100vh;
       display: flex;
-      align-items: center;
-      justify-content: center;
       font-size: 14px;
+    }
+
+    /* ── PANEL IZQUIERDO (formulario) ────────────────────────────────────── */
+    .left {
+      width: 100%;
+      max-width: 520px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 40px 48px;
+      background: var(--surface);
       position: relative;
-      overflow: hidden;
+      z-index: 1;
     }
 
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
+    .left-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: auto;
     }
-
-    body::after {
-      content: '';
-      position: fixed;
-      top: 38%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 700px; height: 500px;
-      background: radial-gradient(ellipse, rgba(0,200,122,.06) 0%, transparent 65%);
-      pointer-events: none;
-    }
-
-    .wrap {
-      position: relative; z-index: 1;
-      width: 100%; max-width: 400px;
-      padding: 24px;
-    }
-
-    /* Card */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border-s);
-      border-radius: 20px;
-      padding: 36px 32px 32px;
-      text-align: center;
-    }
-
-    /* Brand icon */
-    .brand-icon {
-      width: 52px; height: 52px;
+    .left-logo-icon {
+      width: 36px; height: 36px;
       background: var(--green-dim);
       border: 1px solid var(--green-border);
-      border-radius: 14px;
-      display: inline-flex;
-      align-items: center;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .left-logo-name {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -.4px;
+    }
+    .left-logo-name span { color: var(--green); }
+
+    .form-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
-      margin-bottom: 20px;
+      max-width: 360px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 48px 0;
     }
 
-    /* Title */
-    .card-title {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -.3px;
-      margin-bottom: 6px;
-    }
-    .card-sub {
-      font-size: 13px;
-      color: var(--muted2);
-      line-height: 1.5;
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-s);
       margin-bottom: 28px;
+      gap: 24px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted2);
+      cursor: pointer;
+      padding: 0 0 12px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn.active {
+      color: var(--white);
+      border-bottom-color: var(--green);
     }
 
     /* Error */
@@ -104,77 +109,32 @@
       display: none;
       background: var(--danger-dim);
       border: 1px solid rgba(239,68,68,.2);
-      border-radius: 10px;
-      padding: 10px 14px;
+      border-radius: 9px;
+      padding: 10px 13px;
       font-size: 13px;
       color: var(--danger);
       margin-bottom: 16px;
-      text-align: left;
       align-items: center;
       gap: 8px;
     }
     .error-msg.show { display: flex; }
     .error-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
 
-    /* Google button */
-    .btn-google {
-      width: 100%;
-      background: #fff;
-      border: 1px solid rgba(0,0,0,.1);
-      border-radius: 10px;
-      padding: 11px 16px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      color: #1f1f1f;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
-      transition: background .15s, box-shadow .15s;
-      margin-bottom: 20px;
-      text-decoration: none;
-    }
-    .btn-google:hover { background: #f5f5f5; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
-    .btn-google:active { background: #ececec; }
-
-    /* Divider */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border-s);
-    }
-
-    /* Email field */
-    .field {
-      text-align: left;
-      margin-bottom: 12px;
-    }
+    /* Fields */
+    .field { margin-bottom: 16px; }
     .field label {
       display: block;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted2);
-      text-transform: uppercase;
-      letter-spacing: .07em;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--white);
       margin-bottom: 7px;
     }
     .field input {
       width: 100%;
-      background: var(--surface);
+      background: var(--card);
       border: 1px solid var(--border-s);
-      border-radius: 10px;
-      padding: 12px 14px;
+      border-radius: 9px;
+      padding: 11px 14px;
       color: var(--white);
       font-family: 'Inter', sans-serif;
       font-size: 14px;
@@ -183,11 +143,12 @@
     }
     .field input:focus {
       border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(0,200,122,.1);
+      box-shadow: 0 0 0 3px rgba(0,200,122,.10);
     }
     .field input::placeholder { color: var(--muted); }
+    .field input:disabled { opacity: .5; cursor: not-allowed; }
 
-    /* Password wrap */
+    /* Pass wrap */
     .pass-wrap { position: relative; }
     .pass-wrap input { padding-right: 40px; }
     .toggle-pass {
@@ -200,16 +161,15 @@
     }
     .toggle-pass svg { width: 15px; height: 15px; }
 
-    /* Password field — oculto inicialmente */
     #passField { display: none; }
 
-    /* Submit button */
+    /* Submit */
     .btn-submit {
       width: 100%;
       background: var(--green);
       border: none;
-      border-radius: 10px;
-      padding: 13px;
+      border-radius: 9px;
+      padding: 12px;
       font-family: 'Inter', sans-serif;
       font-size: 14px;
       font-weight: 700;
@@ -219,15 +179,15 @@
       align-items: center;
       justify-content: center;
       gap: 7px;
-      margin-top: 4px;
       transition: opacity .15s, transform .1s;
+      margin-bottom: 20px;
     }
     .btn-submit:hover  { opacity: .88; }
     .btn-submit:active { transform: scale(.98); }
     .btn-submit.loading { opacity: .6; pointer-events: none; }
-    .btn-submit.loading .spinner { display: block; }
+    .btn-submit.loading .spinner  { display: block; }
     .btn-submit.loading .btn-text { display: none; }
-
+    .btn-submit.loading .btn-arrow { display: none; }
     .spinner {
       width: 16px; height: 16px;
       border: 2px solid rgba(0,0,0,.2);
@@ -238,33 +198,189 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Arrow icon */
-    .btn-arrow { width: 14px; height: 14px; }
+    /* Divider */
+    .divider {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 20px;
+      color: var(--muted2);
+      font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-s);
+    }
+
+    /* Google */
+    .btn-google {
+      width: 100%;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.1);
+      border-radius: 9px;
+      padding: 11px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f1f1f;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      text-decoration: none;
+      transition: background .15s, box-shadow .15s;
+    }
+    .btn-google:hover { background: #f5f5f5; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+    .btn-google:active { background: #ececec; }
 
     /* Footer */
-    .login-footer {
-      text-align: center;
+    .left-footer {
       font-size: 11px;
       color: var(--muted);
-      margin-top: 16px;
+      margin-top: auto;
+      padding-top: 24px;
     }
-    .login-footer a { color: var(--muted2); text-decoration: none; }
-    .login-footer a:hover { color: var(--white); }
+    .left-footer a { color: var(--muted2); text-decoration: none; }
+    .left-footer a:hover { color: var(--white); }
+
+    /* ── PANEL DERECHO (marketing) ───────────────────────────────────────── */
+    .right {
+      flex: 1;
+      background: linear-gradient(135deg, #0d1f16 0%, #0a1a12 40%, #061410 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 56px;
+    }
+
+    /* Grid decorativo */
+    .right::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,200,122,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,200,122,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    /* Glow */
+    .right::after {
+      content: '';
+      position: absolute;
+      top: -10%; left: 20%;
+      width: 600px; height: 600px;
+      background: radial-gradient(ellipse, rgba(0,200,122,.13) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .right-content { position: relative; z-index: 1; max-width: 480px; }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .stat-card {
+      background: rgba(0,200,122,.08);
+      border: 1px solid rgba(0,200,122,.18);
+      border-radius: 14px;
+      padding: 18px 22px;
+      flex: 1;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: rgba(255,255,255,.5);
+      font-weight: 500;
+    }
+
+    /* Feature list */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 48px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .feature-icon {
+      width: 32px; height: 32px;
+      background: rgba(0,200,122,.10);
+      border: 1px solid rgba(0,200,122,.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .feature-text strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .feature-text span {
+      font-size: 12px;
+      color: rgba(255,255,255,.45);
+      line-height: 1.4;
+    }
+
+    /* Tagline */
+    .right-headline {
+      font-size: clamp(28px, 3vw, 38px);
+      font-weight: 900;
+      letter-spacing: -.8px;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .right-headline .hl { color: var(--green); }
+
+    .right-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,.45);
+      line-height: 1.6;
+      max-width: 380px;
+    }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+      .right { display: none; }
+      .left  { max-width: 100%; padding: 32px 24px; }
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card">
 
-    <!-- Brand icon -->
-    <div class="brand-icon">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+<!-- ── Formulario ───────────────────────────────────────────────────────────── -->
+<div class="left">
+  <div class="left-logo">
+    <div class="left-logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M5 6h14L7 18h12" stroke="#00C87A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
+    <span class="left-logo-name">Ziklo<span>.</span></span>
+  </div>
 
-    <div class="card-title">Iniciá sesión en Ziklo</div>
-    <div class="card-sub">Bienvenido de nuevo. Por favor, ingresá para continuar.</div>
+  <div class="form-wrap">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active">Iniciar sesión</button>
+    </div>
 
     <!-- Error -->
     <div class="error-msg" id="errorMsg">
@@ -276,31 +392,16 @@
       <span id="errorText">Error al iniciar sesión</span>
     </div>
 
-    <!-- Google -->
-    <a href="/auth/google" id="btnGoogle" class="btn-google">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
-      </svg>
-      Continuar con Google
-    </a>
-
-    <!-- Divider -->
-    <div class="divider">o</div>
-
-    <!-- Formulario email / contraseña -->
     <form id="loginForm" onsubmit="handleSubmit(event)">
       <div class="field" id="emailField">
         <label>Correo electrónico</label>
-        <input type="email" id="emailInput" placeholder="Ingresá tu dirección de correo electrónico" autocomplete="email" />
+        <input type="email" id="emailInput" placeholder="example@gmail.com" autocomplete="email" />
       </div>
 
       <div class="field" id="passField">
         <label>Contraseña</label>
         <div class="pass-wrap">
-          <input type="password" id="passInput" placeholder="••••••••" autocomplete="current-password" />
+          <input type="password" id="passInput" placeholder="Contraseña" autocomplete="current-password" />
           <button type="button" class="toggle-pass" id="togglePass" tabindex="-1">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eyeIcon">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -313,15 +414,26 @@
       <button type="submit" class="btn-submit" id="btnSubmit">
         <div class="spinner"></div>
         <span class="btn-text" id="btnLabel">Continuar</span>
-        <svg class="btn-arrow" id="btnArrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg class="btn-arrow" id="btnArrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M5 12h14M13 6l6 6-6 6"/>
         </svg>
       </button>
     </form>
 
+    <div class="divider">o</div>
+
+    <a href="/auth/google" id="btnGoogle" class="btn-google">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
+      </svg>
+      Iniciar sesión con Google
+    </a>
   </div>
 
-  <div class="login-footer">
+  <div class="left-footer">
     Ziklo &copy; 2026 &nbsp;·&nbsp;
     <a href="mailto:hola@ziklo.app">Soporte</a> &nbsp;·&nbsp;
     <a href="/terms.html">Términos</a> &nbsp;·&nbsp;
@@ -329,8 +441,70 @@
   </div>
 </div>
 
+<!-- ── Panel derecho ────────────────────────────────────────────────────────── -->
+<div class="right">
+  <div class="right-content">
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value">+340%</div>
+        <div class="stat-label">LTV promedio</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">98%</div>
+        <div class="stat-label">Cobros exitosos</div>
+      </div>
+    </div>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.2">
+            <path d="M12 2v6M12 16v6M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M2 12h6M16 12h6M4.93 19.07l4.24-4.24M14.83 9.17l4.24-4.24"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <strong>Cobros automáticos con Mercado Pago</strong>
+          <span>Se procesan solos cada ciclo, sin intervención manual.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <strong>Widget listo para instalar en Shopify</strong>
+          <span>Una línea de código y tus productos aceptan suscripciones.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.2">
+            <path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+            <path d="M16 12h.01"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <strong>Beneficios personalizados por producto</strong>
+          <span>Descuentos, regalos o envío gratis según lo que mejor convierta.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-headline">
+      Ingresos recurrentes<br>para tu tienda <span class="hl">Shopify.</span>
+    </div>
+    <div class="right-sub">
+      Convertí compradores únicos en suscriptores de largo plazo con cobros automáticos y beneficios que fidelizan.
+    </div>
+
+  </div>
+</div>
+
 <script>
-  // Estado: 'email' → pide email primero; 'password' → pide contraseña
   let step = 'email';
   let pendingEmail = '';
 
@@ -353,7 +527,6 @@
         return;
       }
       pendingEmail = email;
-      // Mostrar campo contraseña
       document.getElementById('passField').style.display = 'block';
       document.getElementById('emailInput').disabled = true;
       document.getElementById('btnLabel').textContent = 'Ingresar';
@@ -363,12 +536,8 @@
       return;
     }
 
-    // step === 'password'
     const password = document.getElementById('passInput').value;
-    if (!password) {
-      showError('Ingresá tu contraseña.');
-      return;
-    }
+    if (!password) { showError('Ingresá tu contraseña.'); return; }
 
     const btn = document.getElementById('btnSubmit');
     btn.classList.add('loading');
@@ -379,12 +548,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: pendingEmail, password }),
       });
-
-      if (res.ok) {
-        window.location.href = '/admin/';
-        return;
-      }
-
+      if (res.ok) { window.location.href = '/admin/'; return; }
       const data = await res.json().catch(() => ({}));
       showError(data.error || 'Credenciales incorrectas');
       btn.classList.remove('loading');
@@ -396,7 +560,6 @@
     }
   }
 
-  // Toggle contraseña visible
   document.getElementById('togglePass').addEventListener('click', () => {
     const input = document.getElementById('passInput');
     const icon  = document.getElementById('eyeIcon');
@@ -407,19 +570,15 @@
       : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
   });
 
-  // Google loading state
   document.getElementById('btnGoogle').addEventListener('click', function() {
-    this.textContent = '';
     this.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(0,0,0,.15);border-top-color:#555;border-radius:50%;animation:spin .6s linear infinite"></div>';
   });
 
-  // Si ya hay sesión → redirigir
   fetch('/admin/api/login-status')
     .then(r => r.json())
     .then(d => { if (d.loggedIn) window.location.href = '/admin/'; })
     .catch(() => {});
 
-  // Errores de URL (Google OAuth)
   const params = new URLSearchParams(window.location.search);
   const errorParam = params.get('error');
   if (errorParam) {
