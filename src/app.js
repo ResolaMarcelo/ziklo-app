@@ -56,10 +56,10 @@ const PORT = process.env.PORT || 3000;
 // y para que las cookies con secure:true se setteen correctamente
 app.set('trust proxy', 1);
 
-// Forzar HTTPS en producción
+// Forzar HTTPS en producción (solo si viene del proxy externo de Railway)
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
+    if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
       return res.redirect(301, 'https://' + req.headers.host + req.url);
     }
     next();
