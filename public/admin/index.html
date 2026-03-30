@@ -1517,11 +1517,22 @@
           <!-- Period filter — arriba de todo -->
           <div class="period-bar">
             <span class="period-label">Período</span>
-            <div class="period-pills">
-              <button class="period-pill" onclick="setPeriod(7)">7D</button>
-              <button class="period-pill active" onclick="setPeriod(30)">30D</button>
-              <button class="period-pill" onclick="setPeriod(90)">3M</button>
-              <button class="period-pill" onclick="setPeriod(0)">Todo</button>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div class="period-pills">
+                <button class="period-pill" onclick="setPeriod(7)">7D</button>
+                <button class="period-pill active" onclick="setPeriod(30)">30D</button>
+                <button class="period-pill" onclick="setPeriod(90)">3M</button>
+                <button class="period-pill" onclick="setPeriod(0)">Máximo</button>
+                <button class="period-pill" id="pill-custom" onclick="toggleCustomRange()">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Rango
+                </button>
+              </div>
+              <div id="custom-range" style="display:none;align-items:center;gap:6px;flex-wrap:wrap">
+                <input type="date" id="range-desde" style="padding:5px 8px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--white);font-size:12px;font-family:inherit" onchange="aplicarRango()" />
+                <span style="color:var(--muted2);font-size:12px">→</span>
+                <input type="date" id="range-hasta" style="padding:5px 8px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--white);font-size:12px;font-family:inherit" onchange="aplicarRango()" />
+              </div>
             </div>
           </div>
 
@@ -2851,12 +2862,72 @@ function updatePeriodStats(subs, days) {
   document.getElementById('stat-churn').textContent = canceladas;
 }
 
+let _customDesde = null;
+let _customHasta = null;
+
+function toggleCustomRange() {
+  const el = document.getElementById('custom-range');
+  const pill = document.getElementById('pill-custom');
+  const visible = el.style.display === 'flex';
+  el.style.display = visible ? 'none' : 'flex';
+  if (!visible) {
+    const hoy = new Date();
+    const hace30 = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000);
+    if (!document.getElementById('range-desde').value)
+      document.getElementById('range-desde').value = hace30.toISOString().split('T')[0];
+    if (!document.getElementById('range-hasta').value)
+      document.getElementById('range-hasta').value = hoy.toISOString().split('T')[0];
+    aplicarRango();
+  } else {
+    pill.classList.remove('active');
+    setPeriod(30);
+  }
+}
+
+function aplicarRango() {
+  const desde = document.getElementById('range-desde').value;
+  const hasta = document.getElementById('range-hasta').value;
+  if (!desde || !hasta) return;
+  _customDesde = new Date(desde + 'T00:00:00');
+  _customHasta = new Date(hasta + 'T23:59:59');
+  document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('pill-custom').classList.add('active');
+  if (_allSubs.length) {
+    updatePeriodStatsCustom(_allSubs, _customDesde, _customHasta);
+    buildChartsCustom(_allSubs, _customDesde, _customHasta);
+  }
+}
+
+function updatePeriodStatsCustom(subs, desde, hasta) {
+  const subsEnPeriodo = subs.filter(s => { const d = new Date(s.createdAt); return d >= desde && d <= hasta; });
+  const activosEnPeriodo = subsEnPeriodo.filter(s => s.status === 'authorized');
+  const mrr = activosEnPeriodo.reduce((sum, s) => sum + (s.plan?.tipoFrecuencia === 'months' ? s.plan?.monto || 0 : 0), 0);
+  document.getElementById('stat-mrr').textContent = ARS(mrr);
+  const pagosEnPeriodo = subs.flatMap(s => s.pagos || []).filter(p => { const d = new Date(p.createdAt); return p.status === 'approved' && d >= desde && d <= hasta; });
+  document.getElementById('stat-ingresos-mes').textContent = ARS(pagosEnPeriodo.reduce((sum, p) => sum + (p.monto || 0), 0));
+  document.getElementById('stat-activos').textContent = activosEnPeriodo.length;
+  document.getElementById('stat-total').textContent = subsEnPeriodo.length;
+  document.getElementById('stat-pendientes').textContent = subsEnPeriodo.filter(s => s.status === 'pending').length;
+  document.getElementById('stat-pago-fallido').textContent = subsEnPeriodo.filter(s => s.status === 'payment_failed').length;
+  document.getElementById('stat-churn').textContent = subs.filter(s => { const d = new Date(s.updatedAt); return s.status === 'cancelled' && d >= desde && d <= hasta; }).length;
+  const ahora = new Date();
+  const en7dias = new Date(ahora.getTime() + 7 * 24 * 60 * 60 * 1000);
+  document.getElementById('stat-cobros-proximos').textContent = subs.filter(s => s.status === 'authorized' && s.nextChargeDate && new Date(s.nextChargeDate) <= en7dias).length;
+}
+
+function buildChartsCustom(subs, desde, hasta) {
+  buildCharts(subs.filter(s => { const d = new Date(s.createdAt); return d >= desde && d <= hasta; }), 0);
+}
+
 function setPeriod(days) {
   _currentPeriodDays = days;
+  _customDesde = null;
+  _customHasta = null;
+  document.getElementById('custom-range').style.display = 'none';
   document.querySelectorAll('.period-pill').forEach(p => p.classList.remove('active'));
-  const labels = { 7: '7D', 30: '30D', 90: '3M', 0: 'Todo' };
+  const labels = { 7: '7D', 30: '30D', 90: '3M', 0: 'Máximo' };
   document.querySelectorAll('.period-pill').forEach(p => {
-    if (p.textContent === labels[days]) p.classList.add('active');
+    if (p.textContent.trim() === labels[days]) p.classList.add('active');
   });
   if (_allSubs.length) {
     buildCharts(_allSubs, days);
