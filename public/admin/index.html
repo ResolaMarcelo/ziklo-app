@@ -3921,7 +3921,7 @@ async function cargarIntegraciones() {
 
   // Tarjeta especial de Shopify con botón Cambiar tienda
   const shopifyCard = `
-    <div class="integ-card">
+    <div class="integ-card" id="shopify-integ-card" data-domain="${status.shopDomain || ''}">
       <div class="integ-card-head">
         <div class="integ-logo" style="background:#1a2e0a">
           <svg width="22" height="22" viewBox="0 0 109.5 124.5"><path fill="#96BF48" d="M74.7 14.8s-1.4.4-3.7 1.1c-.4-1.3-1-2.8-1.9-4.3-2.8-5.3-6.9-8.1-11.8-8.1-.3 0-.7 0-1 .1-.1-.2-.3-.3-.4-.5-2.1-2.3-4.9-3.4-8.2-3.3-6.4.2-12.8 4.8-17.9 13-3.6 5.7-6.3 12.9-7.1 18.4-7.3 2.3-12.4 3.8-12.5 3.9C7.2 37.5 7 37.6 7 40.5c0 2.2 27.5 84.5 27.5 84.5l56.2-9.6-16-100.6z"/><path fill="#5E8E3E" d="M74.7 14.8l-3.8 79.7-21.1 15.9L57 110.6l40.9-7-3.9-88.3z"/><path fill="#FFF" d="M57 22.6l-2.5 7.3s-2.5-1.3-5.4-1.1c-4.4.3-4.4 3-4.4 3.7.2 3.9 10.7 4.8 11.3 14 .5 7.3-3.8 12.2-10 12.6-7.3.4-11-3.9-11-3.9l1.5-6.5s3.8 2.9 6.9 2.7c2-.1 2.7-1.8 2.7-2.9-.3-5.1-8.8-4.8-9.4-13.2-.5-7.1 4.2-14.2 14.4-14.9 4.2-.2 6.3.2 6.9.2z"/></svg>
@@ -4086,14 +4086,28 @@ async function cargarIntegraciones() {
 }
 
 // ===================== SHOPIFY =====================
-async function desconectarShopify() {
-  if (!confirm('¿Cambiar de tienda Shopify? Se desvinculará la tienda actual de tu cuenta.')) return;
+function desconectarShopify() {
+  // Mostrar confirmación inline en la card
+  const card = document.getElementById('shopify-integ-card');
+  if (!card) return;
+  card.innerHTML = `
+    <div style="padding:20px 18px;display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:14px;font-weight:600;color:var(--white)">¿Cambiar tienda?</div>
+      <div style="font-size:13px;color:var(--muted2);line-height:1.5;">Se desvinculará <strong style="color:var(--white)">${card.dataset.domain || 'la tienda actual'}</strong> de tu cuenta. Podrás conectar una nueva tienda desde el banner.</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="confirmarDesconectarShopify()" style="flex:1;padding:9px;background:#f87171;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Cambiar tienda</button>
+        <button onclick="cargarIntegraciones()" style="flex:1;padding:9px;background:transparent;color:var(--muted2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;">Cancelar</button>
+      </div>
+    </div>
+  `;
+}
+
+async function confirmarDesconectarShopify() {
   try {
     const r = await fetch('/admin/api/disconnect-shop', { method: 'POST' });
     const d = await r.json();
     if (!d.ok) { showToast(d.error || 'Error al desconectar', 'error'); return; }
     showToast('Tienda desvinculada. Conectá tu nueva tienda.');
-    // Recargar para que aparezca el banner de conexión
     setTimeout(() => window.location.reload(), 1200);
   } catch (_) {
     showToast('Error al desconectar', 'error');
