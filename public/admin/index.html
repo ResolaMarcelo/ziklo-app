@@ -1384,7 +1384,7 @@
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     Retención
   </div>
-  <div class="nav-item" onclick="showTab('waitlist')">
+  <div class="nav-item" id="nav-waitlist" onclick="showTab('waitlist')">
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     Lista de espera
     <span id="wl-badge" style="display:none;background:#39e07a;color:#000;font-size:10px;font-weight:700;border-radius:99px;padding:1px 7px;margin-left:auto;">0</span>
@@ -2125,8 +2125,8 @@
             <div class="config-row">
               <span class="config-row-label">Conexión Shopify</span>
               <span class="status-dot-wrap">
-                <span class="status-dot green"></span>
-                <span style="font-size:12px;font-weight:600;color:var(--green)">Activa</span>
+                <span class="status-dot gray" id="cfg-shopify-dot"></span>
+                <span style="font-size:12px;font-weight:600" id="cfg-shopify-status">—</span>
               </span>
             </div>
             <div class="config-btn-row">
@@ -2185,15 +2185,15 @@
             </div>
             <div>
               <div class="config-head-title">Mercado Pago</div>
-              <div class="config-head-sub">Pasarela de cobros activa</div>
+              <div class="config-head-sub" id="cfg-mp-sub">Cargando...</div>
             </div>
           </div>
           <div class="config-body">
             <div class="config-row">
               <span class="config-row-label">Estado</span>
               <span class="status-dot-wrap">
-                <span class="status-dot green" id="cfg-mp-dot"></span>
-                <span style="font-size:12px;font-weight:600;color:var(--green)" id="cfg-mp-status">Conectado</span>
+                <span class="status-dot gray" id="cfg-mp-dot"></span>
+                <span style="font-size:12px;font-weight:600" id="cfg-mp-status">—</span>
               </span>
             </div>
             <div class="config-row">
@@ -4179,23 +4179,67 @@ async function cargarConfiguracion() {
   try {
     const b = await fetch('/admin/api/billing').then(r => r.json());
     const PLAN_LABELS = { free:'Gratis', starter:'Starter', growth:'Crecimiento', pro:'Pro', enterprise:'Enterprise' };
-    const nombre = PLAN_LABELS[b.slug] || b.nombre || b.slug;
-    const limite = b.limite === null || b.limite > 999999 ? '∞' : b.limite;
-    document.getElementById('billing-plan-badge').textContent = nombre;
-    document.getElementById('billing-plan-sub').textContent   = b.atLimit ? '⚠️ Límite alcanzado este mes' : 'Detalles de tu plan';
-    document.getElementById('billing-usage-text').textContent = `${b.used} / ${limite} cobros`;
-    document.getElementById('billing-price').textContent      = b.precio ? `USD $${b.precio}/mes` : 'Gratis';
-    document.getElementById('billing-bar').style.width        = Math.min(b.pct, 100) + '%';
-    document.getElementById('billing-bar').style.background   = b.atLimit ? '#f87171' : b.pct > 75 ? '#f59e0b' : 'var(--green)';
-    if (b.atLimit || b.pct > 80) document.getElementById('billing-upgrade-row').style.display = '';
+    if (b.error) {
+      // Sin tienda — mostrar plan free por defecto
+      document.getElementById('billing-plan-badge').textContent = 'Gratis';
+      document.getElementById('billing-plan-sub').textContent   = 'Detalles de tu plan';
+      document.getElementById('billing-usage-text').textContent = '0 / 10 cobros';
+      document.getElementById('billing-price').textContent      = 'Gratis';
+    } else {
+      const nombre = PLAN_LABELS[b.slug] || b.nombre || b.slug;
+      const limite = b.limite === null || b.limite > 999999 ? '∞' : b.limite;
+      document.getElementById('billing-plan-badge').textContent = nombre;
+      document.getElementById('billing-plan-sub').textContent   = b.atLimit ? '⚠️ Límite alcanzado este mes' : 'Detalles de tu plan';
+      document.getElementById('billing-usage-text').textContent = `${b.used} / ${limite} cobros`;
+      document.getElementById('billing-price').textContent      = b.precio ? `USD $${b.precio}/mes` : 'Gratis';
+      document.getElementById('billing-bar').style.width        = Math.min(b.pct, 100) + '%';
+      document.getElementById('billing-bar').style.background   = b.atLimit ? '#f87171' : b.pct > 75 ? '#f59e0b' : 'var(--green)';
+      if (b.atLimit || b.pct > 80) document.getElementById('billing-upgrade-row').style.display = '';
+    }
+  } catch (_) {}
+
+  // Estado de conexiones (Shopify + MP)
+  try {
+    const status = await fetch('/admin/api/status').then(r => r.json());
+
+    // Shopify
+    const shopDot    = document.getElementById('cfg-shopify-dot');
+    const shopStatus = document.getElementById('cfg-shopify-status');
+    if (status.shopify) {
+      shopDot.className          = 'status-dot green';
+      shopStatus.textContent     = 'Activa';
+      shopStatus.style.color     = 'var(--green)';
+    } else {
+      shopDot.className          = 'status-dot red';
+      shopStatus.textContent     = 'No conectada';
+      shopStatus.style.color     = 'var(--red, #f87171)';
+    }
+
+    // Mercado Pago
+    const mpDot    = document.getElementById('cfg-mp-dot');
+    const mpStatus = document.getElementById('cfg-mp-status');
+    const mpSub    = document.getElementById('cfg-mp-sub');
+    if (status.mercadopago) {
+      mpDot.className      = 'status-dot green';
+      mpStatus.textContent = 'Conectado';
+      mpStatus.style.color = 'var(--green)';
+      mpSub.textContent    = 'Pasarela de cobros activa';
+    } else {
+      mpDot.className      = 'status-dot red';
+      mpStatus.textContent = 'No conectado';
+      mpStatus.style.color = 'var(--red, #f87171)';
+      mpSub.textContent    = 'Conectá tu cuenta de Mercado Pago';
+    }
   } catch (_) {}
 
   // Datos de la tienda Shopify
   try {
     const shop = await fetch('/admin/api/shop').then(r => r.json());
-    document.getElementById('cfg-shop-name').textContent   = shop.name   || '—';
-    document.getElementById('cfg-shop-domain').textContent = shop.domain || '—';
-    document.getElementById('cfg-shop-email').textContent  = shop.email  || '—';
+    if (!shop.error) {
+      document.getElementById('cfg-shop-name').textContent   = shop.name   || '—';
+      document.getElementById('cfg-shop-domain').textContent = shop.domain || '—';
+      document.getElementById('cfg-shop-email').textContent  = shop.email  || '—';
+    }
   } catch (_) {}
 
   // Suscriptores activos para el card de MP
@@ -4203,11 +4247,6 @@ async function cargarConfiguracion() {
     const subs = await fetch('/api/subscripciones').then(r => r.json());
     const activos = subs.filter(s => s.status === 'authorized').length;
     document.getElementById('cfg-mp-activos').textContent = activos;
-    if (activos === 0) {
-      document.getElementById('cfg-mp-dot').className = 'status-dot green';
-      document.getElementById('cfg-mp-status').textContent = 'Listo para recibir suscriptores';
-      document.getElementById('cfg-mp-status').style.color = 'var(--green)';
-    }
   } catch (_) {}
 }
 
@@ -4469,6 +4508,12 @@ async function initApp() {
   }
 
   const me = await fetch('/admin/api/me').then(r => r.json()).catch(() => ({}));
+
+  // Ocultar "Lista de espera" para merchants (solo superadmin puede verla)
+  if (me.userRole !== 'superadmin') {
+    const navWl = document.getElementById('nav-waitlist');
+    if (navWl) navWl.style.display = 'none';
+  }
 
   if (!me.shopDomain) {
     // Sin tienda → mostrar banner no bloqueante y cargar panel igualmente
