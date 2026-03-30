@@ -3147,7 +3147,10 @@ async function renderChecklist(data) {
 
 // ===================== DASHBOARD =====================
 async function cargarDashboard() {
-  const subs = await fetch(API + '/api/subscripciones').then(r => r.json());
+  let subs = [];
+  try {
+    subs = await fetch(API + '/api/subscripciones').then(r => r.json());
+  } catch (_) {}
   _allSubs = subs;
   const activos = subs.filter(s => s.status === 'authorized');
   const pendientes = subs.filter(s => s.status === 'pending');
@@ -3155,7 +3158,7 @@ async function cargarDashboard() {
   // Todos los stats responden al período seleccionado
   updatePeriodStats(subs, _currentPeriodDays);
 
-  buildCharts(subs, _currentPeriodDays);
+  try { buildCharts(subs, _currentPeriodDays); } catch (_) {}
 
   // Checklist data
   const [productosData, statusData] = await Promise.all([
@@ -4471,6 +4474,8 @@ async function initApp() {
     // Sin tienda → mostrar banner no bloqueante y cargar panel igualmente
     document.getElementById('connect-shop-banner').style.display = 'flex';
     document.getElementById('shopName').textContent = 'Sin tienda';
+    initWelcomeBanner(null);
+    renderChecklist({ subs: 0, productos: 0, mp: false, klaviyo: false });
     cargarDashboard();
     return;
   }
