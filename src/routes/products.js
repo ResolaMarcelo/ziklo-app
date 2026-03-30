@@ -16,11 +16,16 @@ router.get('/check', async (req, res) => {
       return res.json({ enabled: false, benefitType: 'discount', benefitValue: '10' });
     }
 
-    const [record, shopRecord] = await Promise.all([
+    const [record, shopRecord, primerPlan] = await Promise.all([
       prisma.productSubscription.findUnique({
         where: { shopDomain_productId: { shopDomain: shop, productId: String(productId) } },
       }),
       prisma.shop.findUnique({ where: { domain: shop } }),
+      prisma.plan.findFirst({
+        where: { shopDomain: shop, activo: true },
+        orderBy: { createdAt: 'asc' },
+        select: { beneficios: true },
+      }),
     ]);
 
     res.json({
@@ -30,6 +35,7 @@ router.get('/check', async (req, res) => {
       widgetTitle:   shopRecord?.widgetTitle  || '',
       widgetChips:   shopRecord?.widgetChips  || '',
       widgetBtnText: shopRecord?.widgetBtnText || '',
+      beneficios:    primerPlan?.beneficios || null,
     });
   } catch (err) {
     // En caso de error, no bloquear el widget — devolver enabled: false

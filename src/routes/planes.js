@@ -38,7 +38,7 @@ router.get('/todos', async (req, res) => {
 // POST /api/planes — crear plan
 router.post('/', async (req, res) => {
   try {
-    const { nombre, descripcion, monto, frecuencia, tipoFrecuencia } = req.body;
+    const { nombre, descripcion, monto, frecuencia, tipoFrecuencia, beneficios } = req.body;
     if (!nombre || !monto) {
       return res.status(400).json({ error: 'nombre y monto son requeridos' });
     }
@@ -51,6 +51,7 @@ router.post('/', async (req, res) => {
         frecuencia:     parseInt(frecuencia) || 1,
         tipoFrecuencia: tipoFrecuencia || 'months',
         shopDomain,
+        beneficios:     Array.isArray(beneficios) ? JSON.stringify(beneficios) : (beneficios || null),
       },
     });
     res.status(201).json(plan);
@@ -68,7 +69,7 @@ router.put('/:id', async (req, res) => {
     });
     if (!existing) return res.status(404).json({ error: 'Plan no encontrado' });
 
-    const { nombre, descripcion, monto, frecuencia, tipoFrecuencia, activo } = req.body;
+    const { nombre, descripcion, monto, frecuencia, tipoFrecuencia, activo, beneficios } = req.body;
     const plan = await prisma.plan.update({
       where: { id: req.params.id },
       data: {
@@ -78,6 +79,9 @@ router.put('/:id', async (req, res) => {
         frecuencia:     frecuencia ? parseInt(frecuencia) : undefined,
         tipoFrecuencia: tipoFrecuencia || undefined,
         activo,
+        beneficios:     beneficios !== undefined
+          ? (Array.isArray(beneficios) ? JSON.stringify(beneficios) : beneficios)
+          : undefined,
       },
     });
     res.json(plan);

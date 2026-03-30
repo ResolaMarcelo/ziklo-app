@@ -318,6 +318,9 @@
       + '&variantId='+ encodeURIComponent(variantId)
       + '&qty='      + encodeURIComponent(qty)
       + '&store='    + encodeURIComponent(document.title.replace(/ [-–|].*/, '').trim());
+    if (window._planBeneficios) {
+      url += '&beneficios=' + encodeURIComponent(window._planBeneficios);
+    }
 
     window.location.href = url;
   }
@@ -457,6 +460,7 @@
           if (data.widgetTitle)   aplicarWidgetTitle(data.widgetTitle);
           if (data.widgetChips)   aplicarWidgetChips(data.widgetChips);
           if (data.widgetBtnText) aplicarWidgetBtnText(data.widgetBtnText);
+          if (data.beneficios)    window._planBeneficios = data.beneficios;
           if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
           } else {

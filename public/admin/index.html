@@ -2584,6 +2584,11 @@
           </div>
         </div>
       </div>
+      <div class="form-group">
+        <label>Beneficios del plan <span style="font-weight:400;opacity:.6">(se muestran en el checkout)</span></label>
+        <div id="plan-beneficios-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
+        <button type="button" class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="agregarBeneficio()">+ Agregar beneficio</button>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
@@ -2960,11 +2965,57 @@ async function cargarPlanes() {
         <td style="color:var(--muted2)">${p._count?.subscriptions||0}</td>
         <td>${p.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-gray">Inactivo</span>'}</td>
         <td class="actions">
-          <button class="btn btn-ghost" onclick="editarPlan('${p.id}','${p.nombre}','${p.descripcion||''}',${p.monto},${p.frecuencia},'${p.tipoFrecuencia}')">Editar</button>
+          <button class="btn btn-ghost" onclick="editarPlan('${p.id}','${p.nombre}','${p.descripcion||''}',${p.monto},${p.frecuencia},'${p.tipoFrecuencia}',${JSON.stringify(p.beneficios||'')})">Editar</button>
           ${p.activo ? `<button class="btn btn-danger" onclick="desactivarPlan('${p.id}')">Desactivar</button>` : ''}
         </td>
       </tr>`).join('')
     : '<tr><td colspan="6" class="empty">No hay planes. Creá el primero.</td></tr>';
+}
+
+const BENEFICIOS_DEFAULT = [
+  'Precio fijo, nunca aumenta',
+  'Envío gratis en cada entrega',
+  'Prioridad de stock garantizada',
+  'Cancelá cuando quieras, sin cargos',
+];
+
+function renderBeneficios(lista) {
+  const container = document.getElementById('plan-beneficios-list');
+  container.innerHTML = '';
+  lista.forEach((b, i) => {
+    const row = document.createElement('div');
+    row.style = 'display:flex;gap:6px;align-items:center';
+    row.innerHTML = `
+      <input type="text" value="${b.replace(/"/g,'&quot;')}" placeholder="Ej: Envío gratis incluido"
+        style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:7px;font-size:13px;font-family:inherit"
+        oninput="actualizarBeneficio(${i}, this.value)" />
+      <button type="button" onclick="eliminarBeneficio(${i})"
+        style="background:none;border:none;cursor:pointer;color:#999;font-size:16px;line-height:1;padding:4px">×</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function getBeneficios() {
+  return Array.from(document.getElementById('plan-beneficios-list').querySelectorAll('input'))
+    .map(i => i.value.trim()).filter(Boolean);
+}
+
+function actualizarBeneficio(idx, val) { /* se lee al guardar */ }
+
+function agregarBeneficio() {
+  const lista = getBeneficios();
+  lista.push('');
+  renderBeneficios(lista);
+  // Focus en el nuevo input
+  const inputs = document.getElementById('plan-beneficios-list').querySelectorAll('input');
+  inputs[inputs.length - 1].focus();
+}
+
+function eliminarBeneficio(idx) {
+  const lista = getBeneficios();
+  lista.splice(idx, 1);
+  renderBeneficios(lista);
 }
 
 function abrirModalPlan() {
@@ -2972,10 +3023,11 @@ function abrirModalPlan() {
   ['plan-id-edit','plan-nombre','plan-descripcion','plan-monto'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('plan-frecuencia').value = '1';
   document.getElementById('plan-tipo').value = 'months';
+  renderBeneficios(BENEFICIOS_DEFAULT);
   document.getElementById('modal-plan').classList.add('open');
 }
 
-function editarPlan(id, nombre, desc, monto, frecuencia, tipo) {
+function editarPlan(id, nombre, desc, monto, frecuencia, tipo, beneficios) {
   document.getElementById('modal-plan-title').textContent = 'Editar plan';
   document.getElementById('plan-id-edit').value = id;
   document.getElementById('plan-nombre').value = nombre;
@@ -2983,6 +3035,9 @@ function editarPlan(id, nombre, desc, monto, frecuencia, tipo) {
   document.getElementById('plan-monto').value = monto;
   document.getElementById('plan-frecuencia').value = frecuencia;
   document.getElementById('plan-tipo').value = tipo;
+  let lista = BENEFICIOS_DEFAULT;
+  try { if (beneficios) lista = JSON.parse(beneficios); } catch {}
+  renderBeneficios(lista);
   document.getElementById('modal-plan').classList.add('open');
 }
 
@@ -2996,6 +3051,7 @@ async function guardarPlan() {
     monto: document.getElementById('plan-monto').value,
     frecuencia: document.getElementById('plan-frecuencia').value,
     tipoFrecuencia: document.getElementById('plan-tipo').value,
+    beneficios: getBeneficios(),
   };
   await fetch(id ? `/api/planes/${id}` : '/api/planes', {
     method: id ? 'PUT' : 'POST',

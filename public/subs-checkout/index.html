@@ -400,6 +400,7 @@
   var productId = params.get('productId') || '';
   var qty       = params.get('qty') || '1';
   var store     = params.get('store') || '';
+  var beneficiosParam = params.get('beneficios') || '';
 
   // Mostrar resumen
   if (store) document.getElementById('hdr-store').textContent = store;
@@ -408,6 +409,24 @@
     var num = parseFloat(monto);
     document.getElementById('sum-precio').textContent =
       '$' + Math.round(num).toLocaleString('es-AR') + '/mes';
+  }
+
+  // Beneficios dinámicos
+  var beneficiosDefault = [
+    'Precio fijo, nunca aumenta',
+    'Envío gratis en cada entrega',
+    'Prioridad de stock garantizada',
+    'Cancelá cuando quieras, sin cargos',
+  ];
+  var beneficiosList = beneficiosDefault;
+  if (beneficiosParam) {
+    try { beneficiosList = JSON.parse(beneficiosParam); } catch {}
+  }
+  var ulBeneficios = document.querySelector('.summary-benefits');
+  if (ulBeneficios && beneficiosList.length) {
+    ulBeneficios.innerHTML = beneficiosList
+      .map(function(b) { return '<li>' + b.replace(/</g,'&lt;') + '</li>'; })
+      .join('');
   }
 
   function mostrarError(msg, mpDown) {

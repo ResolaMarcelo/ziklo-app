@@ -76,6 +76,7 @@ model Plan {
   frecuencia     Int            @default(1)
   tipoFrecuencia String         @default("months") // "months" | "days"
   activo         Boolean        @default(true)
+  beneficios     String?        // JSON array de strings con los beneficios del plan
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   subscriptions  Subscription[]
