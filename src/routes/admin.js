@@ -221,6 +221,14 @@ router.post('/api/subscription-benefit', async (req, res) => {
   }
 });
 
+// GET /admin/api/billing — plan y uso del mes corriente
+const { getPlanInfo } = require('../lib/billing');
+router.get('/api/billing', (req, res) => {
+  const shop = req.shop;
+  if (!shop) return res.status(400).json({ error: 'Sin tienda' });
+  res.json(getPlanInfo(shop));
+});
+
 // GET /admin/api/retention-config — leer config de retención del shop
 router.get('/api/retention-config', (req, res) => {
   const shop = req.shop;

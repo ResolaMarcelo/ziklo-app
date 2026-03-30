@@ -2146,30 +2146,33 @@
             </div>
             <div>
               <div class="config-head-title">Mi plan Ziklo</div>
-              <div class="config-head-sub">Detalles de tu suscripción</div>
+              <div class="config-head-sub" id="billing-plan-sub">Cargando...</div>
             </div>
           </div>
           <div class="config-body">
             <div class="config-row">
               <span class="config-row-label">Plan actual</span>
               <span class="config-row-value">
-                <span class="badge" style="background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)">Early Access</span>
+                <span class="badge" id="billing-plan-badge" style="background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)">—</span>
               </span>
             </div>
             <div class="config-row">
-              <span class="config-row-label">Estado</span>
-              <span class="status-dot-wrap">
-                <span class="status-dot green"></span>
-                <span style="font-size:12px;font-weight:600;color:var(--green)">Activo</span>
-              </span>
+              <span class="config-row-label">Cobros este mes</span>
+              <span class="config-row-value" id="billing-usage-text">—</span>
+            </div>
+            <!-- Barra de uso -->
+            <div style="margin:4px 0 12px;">
+              <div style="background:rgba(255,255,255,.06);border-radius:99px;height:6px;overflow:hidden;">
+                <div id="billing-bar" style="height:100%;border-radius:99px;background:var(--green);transition:width .4s;width:0%"></div>
+              </div>
             </div>
             <div class="config-row">
-              <span class="config-row-label">Comisión por cobro</span>
-              <span class="config-row-value">0% <span style="font-size:11px;color:var(--muted2)">(Early Access)</span></span>
+              <span class="config-row-label">Precio</span>
+              <span class="config-row-value" id="billing-price">—</span>
             </div>
-            <div class="config-row">
-              <span class="config-row-label">Soporte</span>
-              <span class="config-row-value">Prioritario</span>
+            <div class="config-row" id="billing-upgrade-row" style="display:none">
+              <span class="config-row-label"></span>
+              <a href="mailto:hola@zikloapp.com?subject=Upgrade%20plan" style="font-size:13px;color:var(--green);text-decoration:none;font-weight:600;">Actualizar plan →</a>
             </div>
           </div>
         </div>
@@ -4187,6 +4190,21 @@ async function rechazarWaitlist(id) {
 
 // ===================== CONFIGURACIÓN =====================
 async function cargarConfiguracion() {
+  // Plan de billing
+  try {
+    const b = await fetch('/admin/api/billing').then(r => r.json());
+    const PLAN_LABELS = { free:'Gratis', starter:'Starter', growth:'Crecimiento', pro:'Pro', enterprise:'Enterprise' };
+    const nombre = PLAN_LABELS[b.slug] || b.nombre || b.slug;
+    const limite = b.limite === null || b.limite > 999999 ? '∞' : b.limite;
+    document.getElementById('billing-plan-badge').textContent = nombre;
+    document.getElementById('billing-plan-sub').textContent   = b.atLimit ? '⚠️ Límite alcanzado este mes' : 'Detalles de tu plan';
+    document.getElementById('billing-usage-text').textContent = `${b.used} / ${limite} cobros`;
+    document.getElementById('billing-price').textContent      = b.precio ? `USD $${b.precio}/mes` : 'Gratis';
+    document.getElementById('billing-bar').style.width        = Math.min(b.pct, 100) + '%';
+    document.getElementById('billing-bar').style.background   = b.atLimit ? '#f87171' : b.pct > 75 ? '#f59e0b' : 'var(--green)';
+    if (b.atLimit || b.pct > 80) document.getElementById('billing-upgrade-row').style.display = '';
+  } catch (_) {}
+
   // Datos de la tienda Shopify
   try {
     const shop = await fetch('/admin/api/shop').then(r => r.json());

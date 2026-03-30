@@ -1176,64 +1176,86 @@
   <div class="container">
     <div class="pricing-header">
       <div class="tag" style="margin-bottom:18px">Precios transparentes</div>
-      <h2 class="section-title">Solo pagás cuando vendés</h2>
-      <p class="section-sub">Sin costo fijo mensual. Sin sorpresas. Mientras no procesamos cobros, Ziklo es gratis.</p>
+      <h2 class="section-title">Empezá gratis, crecé sin sorpresas</h2>
+      <p class="section-sub">Precio fijo mensual según tus cobros procesados. Sin comisiones ocultas, sin fee por transacción.</p>
     </div>
-    <div class="pricing-grid">
+    <div class="pricing-grid" style="grid-template-columns:repeat(4,1fr)">
 
+      <!-- Gratis -->
       <div class="pricing-card">
-        <div class="pricing-plan">Starter</div>
-        <div class="pricing-price"><sup>%</sup>2.9</div>
-        <div class="pricing-period">por cobro exitoso procesado</div>
-        <div class="pricing-note">Ideal para empezar. Sin costo hasta que tengas tu primer suscriptor.</div>
+        <div class="pricing-plan">Gratis</div>
+        <div class="pricing-price" style="font-size:42px">$0</div>
+        <div class="pricing-period">para siempre</div>
+        <div class="pricing-note">Para empezar y probar sin compromiso.</div>
         <div class="pricing-divider"></div>
         <ul class="pricing-features">
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Hasta 50 suscriptores activos</li>
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>1 plan de suscripción</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Hasta 10 cobros/mes</li>
           <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Widget instalable</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Dashboard básico</li>
           <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Emails automáticos</li>
-          <li class="muted"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Planes ilimitados</li>
-          <li class="muted"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Soporte prioritario</li>
+          <li class="muted"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Retención</li>
+          <li class="muted"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Klaviyo</li>
         </ul>
-        <a href="#" onclick="openWaitlist(); return false;" class="btn-pricing ghost">Probá gratis</a>
+        <a href="#" onclick="openWaitlist(); return false;" class="btn-pricing ghost">Empezar gratis</a>
       </div>
 
-      <div class="pricing-card featured">
-        <div class="pricing-badge">Más popular</div>
-        <div class="pricing-plan">Growth</div>
-        <div class="pricing-price"><sup>%</sup>2.0</div>
-        <div class="pricing-period">por cobro exitoso procesado</div>
-        <div class="pricing-note">Para tiendas en crecimiento con volumen creciente de suscriptores.</div>
+      <!-- Starter -->
+      <div class="pricing-card">
+        <div class="pricing-plan">Starter</div>
+        <div class="pricing-price"><sup style="font-size:18px;top:-12px">USD</sup>25</div>
+        <div class="pricing-period">por mes</div>
+        <div class="pricing-note">Para tiendas que empiezan a escalar sus suscripciones.</div>
         <div class="pricing-divider"></div>
         <ul class="pricing-features">
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Suscriptores ilimitados</li>
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Planes ilimitados</li>
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Widget personalizable</li>
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Emails automáticos</li>
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Órdenes automáticas en Shopify</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Hasta 50 cobros/mes</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Todo lo del plan Gratis</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Flujo de retención</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Portal del cliente</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Órdenes automáticas</li>
+          <li class="muted"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Klaviyo</li>
+        </ul>
+        <a href="#" onclick="openWaitlist(); return false;" class="btn-pricing ghost">Empezar</a>
+      </div>
+
+      <!-- Crecimiento -->
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Más popular</div>
+        <div class="pricing-plan">Crecimiento</div>
+        <div class="pricing-price"><sup style="font-size:18px;top:-12px">USD</sup>49</div>
+        <div class="pricing-period">por mes</div>
+        <div class="pricing-note">Para negocios con suscripciones como canal principal.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Hasta 200 cobros/mes</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Todo lo de Starter</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Integración Klaviyo</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Métricas avanzadas</li>
           <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Soporte prioritario</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Onboarding incluido</li>
         </ul>
         <a href="#" onclick="openWaitlist(); return false;" class="btn-pricing primary">Quiero este plan →</a>
       </div>
 
+      <!-- Pro -->
       <div class="pricing-card">
-        <div class="pricing-plan">Enterprise</div>
-        <div class="pricing-price" style="font-size:32px;margin-top:4px">A medida</div>
-        <div class="pricing-period">comisión negociada según volumen</div>
-        <div class="pricing-note">Para marcas con alto volumen de suscriptores o necesidades especiales.</div>
+        <div class="pricing-plan">Pro</div>
+        <div class="pricing-price"><sup style="font-size:18px;top:-12px">USD</sup>99</div>
+        <div class="pricing-period">por mes</div>
+        <div class="pricing-note">Para marcas con alto volumen de cobros recurrentes.</div>
         <div class="pricing-divider"></div>
         <ul class="pricing-features">
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Todo lo de Growth</li>
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Comisión a negociar</li>
-          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Onboarding dedicado</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Hasta 1.000 cobros/mes</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Todo lo de Crecimiento</li>
+          <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Account manager dedicado</li>
           <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Integraciones a medida</li>
           <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>SLA garantizado</li>
           <li><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Soporte 24/7</li>
         </ul>
-        <a href="mailto:contacto@zikloapp.com" class="btn-pricing ghost">Hablar con el equipo</a>
+        <a href="mailto:hola@zikloapp.com" class="btn-pricing ghost">Hablar con el equipo</a>
       </div>
 
     </div>
+    <p style="text-align:center;color:#666;font-size:13px;margin-top:24px;">+1.000 cobros/mes → <a href="mailto:hola@zikloapp.com" style="color:var(--green);text-decoration:none;">Enterprise a medida →</a></p>
   </div>
 </section>
 

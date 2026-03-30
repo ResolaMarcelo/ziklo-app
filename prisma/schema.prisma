@@ -59,6 +59,10 @@ model Shop {
   retentionDiscountPct     Int?
   retentionSurveyEnabled   Boolean @default(false)
   retentionMessage         String?
+  // Billing Ziklo
+  billingPlan       String   @default("free")  // "free" | "starter" | "growth" | "pro" | "enterprise"
+  monthlyCharges    Int      @default(0)        // cobros exitosos en el mes corriente
+  chargesResetAt    DateTime?                   // cuándo se reseteó el contador por última vez
   installedAt   DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   users         UserShop[]

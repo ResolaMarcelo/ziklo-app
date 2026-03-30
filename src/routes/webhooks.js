@@ -1,11 +1,12 @@
 const express = require('express');
 const router  = express.Router();
 const crypto  = require('crypto');
-const prisma = require('../lib/prisma');
-const mp = require('../services/mercadopago');
+const prisma  = require('../lib/prisma');
+const mp      = require('../services/mercadopago');
 const shopify = require('../services/shopify');
-const email = require('../services/email');
+const email   = require('../services/email');
 const klaviyo = require('../services/klaviyo');
+const { registrarCobro } = require('../lib/billing');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Verificación HMAC de webhooks de Mercado Pago
@@ -140,6 +141,9 @@ router.post('/mp', async (req, res) => {
         if (pago.status === 'approved') {
           const shopifyToken = shop?.accessToken  || process.env.SHOPIFY_ACCESS_TOKEN;
           const shopDomain   = shop?.domain       || process.env.SHOPIFY_SHOP_DOMAIN;
+
+          // Registrar cobro en contador de billing (fire and forget)
+          if (shopDomain) registrarCobro(prisma, shopDomain).catch(() => {});
 
           // Marcar suscripción como activa y guardar fecha próximo cobro
           try {
