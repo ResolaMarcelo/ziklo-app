@@ -184,7 +184,27 @@ router.post('/crear-con-envio', async (req, res) => {
     res.json({ initPoint: preapproval.init_point });
   } catch (err) {
     console.error('Error crear-con-envio:', err);
-    res.status(500).json({ error: err.message });
+
+    // Detectar si el error viene de Mercado Pago (timeout, red, API caída)
+    const msg = err.message || '';
+    const isMpDown =
+      err.code === 'ECONNREFUSED' ||
+      err.code === 'ECONNRESET' ||
+      err.code === 'ETIMEDOUT' ||
+      err.name === 'AbortError' ||
+      msg.includes('fetch') ||
+      msg.includes('network') ||
+      msg.includes('timeout') ||
+      msg.includes('ECONNREFUSED') ||
+      msg.includes('mercadopago') ||
+      (err.status >= 500 && err.status < 600);
+
+    res.status(500).json({
+      error: isMpDown
+        ? 'Mercado Pago no está disponible en este momento. Por favor intentá de nuevo en unos minutos.'
+        : (msg || 'Ocurrió un error al procesar tu suscripción.'),
+      mpDown: isMpDown,
+    });
   }
 });
 

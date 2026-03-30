@@ -207,6 +207,51 @@
     }
     .error-msg.visible { display: block; }
 
+    /* Banner MP caído */
+    .mp-down-banner {
+      display: none;
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-top: 12px;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .mp-down-banner.visible { display: flex; }
+    .mp-down-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
+    .mp-down-body { flex: 1; }
+    .mp-down-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #7a5c00;
+      margin-bottom: 4px;
+    }
+    .mp-down-text {
+      font-size: 13px;
+      color: #7a5c00;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    .btn-retry {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .2s;
+    }
+    .btn-retry:hover { opacity: .8; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     @media (max-width: 700px) {
       .layout {
         grid-template-columns: 1fr;
@@ -330,6 +375,14 @@
         <span class="mp-badge">— Mercado Pago</span>
       </button>
       <div class="error-msg" id="err-msg"></div>
+      <div class="mp-down-banner" id="mp-down-banner">
+        <div class="mp-down-icon">⚠️</div>
+        <div class="mp-down-body">
+          <div class="mp-down-title">Mercado Pago no está disponible</div>
+          <div class="mp-down-text">El servicio de pagos está experimentando problemas en este momento. Tus datos están guardados — podés intentarlo de nuevo en unos minutos.</div>
+          <button class="btn-retry" onclick="confirmarCheckout()">↺ Reintentar</button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -357,10 +410,23 @@
       '$' + Math.round(num).toLocaleString('es-AR') + '/mes';
   }
 
-  function mostrarError(msg) {
-    var el = document.getElementById('err-msg');
-    el.textContent = msg;
-    el.classList.add('visible');
+  function mostrarError(msg, mpDown) {
+    // Ocultar ambos primero
+    document.getElementById('err-msg').classList.remove('visible');
+    document.getElementById('mp-down-banner').classList.remove('visible');
+
+    if (mpDown) {
+      document.getElementById('mp-down-banner').classList.add('visible');
+    } else {
+      var el = document.getElementById('err-msg');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+  }
+
+  function ocultarErrores() {
+    document.getElementById('err-msg').classList.remove('visible');
+    document.getElementById('mp-down-banner').classList.remove('visible');
   }
 
   function validar() {
@@ -387,13 +453,13 @@
   }
 
   window.confirmarCheckout = function() {
-    document.getElementById('err-msg').classList.remove('visible');
+    ocultarErrores();
     if (!validar()) return;
     if (!monto) { mostrarError('No se encontró el monto de la suscripción. Volvé a la tienda.'); return; }
 
     var btn = document.getElementById('btn-pagar');
     btn.disabled = true;
-    btn.innerHTML = 'Procesando...';
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Procesando...';
 
     var payload = {
       email:      document.getElementById('f-email').value.trim(),
@@ -413,25 +479,38 @@
       },
     };
 
+    // Timeout de 15 segundos
+    var controller = new AbortController();
+    var timeout = setTimeout(function(){ controller.abort(); }, 15000);
+
     fetch(APP + '/api/subscripciones/crear-con-envio', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     })
-    .then(function(r){ return r.json(); })
+    .then(function(r){ clearTimeout(timeout); return r.json(); })
     .then(function(d){
-      if (d.initPoint) {
-        window.location.href = d.initPoint;
-      } else {
-        btn.disabled = false;
-        btn.innerHTML = 'Continuar al pago <span class="mp-badge">— Mercado Pago</span>';
-        mostrarError(d.error || 'Ocurrió un error. Intentá de nuevo.');
-      }
-    })
-    .catch(function(){
       btn.disabled = false;
       btn.innerHTML = 'Continuar al pago <span class="mp-badge">— Mercado Pago</span>';
-      mostrarError('Error de conexión. Verificá tu internet e intentá de nuevo.');
+      if (d.initPoint) {
+        btn.disabled = true;
+        btn.innerHTML = 'Redirigiendo a Mercado Pago...';
+        window.location.href = d.initPoint;
+      } else {
+        mostrarError(d.error || 'Ocurrió un error. Intentá de nuevo.', d.mpDown);
+      }
+    })
+    .catch(function(err){
+      clearTimeout(timeout);
+      btn.disabled = false;
+      btn.innerHTML = 'Continuar al pago <span class="mp-badge">— Mercado Pago</span>';
+      // Timeout o error de red → tratar como MP caído
+      var isTimeout = err.name === 'AbortError';
+      mostrarError('Error de conexión.', isTimeout ? true : false);
+      if (!isTimeout) {
+        mostrarError('No pudimos conectar con el servidor. Verificá tu internet e intentá de nuevo.', false);
+      }
     });
   };
 })();
