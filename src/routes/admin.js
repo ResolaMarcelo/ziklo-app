@@ -364,6 +364,8 @@ router.get('/api/pagos', async (req, res) => {
 
     const pagos = await prisma.pago.findMany({
       where: {
+        // Filtro por shopDomain a nivel DB — nunca traer datos de otros merchants
+        subscription: { shopDomain },
         ...(status ? { status } : {}),
         ...(desde || hasta ? {
           createdAt: {
@@ -377,16 +379,12 @@ router.get('/api/pagos', async (req, res) => {
       take: 500,
     });
 
-    // Filtrar por shopDomain y texto en memoria
-    const resultado = pagos.filter(p => {
-      if (p.subscription.shopDomain !== shopDomain) return false;
-      if (q) {
-        const email  = p.subscription.shopifyCustomerEmail.toLowerCase();
-        const envio  = (p.subscription.datosEnvio || '').toLowerCase();
-        if (!email.includes(q.toLowerCase()) && !envio.includes(q.toLowerCase())) return false;
-      }
-      return true;
-    });
+    // Filtrar por texto de búsqueda en memoria (solo si hay query)
+    const resultado = q ? pagos.filter(p => {
+      const email = p.subscription.shopifyCustomerEmail.toLowerCase();
+      const envio = (p.subscription.datosEnvio || '').toLowerCase();
+      return email.includes(q.toLowerCase()) || envio.includes(q.toLowerCase());
+    }) : pagos;
 
     // Enriquecer con productTitle desde ProductSubscription
     const productIds = [...new Set(resultado.map(p => p.subscription.productId).filter(Boolean))];

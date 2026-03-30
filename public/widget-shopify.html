@@ -317,7 +317,8 @@
       + '&desc='     + encodeURIComponent(desc)
       + '&variantId='+ encodeURIComponent(variantId)
       + '&qty='      + encodeURIComponent(qty)
-      + '&store='    + encodeURIComponent(document.title.replace(/ [-–|].*/, '').trim());
+      + '&store='    + encodeURIComponent(document.title.replace(/ [-–|].*/, '').trim())
+      + '&shop='     + encodeURIComponent(window.location.hostname);
     if (window._planBeneficios) {
       url += '&beneficios=' + encodeURIComponent(window._planBeneficios);
     }

@@ -399,6 +399,7 @@
   var variantId = params.get('variantId') || '';
   var productId = params.get('productId') || '';
   var qty       = params.get('qty') || '1';
+  var shopParam = params.get('shop') || '';
   var store     = params.get('store') || '';
   var beneficiosParam = params.get('beneficios') || '';
 
@@ -488,6 +489,7 @@
       variantId:  variantId || null,
       productId:  productId || null,
       qty:        parseInt(qty) || 1,
+      shopDomain: shopParam || null,
       envio: {
         nombre:    document.getElementById('f-nombre').value.trim(),
         apellido:  document.getElementById('f-apellido').value.trim(),

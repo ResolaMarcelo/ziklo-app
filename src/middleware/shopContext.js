@@ -3,22 +3,51 @@ const prisma = require('../lib/prisma');
 /**
  * Middleware que adjunta req.shop con el registro completo de la tienda.
  *
- * Fuentes de shopDomain (en orden de prioridad):
- *  1. req.session.shopDomain  → login OAuth o login con password (lee env var)
- *  2. req.query.shop          → widget público que pasa ?shop= en la URL
- *  3. req.body.shopDomain     → peticiones POST del widget
+ * Para rutas de admin (adminLoggedIn=true):
+ *   Solo se acepta req.session.shopDomain (seteado en OAuth o login).
+ *   Si hay userId pero no shopDomain, lo resuelve desde UserShop en DB.
+ *   NUNCA se acepta shop desde body ni query — evita que un merchant
+ *   manipule el contexto para acceder a datos de otra tienda.
  *
- * Si no se puede resolver, req.shop queda null y la ruta decide cómo manejarlo.
+ * Para rutas públicas (widget, portal /cliente):
+ *   1. req.session.clienteShop → portal /cliente autenticado
+ *   2. req.query.shop          → widget que pasa ?shop= en la URL
+ *   3. req.body.shopDomain     → peticiones POST del widget/checkout
  */
 module.exports = async function shopContext(req, res, next) {
   req.shop = null;
 
-  const domain =
-    req.session?.shopDomain  ||
-    req.session?.clienteShop ||   // portal /cliente — sesión de cliente autenticado
-    req.query?.shop          ||
-    req.body?.shopDomain     ||
-    null;
+  let domain = null;
+
+  if (req.session?.adminLoggedIn) {
+    // ── Rutas de admin: fuente de verdad = sesión únicamente ──────────────
+    domain = req.session.shopDomain || null;
+
+    // Fallback: si el userId está en sesión pero shopDomain no fue seteado
+    // (ej: primera visita tras registro, antes de conectar Shopify)
+    if (!domain && req.session.userId) {
+      try {
+        const userShop = await prisma.userShop.findFirst({
+          where:   { userId: req.session.userId },
+          orderBy: { createdAt: 'desc' },
+        });
+        if (userShop) {
+          domain = userShop.shopDomain;
+          // Persistir en sesión para no hacer DB en cada request
+          req.session.shopDomain = domain;
+        }
+      } catch (err) {
+        console.error('shopContext UserShop fallback error:', err.message);
+      }
+    }
+  } else {
+    // ── Rutas públicas: widget, portal cliente, checkout ──────────────────
+    domain =
+      req.session?.clienteShop ||
+      req.query?.shop          ||
+      req.body?.shopDomain     ||
+      null;
+  }
 
   if (!domain) return next();
 
