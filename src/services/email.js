@@ -111,4 +111,56 @@ async function enviarConfirmacionSuscripcion({ email, nombre, planNombre, monto,
   });
 }
 
-module.exports = { enviarConfirmacionSuscripcion };
+async function enviarResetPassword({ email, resetUrl }) {
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background:#f6f6f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+    <tr><td align="center">
+      <table width="500" cellpadding="0" cellspacing="0" style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+        <tr>
+          <td style="background:#0a0a0f;padding:28px 40px;text-align:center;">
+            <span style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.3px;">Ziklo<span style="color:#00C87A">.</span></span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:36px 40px;">
+            <h2 style="margin:0 0 12px;font-size:20px;color:#202223;">Recuperá tu contraseña</h2>
+            <p style="font-size:14px;color:#6d7175;margin:0 0 28px;line-height:1.6;">
+              Recibimos una solicitud para restablecer la contraseña de tu cuenta Ziklo.<br>
+              Hacé clic en el botón para crear una nueva contraseña. El enlace expira en <strong>1 hora</strong>.
+            </p>
+            <table cellpadding="0" cellspacing="0" width="100%">
+              <tr><td align="center">
+                <a href="${resetUrl}" style="display:inline-block;background:#00C87A;color:#000;font-weight:700;font-size:14px;padding:13px 32px;border-radius:8px;text-decoration:none;">
+                  Restablecer contraseña
+                </a>
+              </td></tr>
+            </table>
+            <p style="font-size:12px;color:#8c9196;margin:24px 0 0;line-height:1.6;">
+              Si no solicitaste este cambio, ignorá este email. Tu contraseña no cambiará.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 40px;border-top:1px solid #e1e3e5;text-align:center;">
+            <p style="font-size:11px;color:#8c9196;margin:0;">Ziklo · Este es un email automático</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`.trim();
+
+  await transporter.sendMail({
+    from: `"Ziklo" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: 'Restablecé tu contraseña de Ziklo',
+    html,
+  });
+}
+
+module.exports = { enviarConfirmacionSuscripcion, enviarResetPassword };

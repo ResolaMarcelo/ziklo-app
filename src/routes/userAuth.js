@@ -1,7 +1,9 @@
 const express = require('express');
 const router  = express.Router();
 const bcrypt  = require('bcryptjs');
+const crypto  = require('crypto');
 const prisma  = require('../lib/prisma');
+const { enviarResetPassword } = require('../services/email');
 
 // ── POST /auth/user/login — login con email + contraseña ─────────────────────
 router.post('/user/login', async (req, res) => {
@@ -36,6 +38,98 @@ router.post('/user/login', async (req, res) => {
     if (firstShop) {
       req.session.shopDomain = firstShop.shopDomain;
     }
+
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /auth/user/register — crear nueva cuenta ────────────────────────────
+router.post('/user/register', async (req, res) => {
+  const { email, password, name } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email y contraseña requeridos' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
+  }
+
+  try {
+    const exists = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    if (exists) {
+      return res.status(400).json({ error: 'Ya existe una cuenta con ese email' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: { email: email.toLowerCase().trim(), passwordHash, name: name || null },
+      include: { shops: true },
+    });
+
+    req.session.userId        = user.id;
+    req.session.userEmail     = user.email;
+    req.session.userName      = user.name || null;
+    req.session.userRole      = user.role;
+    req.session.adminLoggedIn = true;
+
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /auth/user/forgot-password — solicitar reset por email ───────────────
+router.post('/user/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+
+    // Siempre responder OK para no revelar si el email existe
+    if (!user) return res.json({ ok: true });
+
+    const token   = crypto.randomBytes(32).toString('hex');
+    const expiry  = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data:  { resetToken: token, resetTokenExpiry: expiry },
+    });
+
+    const appUrl   = process.env.APP_URL || 'http://localhost:3000';
+    const resetUrl = `${appUrl}/admin/reset-password.html?token=${token}`;
+
+    await enviarResetPassword({ email: user.email, resetUrl });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('forgot-password error:', err.message);
+    // No exponer el error al cliente
+    return res.json({ ok: true });
+  }
+});
+
+// ── POST /auth/user/reset-password — guardar nueva contraseña ─────────────────
+router.post('/user/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: 'Token y contraseña requeridos' });
+  if (password.length < 8) return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
+
+  try {
+    const user = await prisma.user.findUnique({ where: { resetToken: token } });
+
+    if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
+      return res.status(400).json({ error: 'El enlace de recuperación expiró o no es válido' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data:  { passwordHash, resetToken: null, resetTokenExpiry: null },
+    });
 
     return res.json({ ok: true });
   } catch (err) {

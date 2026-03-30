@@ -15,7 +15,6 @@
       --black:        #0A0A0F;
       --surface:      #111118;
       --card:         #16161F;
-      --border:       rgba(255,255,255,.07);
       --border-s:     rgba(255,255,255,.10);
       --white:        #F8FAFC;
       --muted:        #4B5563;
@@ -35,7 +34,7 @@
       font-size: 14px;
     }
 
-    /* ── PANEL IZQUIERDO (formulario) ────────────────────────────────────── */
+    /* ── PANEL IZQUIERDO ─────────────────────────────────────────────────── */
     .left {
       width: 100%;
       max-width: 520px;
@@ -44,15 +43,12 @@
       flex-direction: column;
       padding: 40px 48px;
       background: var(--surface);
-      position: relative;
-      z-index: 1;
     }
 
     .left-logo {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: auto;
     }
     .left-logo-icon {
       width: 36px; height: 36px;
@@ -62,9 +58,7 @@
       display: flex; align-items: center; justify-content: center;
     }
     .left-logo-name {
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: -.4px;
+      font-size: 19px; font-weight: 800; letter-spacing: -.4px;
     }
     .left-logo-name span { color: var(--green); }
 
@@ -87,22 +81,20 @@
       gap: 24px;
     }
     .tab-btn {
-      background: none;
-      border: none;
+      background: none; border: none;
       font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--muted2);
-      cursor: pointer;
+      font-size: 15px; font-weight: 600;
+      color: var(--muted2); cursor: pointer;
       padding: 0 0 12px;
       border-bottom: 2px solid transparent;
       margin-bottom: -1px;
       transition: color .15s, border-color .15s;
     }
-    .tab-btn.active {
-      color: var(--white);
-      border-bottom-color: var(--green);
-    }
+    .tab-btn.active { color: var(--white); border-bottom-color: var(--green); }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.active { display: block; }
 
     /* Error */
     .error-msg {
@@ -124,10 +116,8 @@
     .field { margin-bottom: 16px; }
     .field label {
       display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--white);
-      margin-bottom: 7px;
+      font-size: 13px; font-weight: 500;
+      color: var(--white); margin-bottom: 7px;
     }
     .field input {
       width: 100%;
@@ -137,48 +127,44 @@
       padding: 11px 14px;
       color: var(--white);
       font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      outline: none;
+      font-size: 14px; outline: none;
       transition: border-color .15s, box-shadow .15s;
     }
-    .field input:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(0,200,122,.10);
-    }
+    .field input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,200,122,.10); }
     .field input::placeholder { color: var(--muted); }
-    .field input:disabled { opacity: .5; cursor: not-allowed; }
 
     /* Pass wrap */
     .pass-wrap { position: relative; }
     .pass-wrap input { padding-right: 40px; }
     .toggle-pass {
-      position: absolute;
-      right: 12px; top: 50%;
-      transform: translateY(-50%);
-      background: none; border: none;
-      color: var(--muted); cursor: pointer;
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer;
       display: flex; align-items: center; padding: 0;
     }
     .toggle-pass svg { width: 15px; height: 15px; }
 
-    #passField { display: none; }
+    /* Forgot link */
+    .forgot-link {
+      display: block;
+      font-size: 12px;
+      color: var(--muted2);
+      text-decoration: none;
+      text-align: right;
+      margin-top: -10px;
+      margin-bottom: 18px;
+    }
+    .forgot-link:hover { color: var(--white); }
 
     /* Submit */
     .btn-submit {
       width: 100%;
       background: var(--green);
-      border: none;
-      border-radius: 9px;
+      border: none; border-radius: 9px;
       padding: 12px;
       font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      color: #000;
+      font-size: 14px; font-weight: 700; color: #000;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
       transition: opacity .15s, transform .1s;
       margin-bottom: 20px;
     }
@@ -190,8 +176,7 @@
     .btn-submit.loading .btn-arrow { display: none; }
     .spinner {
       width: 16px; height: 16px;
-      border: 2px solid rgba(0,0,0,.2);
-      border-top-color: #000;
+      border: 2px solid rgba(0,0,0,.2); border-top-color: #000;
       border-radius: 50%;
       animation: spin .6s linear infinite;
       display: none;
@@ -202,14 +187,10 @@
     .divider {
       display: flex; align-items: center; gap: 10px;
       margin-bottom: 20px;
-      color: var(--muted2);
-      font-size: 12px;
+      color: var(--muted2); font-size: 12px;
     }
     .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border-s);
+      content: ''; flex: 1; height: 1px; background: var(--border-s);
     }
 
     /* Google */
@@ -220,143 +201,87 @@
       border-radius: 9px;
       padding: 11px 16px;
       font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      color: #1f1f1f;
+      font-size: 14px; font-weight: 600; color: #1f1f1f;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
       text-decoration: none;
       transition: background .15s, box-shadow .15s;
     }
     .btn-google:hover { background: #f5f5f5; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
-    .btn-google:active { background: #ececec; }
+
+    /* Forgot panel */
+    .forgot-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--muted2); cursor: pointer;
+      background: none; border: none;
+      font-family: 'Inter', sans-serif;
+      padding: 0; margin-bottom: 20px;
+    }
+    .forgot-back:hover { color: var(--white); }
+    .success-msg {
+      display: none;
+      background: rgba(0,200,122,.08);
+      border: 1px solid rgba(0,200,122,.2);
+      border-radius: 9px;
+      padding: 10px 13px;
+      font-size: 13px; color: var(--green);
+      margin-bottom: 16px;
+      align-items: center; gap: 8px;
+    }
+    .success-msg.show { display: flex; }
 
     /* Footer */
-    .left-footer {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: auto;
-      padding-top: 24px;
-    }
+    .left-footer { font-size: 11px; color: var(--muted); margin-top: auto; padding-top: 24px; }
     .left-footer a { color: var(--muted2); text-decoration: none; }
     .left-footer a:hover { color: var(--white); }
 
-    /* ── PANEL DERECHO (marketing) ───────────────────────────────────────── */
+    /* ── PANEL DERECHO ───────────────────────────────────────────────────── */
     .right {
       flex: 1;
       background: linear-gradient(135deg, #0d1f16 0%, #0a1a12 40%, #061410 100%);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 56px;
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
+      justify-content: flex-end; padding: 56px;
     }
-
-    /* Grid decorativo */
     .right::before {
-      content: '';
-      position: absolute; inset: 0;
+      content: ''; position: absolute; inset: 0;
       background-image:
         linear-gradient(rgba(0,200,122,.04) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,200,122,.04) 1px, transparent 1px);
-      background-size: 48px 48px;
-      pointer-events: none;
+      background-size: 48px 48px; pointer-events: none;
     }
-
-    /* Glow */
     .right::after {
-      content: '';
-      position: absolute;
-      top: -10%; left: 20%;
+      content: ''; position: absolute; top: -10%; left: 20%;
       width: 600px; height: 600px;
       background: radial-gradient(ellipse, rgba(0,200,122,.13) 0%, transparent 65%);
       pointer-events: none;
     }
-
     .right-content { position: relative; z-index: 1; max-width: 480px; }
 
-    /* Stats row */
-    .stats-row {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 40px;
-    }
+    .stats-row { display: flex; gap: 16px; margin-bottom: 40px; }
     .stat-card {
       background: rgba(0,200,122,.08);
       border: 1px solid rgba(0,200,122,.18);
-      border-radius: 14px;
-      padding: 18px 22px;
-      flex: 1;
+      border-radius: 14px; padding: 18px 22px; flex: 1;
     }
-    .stat-value {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -.5px;
-      color: var(--green);
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-    .stat-label {
-      font-size: 12px;
-      color: rgba(255,255,255,.5);
-      font-weight: 500;
-    }
+    .stat-value { font-size: 28px; font-weight: 800; letter-spacing: -.5px; color: var(--green); line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 12px; color: rgba(255,255,255,.5); font-weight: 500; }
 
-    /* Feature list */
-    .feature-list {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin-bottom: 48px;
-    }
-    .feature-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
+    .feature-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 48px; }
+    .feature-item { display: flex; align-items: flex-start; gap: 12px; }
     .feature-icon {
       width: 32px; height: 32px;
-      background: rgba(0,200,122,.10);
-      border: 1px solid rgba(0,200,122,.2);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
+      background: rgba(0,200,122,.10); border: 1px solid rgba(0,200,122,.2);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
     }
-    .feature-text strong {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-    .feature-text span {
-      font-size: 12px;
-      color: rgba(255,255,255,.45);
-      line-height: 1.4;
-    }
+    .feature-text strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .feature-text span { font-size: 12px; color: rgba(255,255,255,.45); line-height: 1.4; }
 
-    /* Tagline */
-    .right-headline {
-      font-size: clamp(28px, 3vw, 38px);
-      font-weight: 900;
-      letter-spacing: -.8px;
-      line-height: 1.15;
-      margin-bottom: 12px;
-    }
+    .right-headline { font-size: clamp(28px, 3vw, 38px); font-weight: 900; letter-spacing: -.8px; line-height: 1.15; margin-bottom: 12px; }
     .right-headline .hl { color: var(--green); }
+    .right-sub { font-size: 15px; color: rgba(255,255,255,.45); line-height: 1.6; max-width: 380px; }
 
-    .right-sub {
-      font-size: 15px;
-      color: rgba(255,255,255,.45);
-      line-height: 1.6;
-      max-width: 380px;
-    }
-
-    /* Responsive */
     @media (max-width: 800px) {
       .right { display: none; }
       .left  { max-width: 100%; padding: 32px 24px; }
@@ -365,7 +290,7 @@
 </head>
 <body>
 
-<!-- ── Formulario ───────────────────────────────────────────────────────────── -->
+<!-- ── Formulario ─────────────────────────────────────────────────────────── -->
 <div class="left">
   <div class="left-logo">
     <div class="left-logo-icon">
@@ -377,60 +302,139 @@
   </div>
 
   <div class="form-wrap">
+
     <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab-btn active">Iniciar sesión</button>
+    <div class="tabs" id="mainTabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Iniciar sesión</button>
+      <button class="tab-btn"        onclick="switchTab('register')">Registrarse</button>
     </div>
 
-    <!-- Error -->
-    <div class="error-msg" id="errorMsg">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      <span id="errorText">Error al iniciar sesión</span>
-    </div>
-
-    <form id="loginForm" onsubmit="handleSubmit(event)">
-      <div class="field" id="emailField">
-        <label>Correo electrónico</label>
-        <input type="email" id="emailInput" placeholder="example@gmail.com" autocomplete="email" />
+    <!-- ─ Panel: Login ─────────────────────────────────────────────────── -->
+    <div class="panel active" id="panel-login">
+      <div class="error-msg" id="loginError">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="loginErrorText"></span>
       </div>
 
-      <div class="field" id="passField">
-        <label>Contraseña</label>
-        <div class="pass-wrap">
-          <input type="password" id="passInput" placeholder="Contraseña" autocomplete="current-password" />
-          <button type="button" class="toggle-pass" id="togglePass" tabindex="-1">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eyeIcon">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
+      <form onsubmit="submitLogin(event)">
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" id="loginEmail" placeholder="example@gmail.com" autocomplete="email" />
         </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="loginPass" placeholder="Contraseña" autocomplete="current-password" />
+            <button type="button" class="toggle-pass" onclick="toggleVis('loginPass', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <a href="#" class="forgot-link" onclick="switchTab('forgot'); return false;">¿Olvidaste tu contraseña?</a>
+
+        <button type="submit" class="btn-submit" id="btnLogin">
+          <div class="spinner"></div>
+          <span class="btn-text">Ingresar</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+
+      <div class="divider">o</div>
+
+      <a href="/auth/google" id="btnGoogle" class="btn-google">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
+        </svg>
+        Iniciar sesión con Google
+      </a>
+    </div>
+
+    <!-- ─ Panel: Registro ──────────────────────────────────────────────── -->
+    <div class="panel" id="panel-register">
+      <div class="error-msg" id="registerError">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="registerErrorText"></span>
       </div>
 
-      <button type="submit" class="btn-submit" id="btnSubmit">
-        <div class="spinner"></div>
-        <span class="btn-text" id="btnLabel">Continuar</span>
-        <svg class="btn-arrow" id="btnArrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M5 12h14M13 6l6 6-6 6"/>
+      <form onsubmit="submitRegister(event)">
+        <div class="field">
+          <label>Nombre</label>
+          <input type="text" id="regName" placeholder="Tu nombre" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" id="regEmail" placeholder="example@gmail.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="regPass" placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+            <button type="button" class="toggle-pass" onclick="toggleVis('regPass', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Repetir contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="regPass2" placeholder="Repetí la contraseña" autocomplete="new-password" />
+            <button type="button" class="toggle-pass" onclick="toggleVis('regPass2', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnRegister">
+          <div class="spinner"></div>
+          <span class="btn-text">Crear cuenta</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+
+      <div class="divider">o</div>
+
+      <a href="/auth/google" class="btn-google">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
         </svg>
+        Registrarse con Google
+      </a>
+    </div>
+
+    <!-- ─ Panel: Olvidé contraseña ─────────────────────────────────────── -->
+    <div class="panel" id="panel-forgot">
+      <button class="forgot-back" onclick="switchTab('login')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Volver
       </button>
-    </form>
 
-    <div class="divider">o</div>
+      <div class="error-msg" id="forgotError">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="forgotErrorText"></span>
+      </div>
+      <div class="success-msg" id="forgotSuccess">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Te enviamos un email con el enlace para restablecer tu contraseña.</span>
+      </div>
 
-    <a href="/auth/google" id="btnGoogle" class="btn-google">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
-      </svg>
-      Iniciar sesión con Google
-    </a>
+      <div id="forgotForm">
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" id="forgotEmail" placeholder="example@gmail.com" autocomplete="email" />
+        </div>
+        <button type="button" class="btn-submit" id="btnForgot" onclick="submitForgot()">
+          <div class="spinner"></div>
+          <span class="btn-text">Enviar enlace</span>
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <div class="left-footer">
@@ -441,10 +445,9 @@
   </div>
 </div>
 
-<!-- ── Panel derecho ────────────────────────────────────────────────────────── -->
+<!-- ── Panel derecho ──────────────────────────────────────────────────────── -->
 <div class="right">
   <div class="right-content">
-
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-value">+340%</div>
@@ -459,9 +462,7 @@
     <div class="feature-list">
       <div class="feature-item">
         <div class="feature-icon">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.2">
-            <path d="M12 2v6M12 16v6M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M2 12h6M16 12h6M4.93 19.07l4.24-4.24M14.83 9.17l4.24-4.24"/>
-          </svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.2"><path d="M12 2v6M12 16v6M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M2 12h6M16 12h6M4.93 19.07l4.24-4.24M14.83 9.17l4.24-4.24"/></svg>
         </div>
         <div class="feature-text">
           <strong>Cobros automáticos con Mercado Pago</strong>
@@ -470,10 +471,7 @@
       </div>
       <div class="feature-item">
         <div class="feature-icon">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.2">
-            <rect x="2" y="3" width="20" height="14" rx="2"/>
-            <path d="M8 21h8M12 17v4"/>
-          </svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         </div>
         <div class="feature-text">
           <strong>Widget listo para instalar en Shopify</strong>
@@ -482,10 +480,7 @@
       </div>
       <div class="feature-item">
         <div class="feature-icon">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.2">
-            <path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-            <path d="M16 12h.01"/>
-          </svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2.2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 12h.01"/></svg>
         </div>
         <div class="feature-text">
           <strong>Beneficios personalizados por producto</strong>
@@ -500,85 +495,155 @@
     <div class="right-sub">
       Convertí compradores únicos en suscriptores de largo plazo con cobros automáticos y beneficios que fidelizan.
     </div>
-
   </div>
 </div>
 
 <script>
-  let step = 'email';
-  let pendingEmail = '';
+  // ── Tabs ──────────────────────────────────────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
-  function showError(msg) {
-    document.getElementById('errorText').textContent = msg;
-    document.getElementById('errorMsg').classList.add('show');
-  }
-  function hideError() {
-    document.getElementById('errorMsg').classList.remove('show');
-  }
+    // tabs solo visibles en login/register
+    const tabs = document.getElementById('mainTabs');
+    tabs.style.display = (tab === 'forgot') ? 'none' : 'flex';
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    hideError();
-
-    if (step === 'email') {
-      const email = document.getElementById('emailInput').value.trim();
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showError('Ingresá un correo electrónico válido.');
-        return;
-      }
-      pendingEmail = email;
-      document.getElementById('passField').style.display = 'block';
-      document.getElementById('emailInput').disabled = true;
-      document.getElementById('btnLabel').textContent = 'Ingresar';
-      document.getElementById('btnArrow').style.display = 'none';
-      step = 'password';
-      document.getElementById('passInput').focus();
-      return;
+    if (tab === 'login' || tab === 'register') {
+      const idx = tab === 'login' ? 0 : 1;
+      document.querySelectorAll('.tab-btn')[idx].classList.add('active');
     }
 
-    const password = document.getElementById('passInput').value;
-    if (!password) { showError('Ingresá tu contraseña.'); return; }
+    document.getElementById('panel-' + tab).classList.add('active');
+  }
 
-    const btn = document.getElementById('btnSubmit');
+  // ── Toggle contraseña ─────────────────────────────────────────────────────
+  function toggleVis(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const show  = input.type === 'password';
+    input.type  = show ? 'text' : 'password';
+    btn.querySelector('svg').innerHTML = show
+      ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  }
+
+  // ── Login ─────────────────────────────────────────────────────────────────
+  async function submitLogin(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('loginError');
+    const errTx = document.getElementById('loginErrorText');
+    errEl.classList.remove('show');
+    const btn = document.getElementById('btnLogin');
     btn.classList.add('loading');
 
     try {
       const res = await fetch('/auth/user/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: pendingEmail, password }),
+        body: JSON.stringify({
+          email:    document.getElementById('loginEmail').value.trim(),
+          password: document.getElementById('loginPass').value,
+        }),
       });
       if (res.ok) { window.location.href = '/admin/'; return; }
       const data = await res.json().catch(() => ({}));
-      showError(data.error || 'Credenciales incorrectas');
-      btn.classList.remove('loading');
-      document.getElementById('passInput').value = '';
-      document.getElementById('passInput').focus();
+      errTx.textContent = data.error || 'Credenciales incorrectas';
+      errEl.classList.add('show');
+      document.getElementById('loginPass').value = '';
+      document.getElementById('loginPass').focus();
     } catch (_) {
-      showError('Error de conexión. Intentá de nuevo.');
+      errTx.textContent = 'Error de conexión. Intentá de nuevo.';
+      errEl.classList.add('show');
+    }
+    btn.classList.remove('loading');
+  }
+
+  // ── Registro ──────────────────────────────────────────────────────────────
+  async function submitRegister(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('registerError');
+    const errTx = document.getElementById('registerErrorText');
+    errEl.classList.remove('show');
+
+    const pass  = document.getElementById('regPass').value;
+    const pass2 = document.getElementById('regPass2').value;
+    if (pass !== pass2) {
+      errTx.textContent = 'Las contraseñas no coinciden.';
+      errEl.classList.add('show'); return;
+    }
+    if (pass.length < 8) {
+      errTx.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+      errEl.classList.add('show'); return;
+    }
+
+    const btn = document.getElementById('btnRegister');
+    btn.classList.add('loading');
+
+    try {
+      const res = await fetch('/auth/user/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:    document.getElementById('regEmail').value.trim(),
+          password: pass,
+          name:     document.getElementById('regName').value.trim(),
+        }),
+      });
+      if (res.ok) { window.location.href = '/admin/'; return; }
+      const data = await res.json().catch(() => ({}));
+      errTx.textContent = data.error || 'Error al crear la cuenta';
+      errEl.classList.add('show');
+    } catch (_) {
+      errTx.textContent = 'Error de conexión. Intentá de nuevo.';
+      errEl.classList.add('show');
+    }
+    btn.classList.remove('loading');
+  }
+
+  // ── Olvidé contraseña ─────────────────────────────────────────────────────
+  async function submitForgot() {
+    const errEl = document.getElementById('forgotError');
+    const errTx = document.getElementById('forgotErrorText');
+    errEl.classList.remove('show');
+
+    const email = document.getElementById('forgotEmail').value.trim();
+    if (!email) {
+      errTx.textContent = 'Ingresá tu correo electrónico.';
+      errEl.classList.add('show'); return;
+    }
+
+    const btn = document.getElementById('btnForgot');
+    btn.classList.add('loading');
+
+    try {
+      await fetch('/auth/user/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      // Siempre mostrar éxito (no revelar si el email existe)
+      document.getElementById('forgotSuccess').classList.add('show');
+      document.getElementById('forgotForm').style.display = 'none';
+    } catch (_) {
+      errTx.textContent = 'Error de conexión. Intentá de nuevo.';
+      errEl.classList.add('show');
       btn.classList.remove('loading');
     }
   }
 
-  document.getElementById('togglePass').addEventListener('click', () => {
-    const input = document.getElementById('passInput');
-    const icon  = document.getElementById('eyeIcon');
-    const show  = input.type === 'password';
-    input.type  = show ? 'text' : 'password';
-    icon.innerHTML = show
-      ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
-      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  // ── Google loading ────────────────────────────────────────────────────────
+  document.querySelectorAll('.btn-google').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(0,0,0,.15);border-top-color:#555;border-radius:50%;animation:spin .6s linear infinite"></div>';
+    });
   });
 
-  document.getElementById('btnGoogle').addEventListener('click', function() {
-    this.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(0,0,0,.15);border-top-color:#555;border-radius:50%;animation:spin .6s linear infinite"></div>';
-  });
-
+  // ── Si ya hay sesión → redirigir ──────────────────────────────────────────
   fetch('/admin/api/login-status')
     .then(r => r.json())
     .then(d => { if (d.loggedIn) window.location.href = '/admin/'; })
     .catch(() => {});
 
+  // ── Errores de URL (Google OAuth) ─────────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
   const errorParam = params.get('error');
   if (errorParam) {
@@ -588,7 +653,9 @@
       google_no_email: 'No se pudo obtener el email de tu cuenta Google.',
       google_error:    'Error inesperado con Google. Intentá de nuevo.',
     };
-    showError(msgs[errorParam] || 'Ocurrió un error. Intentá de nuevo.');
+    const errEl = document.getElementById('loginError');
+    document.getElementById('loginErrorText').textContent = msgs[errorParam] || 'Ocurrió un error.';
+    errEl.classList.add('show');
   }
 </script>
 </body>
