@@ -9,13 +9,13 @@
 
     :root {
       --green:        #00C87A;
-      --green-dim:    rgba(0,200,122,.10);
-      --green-border: rgba(0,200,122,.25);
+      --green-dim:    rgba(0,200,122,.12);
+      --green-border: rgba(0,200,122,.3);
       --black:        #0A0A0F;
       --surface:      #111118;
       --card:         #16161F;
       --border:       rgba(255,255,255,.07);
-      --border-s:     rgba(255,255,255,.13);
+      --border-s:     rgba(255,255,255,.11);
       --white:        #F8FAFC;
       --muted:        #4B5563;
       --muted2:       #6B7280;
@@ -42,8 +42,8 @@
       content: '';
       position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
     }
@@ -51,189 +51,100 @@
     body::after {
       content: '';
       position: fixed;
-      top: 40%; left: 50%;
+      top: 38%; left: 50%;
       transform: translate(-50%, -50%);
       width: 700px; height: 500px;
-      background: radial-gradient(ellipse, rgba(0,200,122,.07) 0%, transparent 65%);
+      background: radial-gradient(ellipse, rgba(0,200,122,.06) 0%, transparent 65%);
       pointer-events: none;
     }
 
     .wrap {
       position: relative; z-index: 1;
-      width: 100%; max-width: 420px;
+      width: 100%; max-width: 400px;
       padding: 24px;
     }
-
-    /* Brand */
-    .brand { text-align: center; margin-bottom: 32px; }
-    .brand-logo { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-    .brand-icon {
-      width: 42px; height: 42px;
-      background: var(--green-dim);
-      border: 1px solid var(--green-border);
-      border-radius: 11px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .brand-name { font-size: 24px; font-weight: 800; letter-spacing: -.5px; }
-    .brand-name span { color: var(--green); }
-    .brand-tagline { font-size: 13px; color: var(--muted2); }
 
     /* Card */
     .card {
       background: var(--card);
       border: 1px solid var(--border-s);
-      border-radius: 18px;
-      padding: 32px;
-      margin-bottom: 12px;
+      border-radius: 20px;
+      padding: 36px 32px 32px;
+      text-align: center;
     }
 
-    /* Tabs */
-    .tabs {
-      display: flex;
-      background: var(--surface);
-      border-radius: 10px;
-      padding: 4px;
-      margin-bottom: 24px;
-      gap: 4px;
+    /* Brand icon */
+    .brand-icon {
+      width: 52px; height: 52px;
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
     }
-    .tab-btn {
-      flex: 1;
-      padding: 9px;
-      border: none;
-      border-radius: 8px;
-      font-family: 'Inter', sans-serif;
+
+    /* Title */
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      margin-bottom: 6px;
+    }
+    .card-sub {
       font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
-      background: transparent;
       color: var(--muted2);
+      line-height: 1.5;
+      margin-bottom: 28px;
     }
-    .tab-btn.active {
-      background: var(--card);
-      color: var(--white);
-      box-shadow: 0 1px 4px rgba(0,0,0,.4);
-    }
-
-    /* Panels */
-    .panel { display: none; }
-    .panel.active { display: block; }
-
-    .panel-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-    .panel-sub { font-size: 13px; color: var(--muted2); margin-bottom: 22px; line-height: 1.5; }
 
     /* Error */
     .error-msg {
       display: none;
       background: var(--danger-dim);
       border: 1px solid rgba(239,68,68,.2);
-      border-radius: 9px;
+      border-radius: 10px;
       padding: 10px 14px;
       font-size: 13px;
       color: var(--danger);
       margin-bottom: 16px;
+      text-align: left;
       align-items: center;
       gap: 8px;
     }
     .error-msg.show { display: flex; }
     .error-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
 
-    /* Fields */
-    .field { margin-bottom: 14px; }
-    .field label {
-      display: block;
-      font-size: 11px; font-weight: 600;
-      color: var(--muted2);
-      text-transform: uppercase;
-      letter-spacing: .07em;
-      margin-bottom: 7px;
-    }
-    .input-wrap { position: relative; }
-    .input-wrap > svg:first-child {
-      position: absolute;
-      left: 13px; top: 50%;
-      transform: translateY(-50%);
-      width: 15px; height: 15px;
-      color: var(--muted);
-      pointer-events: none;
-    }
-    .field input {
+    /* Google button */
+    .btn-google {
       width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border-s);
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.1);
       border-radius: 10px;
-      padding: 12px 14px 12px 38px;
-      color: var(--white);
+      padding: 11px 16px;
       font-family: 'Inter', sans-serif;
       font-size: 14px;
-      outline: none;
-      transition: border-color .15s, box-shadow .15s;
-    }
-    .field input:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(0,200,122,.12);
-    }
-    .field input::placeholder { color: var(--muted); }
-
-    /* Toggle pass */
-    .toggle-pass {
-      position: absolute;
-      right: 12px; top: 50%;
-      transform: translateY(-50%);
-      background: none; border: none;
-      color: var(--muted); cursor: pointer;
-      display: flex; align-items: center; padding: 0;
-    }
-    .toggle-pass svg { width: 15px; height: 15px; }
-
-    /* Botones */
-    .btn-primary {
-      width: 100%;
-      border: none;
-      border-radius: 10px;
-      padding: 13px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
+      font-weight: 600;
+      color: #1f1f1f;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: opacity .15s, transform .1s;
-      margin-top: 6px;
+      gap: 9px;
+      transition: background .15s, box-shadow .15s;
+      margin-bottom: 20px;
+      text-decoration: none;
     }
-    .btn-google {
-      background: #fff;
-      color: #1f1f1f;
-      border: 1px solid rgba(0,0,0,.12);
-    }
-    .btn-ziklo {
-      background: var(--green);
-      color: #000;
-    }
-    .btn-primary:hover { opacity: .88; }
-    .btn-primary:active { transform: scale(.98); }
-    .btn-primary.loading { opacity: .6; pointer-events: none; }
-
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,.25);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .6s linear infinite;
-      display: none;
-    }
-    .btn-ziklo .spinner  { border-color: rgba(0,0,0,.2); border-top-color: #000; }
-    .btn-google .spinner { border-color: rgba(0,0,0,.12); border-top-color: #555; }
-    .btn-primary.loading .spinner { display: block; }
-    .btn-primary.loading .btn-text { display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-google:hover { background: #f5f5f5; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+    .btn-google:active { background: #ececec; }
 
     /* Divider */
     .divider {
-      display: flex; align-items: center; gap: 10px;
-      margin: 18px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
       color: var(--muted);
       font-size: 11px;
     }
@@ -244,11 +155,98 @@
       background: var(--border-s);
     }
 
+    /* Email field */
+    .field {
+      text-align: left;
+      margin-bottom: 12px;
+    }
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 7px;
+    }
+    .field input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border-s);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(0,200,122,.1);
+    }
+    .field input::placeholder { color: var(--muted); }
+
+    /* Password wrap */
+    .pass-wrap { position: relative; }
+    .pass-wrap input { padding-right: 40px; }
+    .toggle-pass {
+      position: absolute;
+      right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      display: flex; align-items: center; padding: 0;
+    }
+    .toggle-pass svg { width: 15px; height: 15px; }
+
+    /* Password field — oculto inicialmente */
+    #passField { display: none; }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      background: var(--green);
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      margin-top: 4px;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn-submit:hover  { opacity: .88; }
+    .btn-submit:active { transform: scale(.98); }
+    .btn-submit.loading { opacity: .6; pointer-events: none; }
+    .btn-submit.loading .spinner { display: block; }
+    .btn-submit.loading .btn-text { display: none; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,.2);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Arrow icon */
+    .btn-arrow { width: 14px; height: 14px; }
+
     /* Footer */
     .login-footer {
       text-align: center;
       font-size: 11px;
       color: var(--muted);
+      margin-top: 16px;
     }
     .login-footer a { color: var(--muted2); text-decoration: none; }
     .login-footer a:hover { color: var(--white); }
@@ -256,128 +254,149 @@
 </head>
 <body>
 <div class="wrap">
-
-  <!-- Brand -->
-  <div class="brand">
-    <div class="brand-logo">
-      <div class="brand-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M5 6h14L7 18h12" stroke="#00C87A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <span class="brand-name">Ziklo<span>.</span></span>
-    </div>
-    <div class="brand-tagline">Suscripciones para Shopify</div>
-  </div>
-
-  <!-- Card -->
   <div class="card">
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('google')" id="tab-google">
-        <svg width="13" height="13" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;margin-right:5px" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/></svg>
-        Google
-      </button>
-      <button class="tab-btn" onclick="switchTab('email')" id="tab-email">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:5px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Email
-      </button>
+    <!-- Brand icon -->
+    <div class="brand-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+        <path d="M5 6h14L7 18h12" stroke="#00C87A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
 
-    <!-- Panel: Google OAuth -->
-    <div class="panel active" id="panel-google">
-      <div class="panel-title">Bienvenido</div>
-      <div class="panel-sub">Ingresá con tu cuenta de Google para acceder al panel.</div>
+    <div class="card-title">Iniciá sesión en Ziklo</div>
+    <div class="card-sub">Bienvenido de nuevo. Por favor, ingresá para continuar.</div>
 
-      <div class="error-msg" id="errorMsgGoogle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <span id="errorTextGoogle">Error al iniciar sesión con Google</span>
+    <!-- Error -->
+    <div class="error-msg" id="errorMsg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span id="errorText">Error al iniciar sesión</span>
+    </div>
+
+    <!-- Google -->
+    <a href="/auth/google" id="btnGoogle" class="btn-google">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
+      </svg>
+      Continuar con Google
+    </a>
+
+    <!-- Divider -->
+    <div class="divider">o</div>
+
+    <!-- Formulario email / contraseña -->
+    <form id="loginForm" onsubmit="handleSubmit(event)">
+      <div class="field" id="emailField">
+        <label>Correo electrónico</label>
+        <input type="email" id="emailInput" placeholder="Ingresá tu dirección de correo electrónico" autocomplete="email" />
       </div>
 
-      <a href="/auth/google" id="btnGoogle" class="btn-primary btn-google" style="text-decoration:none">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-          <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" fill="#FBBC05"/>
-          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
-        </svg>
-        <span class="btn-text">Continuar con Google</span>
+      <div class="field" id="passField">
+        <label>Contraseña</label>
+        <div class="pass-wrap">
+          <input type="password" id="passInput" placeholder="••••••••" autocomplete="current-password" />
+          <button type="button" class="toggle-pass" id="togglePass" tabindex="-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eyeIcon">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnSubmit">
         <div class="spinner"></div>
-      </a>
-    </div>
-
-    <!-- Panel: Email + Contraseña -->
-    <div class="panel" id="panel-email">
-      <div class="panel-title">Ingresá con tu cuenta</div>
-      <div class="panel-sub">Usá el email y contraseña de tu cuenta Ziklo.</div>
-
-      <div class="error-msg" id="errorMsgEmail">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        <span class="btn-text" id="btnLabel">Continuar</span>
+        <svg class="btn-arrow" id="btnArrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M13 6l6 6-6 6"/>
         </svg>
-        <span id="errorTextEmail">Credenciales incorrectas</span>
-      </div>
-
-      <form id="emailForm" onsubmit="submitEmail(event)">
-        <div class="field">
-          <label>Email</label>
-          <div class="input-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
-            </svg>
-            <input type="email" id="emailInput" placeholder="vos@tutienda.com" autocomplete="email" />
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Contraseña</label>
-          <div class="input-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-            <input type="password" id="passInput" placeholder="••••••••" autocomplete="current-password" />
-            <button type="button" class="toggle-pass" id="togglePass" tabindex="-1">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eyeIcon">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <button type="submit" class="btn-primary btn-ziklo" id="btnEmail">
-          <div class="spinner"></div>
-          <span class="btn-text">Ingresar al panel</span>
-        </button>
-      </form>
-    </div>
+      </button>
+    </form>
 
   </div>
 
   <div class="login-footer">
-    Ziklo &copy; 2026 &nbsp;·&nbsp; <a href="mailto:hola@ziklo.app">Soporte</a> &nbsp;·&nbsp; <a href="/terms.html">Términos</a> &nbsp;·&nbsp; <a href="/privacy.html">Privacidad</a>
+    Ziklo &copy; 2026 &nbsp;·&nbsp;
+    <a href="mailto:hola@ziklo.app">Soporte</a> &nbsp;·&nbsp;
+    <a href="/terms.html">Términos</a> &nbsp;·&nbsp;
+    <a href="/privacy.html">Privacidad</a>
   </div>
-
 </div>
+
 <script>
-  // ── Tabs ──────────────────────────────────────────────────────────────────
-  function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-    document.getElementById('panel-' + tab).classList.add('active');
+  // Estado: 'email' → pide email primero; 'password' → pide contraseña
+  let step = 'email';
+  let pendingEmail = '';
+
+  function showError(msg) {
+    document.getElementById('errorText').textContent = msg;
+    document.getElementById('errorMsg').classList.add('show');
+  }
+  function hideError() {
+    document.getElementById('errorMsg').classList.remove('show');
   }
 
-  // ── Toggle contraseña ─────────────────────────────────────────────────────
+  async function handleSubmit(e) {
+    e.preventDefault();
+    hideError();
+
+    if (step === 'email') {
+      const email = document.getElementById('emailInput').value.trim();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError('Ingresá un correo electrónico válido.');
+        return;
+      }
+      pendingEmail = email;
+      // Mostrar campo contraseña
+      document.getElementById('passField').style.display = 'block';
+      document.getElementById('emailInput').disabled = true;
+      document.getElementById('btnLabel').textContent = 'Ingresar';
+      document.getElementById('btnArrow').style.display = 'none';
+      step = 'password';
+      document.getElementById('passInput').focus();
+      return;
+    }
+
+    // step === 'password'
+    const password = document.getElementById('passInput').value;
+    if (!password) {
+      showError('Ingresá tu contraseña.');
+      return;
+    }
+
+    const btn = document.getElementById('btnSubmit');
+    btn.classList.add('loading');
+
+    try {
+      const res = await fetch('/auth/user/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, password }),
+      });
+
+      if (res.ok) {
+        window.location.href = '/admin/';
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+      showError(data.error || 'Credenciales incorrectas');
+      btn.classList.remove('loading');
+      document.getElementById('passInput').value = '';
+      document.getElementById('passInput').focus();
+    } catch (_) {
+      showError('Error de conexión. Intentá de nuevo.');
+      btn.classList.remove('loading');
+    }
+  }
+
+  // Toggle contraseña visible
   document.getElementById('togglePass').addEventListener('click', () => {
     const input = document.getElementById('passInput');
     const icon  = document.getElementById('eyeIcon');
@@ -388,55 +407,19 @@
       : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
   });
 
-  // ── Login con email/contraseña ────────────────────────────────────────────
-  async function submitEmail(e) {
-    e.preventDefault();
-    const errorMsg  = document.getElementById('errorMsgEmail');
-    const errorText = document.getElementById('errorTextEmail');
-    const btn       = document.getElementById('btnEmail');
-    errorMsg.classList.remove('show');
-    btn.classList.add('loading');
-
-    try {
-      const res = await fetch('/auth/user/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email:    document.getElementById('emailInput').value.trim(),
-          password: document.getElementById('passInput').value,
-        }),
-      });
-
-      if (res.ok) {
-        window.location.href = '/admin/';
-      } else {
-        const data = await res.json().catch(() => ({}));
-        errorText.textContent = data.error || 'Credenciales incorrectas';
-        errorMsg.classList.add('show');
-        btn.classList.remove('loading');
-        document.getElementById('passInput').value = '';
-        document.getElementById('passInput').focus();
-      }
-    } catch (_) {
-      errorText.textContent = 'Error de conexión. Intentá de nuevo.';
-      errorMsg.classList.add('show');
-      btn.classList.remove('loading');
-    }
-  }
-
-  // ── Google loading state ──────────────────────────────────────────────────
+  // Google loading state
   document.getElementById('btnGoogle').addEventListener('click', function() {
-    this.querySelector('.btn-text').style.display = 'none';
-    this.querySelector('.spinner').style.display  = 'block';
+    this.textContent = '';
+    this.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(0,0,0,.15);border-top-color:#555;border-radius:50%;animation:spin .6s linear infinite"></div>';
   });
 
-  // ── Si ya hay sesión → redirigir ──────────────────────────────────────────
+  // Si ya hay sesión → redirigir
   fetch('/admin/api/login-status')
     .then(r => r.json())
     .then(d => { if (d.loggedIn) window.location.href = '/admin/'; })
     .catch(() => {});
 
-  // ── Mostrar errores de URL ────────────────────────────────────────────────
+  // Errores de URL (Google OAuth)
   const params = new URLSearchParams(window.location.search);
   const errorParam = params.get('error');
   if (errorParam) {
@@ -446,11 +429,7 @@
       google_no_email: 'No se pudo obtener el email de tu cuenta Google.',
       google_error:    'Error inesperado con Google. Intentá de nuevo.',
     };
-    const msg = msgs[errorParam] || 'Ocurrió un error. Intentá de nuevo.';
-    document.getElementById('errorTextGoogle').textContent = msg;
-    document.getElementById('errorMsgGoogle').classList.add('show');
-    // Asegurarse de que el tab de Google esté activo
-    switchTab('google');
+    showError(msgs[errorParam] || 'Ocurrió un error. Intentá de nuevo.');
   }
 </script>
 </body>
