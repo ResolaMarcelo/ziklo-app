@@ -1525,33 +1525,22 @@
             </div>
           </div>
 
-          <!-- Stats del período seleccionado -->
-          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted2);text-transform:uppercase;margin-bottom:6px">En el período seleccionado</div>
-          <div class="stats" style="margin-bottom:16px">
-            <div class="stat stat-mrr">
-              <div class="stat-value" id="stat-ingresos-mes">—</div>
-              <div class="stat-label">Ingresos</div>
-            </div>
-            <div class="stat">
-              <div class="stat-value" id="stat-total">—</div>
-              <div class="stat-label">Nuevas suscripciones</div>
-            </div>
-            <div class="stat">
-              <div class="stat-value" id="stat-churn">—</div>
-              <div class="stat-label">Canceladas</div>
-            </div>
-          </div>
-
-          <!-- Stats actuales (snapshot) -->
-          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted2);text-transform:uppercase;margin-bottom:6px">Estado actual</div>
           <div class="stats">
             <div class="stat stat-mrr">
               <div class="stat-value" id="stat-mrr">—</div>
               <div class="stat-label">MRR estimado</div>
             </div>
             <div class="stat">
+              <div class="stat-value" id="stat-ingresos-mes">—</div>
+              <div class="stat-label">Ingresos</div>
+            </div>
+            <div class="stat">
               <div class="stat-value" id="stat-activos">—</div>
               <div class="stat-label">Suscriptores activos</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-total">—</div>
+              <div class="stat-label">Nuevas suscripciones</div>
             </div>
             <div class="stat">
               <div class="stat-value" id="stat-pendientes">—</div>
@@ -1564,6 +1553,10 @@
             <div class="stat stat-danger">
               <div class="stat-value" id="stat-pago-fallido">—</div>
               <div class="stat-label">Pagos fallidos</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="stat-churn">—</div>
+              <div class="stat-label">Canceladas</div>
             </div>
           </div>
 
@@ -2819,11 +2812,13 @@ function updatePeriodStats(subs, days) {
   const ahora = new Date();
   const desde = days > 0 ? new Date(ahora.getTime() - days * 24 * 60 * 60 * 1000) : null;
 
-  // Nuevas suscripciones en el período
-  const nuevas = desde
-    ? subs.filter(s => new Date(s.createdAt) >= desde).length
-    : subs.length;
-  document.getElementById('stat-total').textContent = nuevas;
+  // Filtrar subs creadas en el período
+  const subsEnPeriodo = desde ? subs.filter(s => new Date(s.createdAt) >= desde) : subs;
+
+  // MRR — activos creados en el período
+  const activosEnPeriodo = subsEnPeriodo.filter(s => s.status === 'authorized');
+  const mrr = activosEnPeriodo.reduce((sum, s) => sum + (s.plan?.tipoFrecuencia === 'months' ? s.plan?.monto || 0 : 0), 0);
+  document.getElementById('stat-mrr').textContent = ARS(mrr);
 
   // Ingresos en el período
   const pagosEnPeriodo = subs.flatMap(s => s.pagos || []).filter(p =>
@@ -2831,6 +2826,23 @@ function updatePeriodStats(subs, days) {
   );
   const ingresos = pagosEnPeriodo.reduce((sum, p) => sum + (p.monto || 0), 0);
   document.getElementById('stat-ingresos-mes').textContent = ARS(ingresos);
+
+  // Suscriptores activos en el período
+  document.getElementById('stat-activos').textContent = activosEnPeriodo.length;
+
+  // Nuevas suscripciones en el período
+  document.getElementById('stat-total').textContent = subsEnPeriodo.length;
+
+  // Pendientes en el período
+  document.getElementById('stat-pendientes').textContent = subsEnPeriodo.filter(s => s.status === 'pending').length;
+
+  // Cobros próximos (siempre próximos 7 días, no cambia con período)
+  const en7dias = new Date(ahora.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const cobrosProximos = subs.filter(s => s.status === 'authorized' && s.nextChargeDate && new Date(s.nextChargeDate) <= en7dias).length;
+  document.getElementById('stat-cobros-proximos').textContent = cobrosProximos;
+
+  // Pagos fallidos en el período
+  document.getElementById('stat-pago-fallido').textContent = subsEnPeriodo.filter(s => s.status === 'payment_failed').length;
 
   // Canceladas en el período
   const canceladas = desde
@@ -2933,22 +2945,7 @@ async function cargarDashboard() {
   const activos = subs.filter(s => s.status === 'authorized');
   const pendientes = subs.filter(s => s.status === 'pending');
 
-  // Stats "Ahora" — snapshot actual
-  document.getElementById('stat-activos').textContent = activos.length;
-  document.getElementById('stat-pendientes').textContent = pendientes.length;
-
-  const mrr = activos.reduce((sum, s) => sum + (s.plan?.tipoFrecuencia === 'months' ? s.plan?.monto || 0 : 0), 0);
-  document.getElementById('stat-mrr').textContent = ARS(mrr);
-
-  const ahora = new Date();
-  const en7dias = new Date(ahora.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const cobrosProximos = activos.filter(s => s.nextChargeDate && new Date(s.nextChargeDate) <= en7dias).length;
-  document.getElementById('stat-cobros-proximos').textContent = cobrosProximos;
-
-  const pagosFallidos = subs.filter(s => s.status === 'payment_failed').length;
-  document.getElementById('stat-pago-fallido').textContent = pagosFallidos;
-
-  // Stats "En el período" — filtradas por período seleccionado
+  // Todos los stats responden al período seleccionado
   updatePeriodStats(subs, _currentPeriodDays);
 
   buildCharts(subs, _currentPeriodDays);
