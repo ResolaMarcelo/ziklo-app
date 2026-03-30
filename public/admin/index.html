@@ -2829,11 +2829,11 @@ const CHECKLIST_STEPS = [
   },
   {
     id: 'plan',
-    name: 'Crear tu primer plan',
-    desc: 'Definí precio y frecuencia de cobro.',
-    action: 'Ir a Planes →',
-    actionTab: 'planes',
-    check: (data) => data.planes > 0,
+    name: 'Activar tu primer producto',
+    desc: 'Habilitá el widget de suscripción en un producto.',
+    action: 'Ir a Productos →',
+    actionTab: 'productos',
+    check: (data) => data.productos > 0,
   },
   {
     id: 'widget',
@@ -2929,8 +2929,8 @@ async function cargarDashboard() {
   buildCharts(subs, _currentPeriodDays);
 
   // Checklist data
-  const planes = await fetch(API + '/api/planes/todos').then(r => r.json()).catch(() => []);
-  renderChecklist({ subs: subs.length, planes: planes.length });
+  const productosData = await fetch(API + '/api/products/enabled').then(r => r.json()).catch(() => ({ count: 0 }));
+  renderChecklist({ subs: subs.length, productos: productosData.count || 0 });
 
   document.getElementById('tabla-recientes').innerHTML = subs.slice(0,10).map(s => {
     const envio = s.datosEnvio ? JSON.parse(s.datosEnvio) : null;

@@ -44,4 +44,17 @@ router.get('/check', async (req, res) => {
   }
 });
 
+// GET /api/products/enabled — cuántos productos tienen suscripciones activas (admin)
+router.get('/enabled', async (req, res) => {
+  try {
+    const shopDomain = req.shop?.domain || req.session?.shopDomain || null;
+    const count = await prisma.productSubscription.count({
+      where: { shopDomain, enabled: true },
+    });
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
