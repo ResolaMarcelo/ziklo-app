@@ -419,7 +419,6 @@ router.get('/api/pagos', async (req, res) => {
 });
 
 // ── Waitlist beta ─────────────────────────────────────────────────────────────
-const prisma = require('../lib/prisma');
 const emailSvc = require('../services/email');
 
 router.get('/api/waitlist', async (req, res) => {

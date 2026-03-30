@@ -61,6 +61,15 @@ router.post('/user/register', async (req, res) => {
   }
 
   try {
+    // ── Verificar acceso beta ─────────────────────────────────────────────────
+    const wl = await prisma.waitlistEntry.findUnique({ where: { email: email.toLowerCase().trim() } });
+    if (!wl || wl.status !== 'approved') {
+      return res.status(403).json({
+        error: 'Este email no tiene acceso aprobado a la beta. Anotate en la lista de espera en zikloapp.com',
+        waitlist: true,
+      });
+    }
+
     const exists = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
     if (exists) {
       return res.status(400).json({ error: 'Ya existe una cuenta con ese email' });
