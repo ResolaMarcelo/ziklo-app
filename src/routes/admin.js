@@ -122,11 +122,11 @@ router.get('/api/shop', async (req, res) => {
 router.get('/api/status', async (req, res) => {
   const shop = req.shop;
   res.json({
-    shopify:     !!(shop?.accessToken || (process.env.SHOPIFY_ACCESS_TOKEN && process.env.SHOPIFY_SHOP_DOMAIN)),
-    mercadopago: !!(shop?.mpAccessToken || process.env.MP_ACCESS_TOKEN),
+    shopify:     !!(shop?.accessToken),
+    mercadopago: !!(shop?.mpAccessToken),
     email:       !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
     klaviyo:     !!(shop?.klaviyoAccessToken),
-    shopDomain:  shop?.domain || process.env.SHOPIFY_SHOP_DOMAIN || null,
+    shopDomain:  shop?.domain || null,
   });
 });
 
