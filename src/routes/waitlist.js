@@ -4,12 +4,17 @@ const prisma  = require('../lib/prisma');
 const email   = require('../services/email');
 const adminAuth = require('../middleware/adminAuth');
 
+const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e));
+
 // POST /api/waitlist — solicitud pública de acceso beta
 router.post('/', async (req, res) => {
   try {
     const { nombre, email: emailAddr, tienda, mensaje } = req.body;
     if (!nombre || !emailAddr) {
       return res.status(400).json({ error: 'nombre y email son requeridos' });
+    }
+    if (!isValidEmail(emailAddr)) {
+      return res.status(400).json({ error: 'El email no es válido' });
     }
 
     // Verificar si ya existe

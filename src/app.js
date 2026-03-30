@@ -76,8 +76,25 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
 app.use(cors({
-  origin: '*',
+  origin: function (origin, callback) {
+    // Requests sin origin (mobile, curl, server-to-server) → siempre ok
+    if (!origin) return callback(null, true);
+    // Dominios Ziklo explícitos
+    const ziklo = ['https://zikloapp.com', 'https://app.zikloapp.com', ...ALLOWED_ORIGINS];
+    if (ziklo.includes(origin)) return callback(null, true);
+    // Cualquier tienda .myshopify.com (widget embebido)
+    if (origin.endsWith('.myshopify.com')) return callback(null, true);
+    // Desarrollo local
+    if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost')) {
+      return callback(null, true);
+    }
+    // Cualquier origen HTTPS (custom domains de merchants con el widget)
+    if (origin.startsWith('https://')) return callback(null, true);
+    callback(new Error('CORS: origen no permitido'));
+  },
+  credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));

@@ -14,8 +14,9 @@ const getMpToken    = (req) => req.shop?.mpAccessToken || null;
 // Helper: determina si la request viene del panel admin
 const isAdmin = (req) => !!req.session?.adminLoggedIn;
 
-// GET /api/subscripciones — listar (filtrado por shop)
+// GET /api/subscripciones — listar (filtrado por shop, solo admin)
 router.get('/', async (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'No autorizado' });
   try {
     const shopDomain = getShopDomain(req);
     const subs = await prisma.subscription.findMany({

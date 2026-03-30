@@ -5,6 +5,8 @@ const crypto  = require('crypto');
 const prisma  = require('../lib/prisma');
 const { enviarResetPassword, enviarVerificacionEmail } = require('../services/email');
 
+const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e));
+
 // ── POST /auth/user/login — login con email + contraseña ─────────────────────
 router.post('/user/login', async (req, res) => {
   const { email, password } = req.body;
@@ -53,6 +55,9 @@ router.post('/user/register', async (req, res) => {
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email y contraseña requeridos' });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'El email no es válido' });
   }
   if (password.length < 8) {
     return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
