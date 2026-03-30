@@ -45,6 +45,12 @@ model Shop {
   email           String?                 // email del owner
   subBenefitType  String?                 // "discount" | "gift" | "free_shipping"
   subBenefitValue String?                 // "10" | "Muestra de crema"
+  // Retención
+  retentionPauseEnabled    Boolean @default(false)
+  retentionDiscountEnabled Boolean @default(false)
+  retentionDiscountPct     Int?
+  retentionSurveyEnabled   Boolean @default(false)
+  retentionMessage         String?
   installedAt   DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   users         UserShop[]
@@ -83,9 +89,11 @@ model Subscription {
   planId               String
   datosEnvio           String?  // JSON: nombre, apellido, telefono, direccion, ciudad, provincia, cp
   qty                  Int?     @default(1)
+  retentionDiscountApplied Boolean @default(false)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   pagos                Pago[]
+  cancelReasons        CancelReason[]
 
   @@index([shopDomain])
 }
@@ -98,6 +106,14 @@ model Pago {
   subscription   Subscription @relation(fields: [subscriptionId], references: [id])
   subscriptionId String
   createdAt      DateTime     @default(now())
+}
+
+model CancelReason {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  reason         String
+  createdAt      DateTime     @default(now())
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 }
 
 // Productos de Shopify con suscripciones activadas por el merchant

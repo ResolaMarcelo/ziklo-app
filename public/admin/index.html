@@ -1326,6 +1326,10 @@
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
     Instalar Widget
   </div>
+  <div class="nav-item" onclick="showTab('retencion')">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    Retención
+  </div>
   <div class="nav-item" onclick="showTab('configuracion')">
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     Configuración
@@ -1955,6 +1959,84 @@
       </div>
     </div><!-- /tab-configuracion -->
 
+    <!-- RETENCIÓN -->
+    <div id="tab-retencion" class="page">
+      <div class="config-grid" style="grid-template-columns:1fr;max-width:680px;">
+
+        <div class="config-card">
+          <div class="config-head">
+            <div class="config-head-icon" style="background:rgba(0,200,122,.1);border-color:rgba(0,200,122,.25)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00C87A" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div>
+              <div class="config-head-title">Flujo de retención</div>
+              <div class="config-head-sub">Configurá qué se le ofrece al suscriptor antes de que cancele</div>
+            </div>
+          </div>
+          <div class="config-body">
+
+            <!-- Toggle: pausa -->
+            <div class="config-row" style="align-items:flex-start;gap:16px;padding:14px 0;">
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px;">Ofrecer pausa</div>
+                <div style="font-size:12px;color:var(--muted2);line-height:1.5;">Antes de cancelar, se le ofrece pausar la suscripción en lugar de cancelarla.</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="ret-pause-enabled">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Toggle: descuento -->
+            <div class="config-row" style="align-items:flex-start;gap:16px;padding:14px 0;border-top:1px solid var(--border);">
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px;">Ofrecer descuento de retención</div>
+                <div style="font-size:12px;color:var(--muted2);line-height:1.5;">Si rechaza la pausa, se le ofrece un descuento en el próximo cobro.</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="ret-discount-enabled" onchange="toggleDiscountPct()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div id="ret-discount-pct-row" style="display:none;padding:0 0 14px;border-top:none;">
+              <label style="font-size:12px;color:var(--muted2);display:block;margin-bottom:6px;">Porcentaje de descuento</label>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="number" id="ret-discount-pct" min="1" max="99" placeholder="10"
+                  style="width:90px;background:var(--surface);border:1px solid var(--border-strong);border-radius:7px;padding:7px 12px;color:var(--white);font-size:13px;outline:none;">
+                <span style="font-size:13px;color:var(--muted2);">%</span>
+              </div>
+            </div>
+
+            <!-- Toggle: encuesta -->
+            <div class="config-row" style="align-items:flex-start;gap:16px;padding:14px 0;border-top:1px solid var(--border);">
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px;">Encuesta de cancelación</div>
+                <div style="font-size:12px;color:var(--muted2);line-height:1.5;">Pedirle al cliente que elija un motivo antes de confirmar la cancelación.</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="ret-survey-enabled">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Mensaje personalizado -->
+            <div style="padding:14px 0;border-top:1px solid var(--border);">
+              <label style="font-size:13px;font-weight:600;color:var(--white);display:block;margin-bottom:4px;">Mensaje personalizado</label>
+              <div style="font-size:12px;color:var(--muted2);margin-bottom:10px;">Este texto aparece al inicio del modal de cancelación. Dejalo en blanco para omitir.</div>
+              <textarea id="ret-message" rows="3" placeholder="Ej: Lamentamos que quieras cancelar. ¿Podemos hacer algo para que te quedes?"
+                style="width:100%;background:var(--surface);border:1px solid var(--border-strong);border-radius:7px;padding:10px 12px;color:var(--white);font-size:13px;font-family:inherit;outline:none;resize:vertical;line-height:1.5;"></textarea>
+            </div>
+
+            <div class="config-btn-row" style="margin-top:8px;">
+              <button class="btn-config primary" id="ret-save-btn" onclick="guardarRetencion()">Guardar cambios</button>
+              <span id="ret-save-msg" style="font-size:12px;color:var(--green);display:none;margin-left:12px;">✓ Guardado</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-retencion -->
+
     <!-- FAQs -->
     <div id="tab-faqs" class="page">
 
@@ -2254,6 +2336,7 @@ const TITLES = {
   beneficio:      ['Beneficio', 'Configurá qué reciben tus clientes al suscribirse'],
   integraciones:  ['Integraciones', 'Servicios conectados a tu cuenta'],
   widget:         ['Instalar Widget', 'Instrucciones de integración'],
+  retencion:      ['Retención', 'Flujo para retener suscriptores antes de que cancelen'],
   configuracion:  ['Configuración', 'Ajustes de la cuenta y la app'],
   faqs:           ['Ayuda & FAQs', 'Preguntas frecuentes sobre Ziklo'],
 };
@@ -2275,6 +2358,7 @@ function showTab(name) {
   if (name === 'productos') cargarProductos();
   if (name === 'beneficio') cargarBeneficio();
   if (name === 'integraciones') cargarIntegraciones();
+  if (name === 'retencion') cargarRetencion();
   if (name === 'configuracion') cargarConfiguracion();
   // Cerrar sidebar en mobile al navegar
   if (window.innerWidth <= 768) closeSidebar();
@@ -3299,6 +3383,56 @@ async function cargarConfiguracion() {
       document.getElementById('cfg-mp-status').style.color = 'var(--green)';
     }
   } catch (_) {}
+}
+
+// ===================== RETENCIÓN =====================
+async function cargarRetencion() {
+  try {
+    const r = await fetch('/admin/api/retention-config');
+    const d = await r.json();
+    document.getElementById('ret-pause-enabled').checked    = !!d.pauseEnabled;
+    document.getElementById('ret-discount-enabled').checked = !!d.discountEnabled;
+    document.getElementById('ret-discount-pct').value       = d.discountPct || 10;
+    document.getElementById('ret-survey-enabled').checked   = !!d.surveyEnabled;
+    document.getElementById('ret-message').value            = d.message || '';
+    toggleDiscountPct();
+  } catch (e) { console.error('cargarRetencion', e); }
+}
+
+function toggleDiscountPct() {
+  const enabled = document.getElementById('ret-discount-enabled')?.checked;
+  const row     = document.getElementById('ret-discount-pct-row');
+  if (row) row.style.display = enabled ? 'block' : 'none';
+}
+
+async function guardarRetencion() {
+  const btn  = document.getElementById('ret-save-btn');
+  const msg  = document.getElementById('ret-save-msg');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  msg.style.display = 'none';
+  try {
+    const body = {
+      pauseEnabled:    document.getElementById('ret-pause-enabled').checked,
+      discountEnabled: document.getElementById('ret-discount-enabled').checked,
+      discountPct:     parseInt(document.getElementById('ret-discount-pct').value) || null,
+      surveyEnabled:   document.getElementById('ret-survey-enabled').checked,
+      message:         document.getElementById('ret-message').value.trim(),
+    };
+    const r = await fetch('/admin/api/retention-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error('Error al guardar');
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 2500);
+  } catch (e) {
+    alert('Error al guardar: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar cambios';
+  }
 }
 
 // ===================== RESPONSIVE SIDEBAR =====================

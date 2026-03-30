@@ -208,6 +208,51 @@ router.post('/api/subscription-benefit', async (req, res) => {
   }
 });
 
+// GET /admin/api/retention-config — leer config de retención del shop
+router.get('/api/retention-config', (req, res) => {
+  const shop = req.shop;
+  res.json({
+    pauseEnabled:    shop?.retentionPauseEnabled    ?? false,
+    discountEnabled: shop?.retentionDiscountEnabled ?? false,
+    discountPct:     shop?.retentionDiscountPct     ?? 10,
+    surveyEnabled:   shop?.retentionSurveyEnabled   ?? false,
+    message:         shop?.retentionMessage         ?? '',
+  });
+});
+
+// POST /admin/api/retention-config — guardar config de retención del shop
+router.post('/api/retention-config', async (req, res) => {
+  try {
+    const { pauseEnabled, discountEnabled, discountPct, surveyEnabled, message } = req.body;
+    const shopDomain = req.session?.shopDomain;
+    if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
+
+    await prisma.shop.upsert({
+      where:  { domain: shopDomain },
+      update: {
+        retentionPauseEnabled:    !!pauseEnabled,
+        retentionDiscountEnabled: !!discountEnabled,
+        retentionDiscountPct:     discountPct ? parseInt(discountPct) : null,
+        retentionSurveyEnabled:   !!surveyEnabled,
+        retentionMessage:         message || null,
+      },
+      create: {
+        domain:                   shopDomain,
+        accessToken:              process.env.SHOPIFY_ACCESS_TOKEN || '',
+        retentionPauseEnabled:    !!pauseEnabled,
+        retentionDiscountEnabled: !!discountEnabled,
+        retentionDiscountPct:     discountPct ? parseInt(discountPct) : null,
+        retentionSurveyEnabled:   !!surveyEnabled,
+        retentionMessage:         message || null,
+      },
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /admin/api/widget-code — contenido actual del widget
 router.get('/api/widget-code', (req, res) => {
   const filePath = path.join(__dirname, '../../public/widget-shopify.html');

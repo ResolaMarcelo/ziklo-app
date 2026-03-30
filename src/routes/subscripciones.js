@@ -177,6 +177,59 @@ router.post('/crear-con-envio', async (req, res) => {
   }
 });
 
+// ── Endpoints públicos de retención ───────────────────────────────────────────
+
+// GET /api/subscripciones/retention-config?shop=domain — config pública (sin auth)
+router.get('/retention-config', async (req, res) => {
+  try {
+    const shop = req.shop; // ya resuelto por shopContext con ?shop=
+    res.json({
+      pauseEnabled:    shop?.retentionPauseEnabled    ?? false,
+      discountEnabled: shop?.retentionDiscountEnabled ?? false,
+      discountPct:     shop?.retentionDiscountPct     ?? 10,
+      surveyEnabled:   shop?.retentionSurveyEnabled   ?? false,
+      message:         shop?.retentionMessage         ?? null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/subscripciones/:id/cancelar-motivo — guarda motivo de cancelación (sin auth)
+router.post('/:id/cancelar-motivo', async (req, res) => {
+  try {
+    const { motivo } = req.body;
+    if (!motivo) return res.status(400).json({ error: 'motivo requerido' });
+    // Verificar que la sub existe
+    const sub = await prisma.subscription.findUnique({ where: { id: req.params.id } });
+    if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
+    await prisma.cancelReason.create({
+      data: { subscriptionId: req.params.id, reason: motivo },
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/subscripciones/:id/aplicar-descuento — marca descuento de retención aplicado
+router.post('/:id/aplicar-descuento', async (req, res) => {
+  try {
+    const sub = await prisma.subscription.findUnique({ where: { id: req.params.id } });
+    if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
+    if (sub.retentionDiscountApplied) {
+      return res.status(400).json({ error: 'El descuento ya fue aplicado anteriormente' });
+    }
+    await prisma.subscription.update({
+      where: { id: req.params.id },
+      data:  { retentionDiscountApplied: true },
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Helper: busca sub y verifica que pertenece al shop logueado
 async function findSubForShop(id, shopDomain) {
   const sub = await prisma.subscription.findFirst({

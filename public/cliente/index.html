@@ -3,247 +3,892 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mi Suscripción</title>
+  <title>Mis Suscripciones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #f6f6f7; --white: #fff; --border: #e1e3e5;
-      --primary: #009ee3; --text: #202223; --muted: #6d7175;
-      --green: #008060; --red: #d72c0d;
+      --bg:       #f6f6f7;
+      --white:    #ffffff;
+      --primary:  #009ee3;
+      --primary-dark: #0082c1;
+      --text:     #202223;
+      --muted:    #6d7175;
+      --border:   #e1e3e5;
+      --green:    #008060;
+      --green-bg: #e3f1ec;
+      --red:      #d82c0d;
+      --red-bg:   #fff4f4;
+      --yellow:   #8a6116;
+      --yellow-bg:#fff3cd;
+      --shadow:   0 1px 4px rgba(0,0,0,.10), 0 0 1px rgba(0,0,0,.06);
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-    .header { background: var(--primary); color: white; padding: 20px 24px; text-align: center; }
-    .header h1 { font-size: 20px; font-weight: 600; }
-    .header p { font-size: 14px; opacity: .8; margin-top: 4px; }
-    .container { max-width: 600px; margin: 0 auto; padding: 24px 16px; }
 
-    .card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
-    .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
 
-    .email-form { display: flex; gap: 8px; }
-    .email-form input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+    /* ─── HEADER ─── */
+    .header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .header-logo-dot { color: var(--primary); }
+
+    /* ─── CONTAINER ─── */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 32px 16px 48px;
+    }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .card-body { padding: 24px; }
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .card-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+    /* ─── FORMULARIO EMAIL ─── */
+    .email-form { display: flex; gap: 10px; }
+    .email-form input {
+      flex: 1;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      color: var(--text);
+      transition: border-color .15s;
+    }
     .email-form input:focus { border-color: var(--primary); }
-    .btn { padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
+
+    /* ─── BOTONES ─── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: background .15s, opacity .15s;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: .55; cursor: default; }
     .btn-primary { background: var(--primary); color: white; }
-    .btn-danger { background: white; color: var(--red); border: 1px solid var(--red); }
-    .btn-warning { background: white; color: #573b00; border: 1px solid #ffc453; }
-    .btn-success { background: white; color: var(--green); border: 1px solid var(--green); }
+    .btn-primary:not(:disabled):hover { background: var(--primary-dark); }
+    .btn-ghost { background: white; color: var(--text); border-color: var(--border); }
+    .btn-ghost:not(:disabled):hover { background: var(--bg); }
+    .btn-danger { background: white; color: var(--red); border-color: #f4c5c0; }
+    .btn-danger:not(:disabled):hover { background: var(--red-bg); }
+    .btn-warning { background: white; color: var(--yellow); border-color: #ffd380; }
+    .btn-warning:not(:disabled):hover { background: var(--yellow-bg); }
+    .btn-success { background: white; color: var(--green); border-color: #aed9c9; }
+    .btn-success:not(:disabled):hover { background: var(--green-bg); }
+    .btn-full { width: 100%; }
+    .btn-mp {
+      width: 100%;
+      padding: 13px;
+      background: var(--primary);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+    .btn-mp:not(:disabled):hover { background: var(--primary-dark); }
 
-    .sub-card { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-    .sub-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
-    .sub-plan { font-size: 16px; font-weight: 600; }
-    .sub-monto { font-size: 22px; font-weight: 700; color: var(--primary); }
-    .sub-info { font-size: 13px; color: var(--muted); margin-top: 4px; }
-    .sub-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    /* ─── SUSCRIPCIÓN CARD ─── */
+    .sub-card {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .sub-card-body { padding: 20px; }
+    .sub-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .sub-plan-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .sub-amount { font-size: 26px; font-weight: 700; color: var(--primary); line-height: 1; }
+    .sub-freq { font-size: 14px; font-weight: 400; color: var(--muted); }
+    .sub-desc { font-size: 13px; color: var(--muted); margin-top: 5px; }
+    .sub-since { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
 
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
-    .badge-green { background: #aee9d1; color: #003d2b; }
-    .badge-yellow { background: #ffea8a; color: #573b00; }
-    .badge-red { background: #fed3d1; color: #7b0e00; }
-    .badge-gray { background: #e4e5e7; color: #6d7175; }
+    .sub-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
 
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { text-align: left; padding: 8px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); text-transform: uppercase; }
-    td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
-    tr:last-child td { border-bottom: none; }
+    /* ─── BADGE ─── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .badge-green { background: var(--green-bg); color: var(--green); }
+    .badge-green::before { background: var(--green); }
+    .badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+    .badge-yellow::before { background: #e09600; }
+    .badge-red { background: var(--red-bg); color: var(--red); }
+    .badge-red::before { background: var(--red); }
+    .badge-gray { background: #f1f2f3; color: var(--muted); }
+    .badge-gray::before { background: #bbbfc3; }
 
-    .planes-grid { display: grid; gap: 12px; }
-    .plan-option { border: 2px solid var(--border); border-radius: 8px; padding: 16px; cursor: pointer; transition: .15s; }
+    /* ─── HISTORIAL PAGOS ─── */
+    .pagos-section { margin-top: 14px; }
+    .pagos-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+    .pago-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .pago-row:last-child { border-bottom: 1px solid var(--border); }
+    .pago-fecha { color: var(--muted); }
+    .pago-monto { font-weight: 600; color: var(--text); }
+
+    /* ─── PLANES ─── */
+    .planes-grid { display: flex; flex-direction: column; gap: 10px; }
+    .plan-option {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
     .plan-option:hover { border-color: var(--primary); }
     .plan-option.selected { border-color: var(--primary); background: #f0f9ff; }
     .plan-nombre { font-weight: 600; font-size: 15px; }
-    .plan-monto { font-size: 20px; font-weight: 700; color: var(--primary); margin-top: 4px; }
+    .plan-monto { font-size: 22px; font-weight: 700; color: var(--primary); margin-top: 4px; }
     .plan-desc { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
-    .mp-btn { width: 100%; padding: 14px; background: #009ee3; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .mp-btn:hover { background: #0082c1; }
-    .mp-btn:disabled { opacity: .6; cursor: default; }
+    /* ─── EMPTY / SPINNER ─── */
+    .empty {
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--muted);
+    }
+    .empty-icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .empty-text { font-size: 13px; }
 
-    .empty { text-align: center; padding: 32px; color: var(--muted); font-size: 14px; }
-    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    .spinner-dark {
+      border-color: rgba(0,0,0,.15);
+      border-top-color: var(--primary);
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    #vista-inicio, #vista-planes, #vista-mis-subs { display: none; }
-    #vista-inicio.visible, #vista-planes.visible, #vista-mis-subs.visible { display: block; }
+    /* ─── VISTAS ─── */
+    #vista-inicio, #vista-mis-subs, #vista-planes { display: none; }
+    #vista-inicio.visible, #vista-mis-subs.visible, #vista-planes.visible { display: block; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title { font-size: 16px; font-weight: 600; }
+    .link-btn { background: none; border: none; color: var(--primary); font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
+    .link-btn:hover { text-decoration: underline; }
+
+    /* ─── MODAL RETENCIÓN ─── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+      width: 100%;
+      max-width: 440px;
+      overflow: hidden;
+      animation: modal-in .2s ease-out;
+    }
+    @keyframes modal-in {
+      from { opacity: 0; transform: translateY(12px) scale(.97); }
+      to   { opacity: 1; transform: none; }
+    }
+    .modal-header {
+      padding: 24px 24px 0;
+      text-align: center;
+    }
+    .modal-icon { font-size: 36px; margin-bottom: 10px; }
+    .modal-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .modal-sub { font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .modal-body { padding: 20px 24px; }
+    .modal-msg {
+      background: #f0f9ff;
+      border: 1px solid #bde5f7;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 24px 24px;
+    }
+    .modal-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 4px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .modal-divider::before, .modal-divider::after {
+      content: ''; flex: 1; border-top: 1px solid var(--border);
+    }
+
+    /* ─── ENCUESTA ─── */
+    .survey-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+    .survey-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color .12s, background .12s;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .survey-option input[type=radio] { accent-color: var(--primary); width: 16px; height: 16px; }
+    .survey-option:has(input:checked) {
+      border-color: var(--primary);
+      background: #f0f9ff;
+    }
+
+    /* ─── DISCOUNT HIGHLIGHT ─── */
+    .discount-highlight {
+      background: #f0f9ff;
+      border: 1.5px solid #9dd5f3;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .discount-pct { font-size: 40px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .discount-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* ─── LINK VOLVER ─── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--muted);
+      background: none;
+      border: none;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .back-link:hover { color: var(--primary); }
+
+    @media (max-width: 480px) {
+      .container { padding: 20px 12px 40px; }
+      .sub-amount { font-size: 22px; }
+      .modal-actions { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Mi Suscripción</h1>
-  <p>Gestioná tu suscripción con Mercado Pago</p>
-</div>
+<!-- HEADER -->
+<header class="header">
+  <a class="header-logo" href="#">
+    Ziklo<span class="header-logo-dot">.</span>
+  </a>
+</header>
 
-<div class="container">
-
-  <!-- INICIO: pedir email -->
-  <div id="vista-inicio" class="visible">
-    <div class="card">
-      <h2>Ingresá tu email para ver tu suscripción</h2>
-      <div class="email-form">
-        <input type="email" id="input-email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')buscarSubs()" />
-        <button class="btn btn-primary" onclick="buscarSubs()">Ver suscripción</button>
+<!-- MODAL DE RETENCIÓN -->
+<div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <!-- Paso 1: Pausa -->
+    <div id="modal-paso-pause">
+      <div class="modal-header">
+        <div class="modal-icon">⏸️</div>
+        <div class="modal-title">¿Querés pausar en vez de cancelar?</div>
+        <div class="modal-sub">Podés pausar tu suscripción y retomarla cuando quieras, sin perder tu historial.</div>
       </div>
-      <p style="font-size:13px;color:var(--muted);margin-top:12px">
-        ¿No tenés una suscripción aún? <a href="#" onclick="mostrarPlanes();return false" style="color:var(--primary)">Ver planes disponibles</a>
-      </p>
-    </div>
-  </div>
-
-  <!-- MIS SUSCRIPCIONES -->
-  <div id="vista-mis-subs">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h2 style="font-size:16px;font-weight:600">Tus suscripciones</h2>
-      <a href="#" onclick="nuevaSub();return false" style="color:var(--primary);font-size:14px">+ Nueva suscripción</a>
-    </div>
-    <div id="mis-subs-lista"></div>
-  </div>
-
-  <!-- ELEGIR PLAN -->
-  <div id="vista-planes">
-    <div class="card">
-      <h2>Elegí tu plan</h2>
-      <div id="planes-lista" class="planes-grid"></div>
-      <div id="form-email-sub" style="display:none;margin-top:16px">
-        <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">Tu email para la suscripción</label>
-        <input type="email" id="sub-email" placeholder="tu@email.com" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:4px" />
-        <button class="mp-btn" id="btn-suscribir" onclick="iniciarSuscripcion()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="10"/><path fill="#009ee3" d="M12 6c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6z"/></svg>
-          Suscribirme con Mercado Pago
+      <div class="modal-body" id="modal-msg-container" style="display:none;">
+        <div class="modal-msg" id="modal-msg-text"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary btn-full" onclick="accionConShop(window._retSubId,'pausar');cerrarModal()">
+          ⏸ Pausar mi suscripción
+        </button>
+        <div class="modal-divider">o</div>
+        <button class="btn btn-ghost btn-full" onclick="avanzarRetencion()">
+          Continuar con la cancelación →
         </button>
       </div>
-      <p style="margin-top:12px;text-align:center"><a href="#" onclick="mostrarInicio();return false" style="font-size:13px;color:var(--muted)">← Volver</a></p>
+    </div>
+
+    <!-- Paso 2: Descuento -->
+    <div id="modal-paso-discount" style="display:none;">
+      <div class="modal-header">
+        <div class="modal-icon">🎁</div>
+        <div class="modal-title">Tenemos una oferta para vos</div>
+        <div class="modal-sub">Antes de irte, queremos ofrecerte un descuento en tu próximo cobro.</div>
+      </div>
+      <div class="modal-body">
+        <div class="discount-highlight">
+          <div class="discount-pct" id="modal-discount-pct">10%</div>
+          <div class="discount-label">de descuento en tu próximo cobro</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary btn-full" onclick="aceptarDescuento()">
+          🎁 Aceptar descuento
+        </button>
+        <div class="modal-divider">o</div>
+        <button class="btn btn-ghost btn-full" onclick="avanzarRetencion()">
+          No me interesa, cancelar →
+        </button>
+      </div>
+    </div>
+
+    <!-- Paso 3: Encuesta -->
+    <div id="modal-paso-survey" style="display:none;">
+      <div class="modal-header">
+        <div class="modal-icon">📋</div>
+        <div class="modal-title">¿Por qué cancelás?</div>
+        <div class="modal-sub">Tu respuesta nos ayuda a mejorar el servicio.</div>
+      </div>
+      <div class="modal-body">
+        <div class="survey-options" id="survey-options">
+          <label class="survey-option">
+            <input type="radio" name="cancel-reason" value="Precio muy alto" />
+            Precio muy alto
+          </label>
+          <label class="survey-option">
+            <input type="radio" name="cancel-reason" value="Ya no lo necesito" />
+            Ya no lo necesito
+          </label>
+          <label class="survey-option">
+            <input type="radio" name="cancel-reason" value="Problemas con el producto" />
+            Problemas con el producto
+          </label>
+          <label class="survey-option">
+            <input type="radio" name="cancel-reason" value="Otro motivo" />
+            Otro motivo
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-danger btn-full" onclick="confirmarCancelacion()">
+          Cancelar mi suscripción
+        </button>
+        <button class="btn btn-ghost btn-full" onclick="cerrarModal()">
+          Mejor me quedo
+        </button>
+      </div>
+    </div>
+
+    <!-- Paso confirm (sin retención) -->
+    <div id="modal-paso-confirm" style="display:none;">
+      <div class="modal-header">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-title">¿Cancelar suscripción?</div>
+        <div class="modal-sub">Esta acción cancelará tu suscripción activa. No podrás revertirlo fácilmente.</div>
+      </div>
+      <div class="modal-body" id="modal-confirm-msg-container" style="display:none;">
+        <div class="modal-msg" id="modal-confirm-msg-text"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-danger btn-full" onclick="confirmarCancelacion()">
+          Sí, cancelar mi suscripción
+        </button>
+        <button class="btn btn-ghost btn-full" onclick="cerrarModal()">
+          No, quedarme suscrito
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- VISTA INICIO -->
+  <div id="vista-inicio" class="visible">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">Mis suscripciones</div>
+      <div style="font-size:13px;color:var(--muted);">Gestioná tu suscripción activa</div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <div style="font-size:14px;font-weight:500;margin-bottom:12px;">Ingresá tu email para continuar</div>
+        <div class="email-form">
+          <input type="email" id="input-email" placeholder="tu@email.com" autocomplete="email"
+            onkeydown="if(event.key==='Enter')buscarSubs()" />
+          <button class="btn btn-primary" id="btn-buscar" onclick="buscarSubs()">Ver suscripción</button>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:14px;">
+          ¿Todavía no tenés una?
+          <button class="link-btn" onclick="mostrarPlanes()">Ver planes disponibles →</button>
+        </p>
+      </div>
     </div>
   </div>
 
-</div>
+  <!-- VISTA MIS SUSCRIPCIONES -->
+  <div id="vista-mis-subs">
+    <div class="section-header">
+      <div class="section-title">Tus suscripciones</div>
+      <button class="link-btn" onclick="mostrarPlanes()">+ Nueva</button>
+    </div>
+    <div id="mis-subs-lista"></div>
+    <div style="text-align:center;">
+      <button class="back-link" onclick="mostrarInicio()">← Buscar con otro email</button>
+    </div>
+  </div>
+
+  <!-- VISTA PLANES -->
+  <div id="vista-planes">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Elegí tu plan</div>
+        <div class="card-sub">Suscripciones con cobro automático mensual via Mercado Pago</div>
+      </div>
+      <div class="card-body">
+        <div id="planes-lista" class="planes-grid"></div>
+        <div id="form-email-sub" style="display:none;margin-top:20px;border-top:1px solid var(--border);padding-top:20px;">
+          <label style="font-size:13px;font-weight:500;display:block;margin-bottom:8px;">Tu email</label>
+          <input type="email" id="sub-email" placeholder="tu@email.com" autocomplete="email"
+            style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:var(--text);" />
+          <button class="btn-mp btn" id="btn-suscribir" onclick="iniciarSuscripcion()">
+            Suscribirme con Mercado Pago
+          </button>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button class="back-link" onclick="mostrarInicio()">← Volver</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
 
 <script>
-let planSeleccionadoId = null;
-let emailActual = null;
+// ── Estado global ──────────────────────────────────────────────────────────────
+let emailActual      = null;
+let planSeleccionado = null;
+let _retCfg          = null;   // config de retención cargada desde la API
+let _retSubId        = null;   // ID de la sub que se quiere cancelar
+let _retStep         = 0;      // paso actual del modal (1=pause, 2=discount, 3=survey)
+let _retSteps        = [];     // lista de pasos activos
 
-// ===================== INICIO =====================
+// Obtiene el shopDomain del query string (?shop=...)
+const SHOP = new URLSearchParams(window.location.search).get('shop') || '';
+
+// Helper para agregar ?shop= a las URLs de la API
+function apiUrl(path) {
+  if (!SHOP) return path;
+  const sep = path.includes('?') ? '&' : '?';
+  return path + sep + 'shop=' + encodeURIComponent(SHOP);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+(async function init() {
+  // Cargar config de retención al inicio (no bloquea la UI)
+  try {
+    const r = await fetch(apiUrl('/api/subscripciones/retention-config'));
+    if (r.ok) _retCfg = await r.json();
+  } catch (_) {}
+})();
+
+// ── VISTA INICIO ───────────────────────────────────────────────────────────────
 async function buscarSubs() {
-  const email = document.getElementById('input-email').value.trim();
-  if (!email) return;
+  const input = document.getElementById('input-email');
+  const email = input.value.trim();
+  if (!email) { input.focus(); return; }
   emailActual = email;
 
-  const subs = await fetch(`/api/subscripciones/cliente/${encodeURIComponent(email)}`).then(r => r.json());
+  const btn = document.getElementById('btn-buscar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
 
-  ocultarTodo();
-  document.getElementById('vista-mis-subs').classList.add('visible');
+  try {
+    const subs = await fetch(apiUrl(`/api/subscripciones/cliente/${encodeURIComponent(email)}`)).then(r => r.json());
+    ocultarTodo();
+    document.getElementById('vista-mis-subs').classList.add('visible');
+    renderSubs(subs);
+  } catch (e) {
+    alert('Error al buscar suscripciones. Intentá nuevamente.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Ver suscripción';
+  }
+}
 
+function renderSubs(subs) {
+  const lista = document.getElementById('mis-subs-lista');
   if (!subs.length) {
-    document.getElementById('mis-subs-lista').innerHTML = `
-      <div class="card empty">
-        <p>No tenés suscripciones activas con ese email.</p>
-        <a href="#" onclick="mostrarPlanes();return false" style="color:var(--primary);display:block;margin-top:8px">Ver planes disponibles →</a>
+    lista.innerHTML = `
+      <div class="card">
+        <div class="empty">
+          <div class="empty-icon">📭</div>
+          <div class="empty-title">Sin suscripciones activas</div>
+          <div class="empty-text">No encontramos suscripciones para <strong>${esc(emailActual)}</strong>.</div>
+          <button class="btn btn-primary" style="margin-top:16px;" onclick="mostrarPlanes()">Ver planes disponibles →</button>
+        </div>
       </div>`;
     return;
   }
 
-  document.getElementById('mis-subs-lista').innerHTML = subs.map(s => `
+  lista.innerHTML = subs.map(s => {
+    const freq    = freqLabel(s.plan);
+    const actions = buildActions(s);
+    const pagosHtml = buildPagos(s.pagos);
+
+    return `
     <div class="sub-card">
-      <div class="sub-card-header">
-        <div>
-          <div class="sub-plan">${s.plan?.nombre || 'Plan'}</div>
-          <div class="sub-monto">$${Number(s.plan?.monto).toLocaleString('es-AR')}<span style="font-size:14px;font-weight:400;color:var(--muted)">/${s.plan?.tipoFrecuencia === 'months' ? (s.plan?.frecuencia === 1 ? 'mes' : s.plan?.frecuencia + ' meses') : s.plan?.frecuencia + ' días'}</span></div>
-          ${s.plan?.descripcion ? `<div class="sub-info">${s.plan.descripcion}</div>` : ''}
+      <div class="sub-card-body">
+        <div class="sub-card-top">
+          <div>
+            <div class="sub-plan-name">${esc(s.plan?.nombre || 'Plan')}</div>
+            <div>
+              <span class="sub-amount">$${fmtNum(s.plan?.monto)}</span>
+              <span class="sub-freq">/${freq}</span>
+            </div>
+            ${s.plan?.descripcion ? `<div class="sub-desc">${esc(s.plan.descripcion)}</div>` : ''}
+          </div>
+          ${badge(s.status)}
         </div>
-        ${badge(s.status)}
+        <div class="sub-since">Activa desde ${fecha(s.createdAt)}</div>
+        ${pagosHtml}
+        <div class="sub-actions">${actions}</div>
       </div>
-      <div style="font-size:13px;color:var(--muted)">Desde: ${fecha(s.createdAt)}</div>
-
-      ${s.pagos?.length ? `
-        <div style="margin-top:12px">
-          <p style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;font-weight:600">Últimos pagos</p>
-          <table>
-            <thead><tr><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
-            <tbody>
-              ${s.pagos.slice(0,5).map(p=>`<tr><td>${fecha(p.createdAt)}</td><td>$${Number(p.monto).toLocaleString('es-AR')}</td><td>${badge(p.status)}</td></tr>`).join('')}
-            </tbody>
-          </table>
-        </div>` : ''}
-
-      <div class="sub-actions">
-        ${s.status === 'authorized' ? `<button class="btn btn-warning" onclick="accion('${s.id}','pausar')">Pausar</button>` : ''}
-        ${s.status === 'paused' ? `<button class="btn btn-success" onclick="accion('${s.id}','reanudar')">Reanudar</button>` : ''}
-        ${s.status !== 'cancelled' ? `<button class="btn btn-danger" onclick="accion('${s.id}','cancelar')">Cancelar suscripción</button>` : ''}
-      </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
-async function accion(id, tipo) {
-  const msg = { cancelar: '¿Cancelar tu suscripción?', pausar: '¿Pausar tu suscripción?', reanudar: '¿Reanudar tu suscripción?' };
-  if (!confirm(msg[tipo])) return;
-  await fetch(`/api/subscripciones/${id}/${tipo}`, { method: 'POST' });
-  buscarSubs();
+function buildActions(s) {
+  let html = '';
+  if (s.status === 'authorized') {
+    html += `<button class="btn btn-warning" onclick="accionConShop('${s.id}','pausar')">⏸ Pausar</button>`;
+  }
+  if (s.status === 'paused') {
+    html += `<button class="btn btn-success" onclick="accionConShop('${s.id}','reanudar')">▶ Reanudar</button>`;
+  }
+  if (s.status !== 'cancelled') {
+    html += `<button class="btn btn-danger" onclick="iniciarCancelacion('${s.id}')">Cancelar suscripción</button>`;
+  }
+  return html || `<span style="font-size:13px;color:var(--muted);">Sin acciones disponibles</span>`;
 }
 
-// ===================== PLANES =====================
+function buildPagos(pagos) {
+  if (!pagos?.length) return '';
+  return `
+    <div class="pagos-section">
+      <div class="pagos-title">Últimos pagos</div>
+      ${pagos.slice(0,5).map(p => `
+        <div class="pago-row">
+          <span class="pago-fecha">${fecha(p.createdAt)}</span>
+          <span class="pago-monto">$${fmtNum(p.monto)}</span>
+          ${badge(p.status)}
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── ACCIONES ──────────────────────────────────────────────────────────────────
+async function accionConShop(id, tipo) {
+  if (tipo === 'cancelar') { iniciarCancelacion(id); return; }
+  const confirmMsg = tipo === 'pausar'
+    ? '¿Pausar tu suscripción? Podés reanudarla cuando quieras.'
+    : '¿Reanudar tu suscripción?';
+  if (!confirm(confirmMsg)) return;
+  await ejecutarAccion(id, tipo);
+}
+
+async function ejecutarAccion(id, tipo) {
+  try {
+    const r = await fetch(apiUrl(`/api/subscripciones/${id}/${tipo}`), { method: 'POST' });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      throw new Error(d.error || 'Error desconocido');
+    }
+    buscarSubs();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+// ── FLUJO DE RETENCIÓN ────────────────────────────────────────────────────────
+function iniciarCancelacion(subId) {
+  _retSubId = subId;
+  _retStep  = 0;
+
+  // Construir lista de pasos según config
+  _retSteps = [];
+  if (_retCfg?.pauseEnabled)    _retSteps.push('pause');
+  if (_retCfg?.discountEnabled) _retSteps.push('discount');
+  if (_retCfg?.surveyEnabled)   _retSteps.push('survey');
+
+  if (_retSteps.length === 0) {
+    // Sin retención → confirm directo
+    mostrarPaso('confirm');
+    if (_retCfg?.message) {
+      document.getElementById('modal-confirm-msg-text').textContent = _retCfg.message;
+      document.getElementById('modal-confirm-msg-container').style.display = 'block';
+    }
+  } else {
+    // Mostrar mensaje personalizado en el primer paso
+    if (_retCfg?.message) {
+      document.getElementById('modal-msg-text').textContent = _retCfg.message;
+      document.getElementById('modal-msg-container').style.display = 'block';
+    }
+    mostrarPaso(_retSteps[0]);
+  }
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function mostrarPaso(step) {
+  ['pause','discount','survey','confirm'].forEach(s =>
+    document.getElementById('modal-paso-' + s).style.display = 'none'
+  );
+  document.getElementById('modal-paso-' + step).style.display = 'block';
+
+  if (step === 'discount' && _retCfg?.discountPct) {
+    document.getElementById('modal-discount-pct').textContent = _retCfg.discountPct + '%';
+  }
+}
+
+function avanzarRetencion() {
+  _retStep++;
+  if (_retStep < _retSteps.length) {
+    mostrarPaso(_retSteps[_retStep]);
+  } else {
+    // Agotamos los pasos → confirm final sin retención
+    mostrarPaso('confirm');
+    document.getElementById('modal-confirm-msg-container').style.display = 'none';
+  }
+}
+
+async function aceptarDescuento() {
+  try {
+    await fetch(apiUrl(`/api/subscripciones/${_retSubId}/aplicar-descuento`), { method: 'POST' });
+    cerrarModal();
+    alert('¡Genial! Tu descuento fue aplicado al próximo cobro. ¡Gracias por quedarte!');
+    buscarSubs();
+  } catch (e) {
+    alert('Error al aplicar el descuento. Intentá nuevamente.');
+  }
+}
+
+async function confirmarCancelacion() {
+  const motivo = document.querySelector('input[name="cancel-reason"]:checked')?.value || null;
+
+  // Guardar motivo si aplica
+  if (motivo) {
+    try {
+      await fetch(apiUrl(`/api/subscripciones/${_retSubId}/cancelar-motivo`), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motivo }),
+      });
+    } catch (_) {}
+  }
+
+  cerrarModal();
+  await ejecutarAccion(_retSubId, 'cancelar');
+}
+
+function cerrarModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  _retSubId = null;
+  _retStep  = 0;
+  _retSteps = [];
+  // Resetear encuesta
+  document.querySelectorAll('input[name="cancel-reason"]').forEach(r => r.checked = false);
+  // Resetear msg
+  document.getElementById('modal-msg-container').style.display = 'none';
+}
+
+// Cerrar modal al hacer click fuera
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModal();
+});
+
+// ── PLANES ────────────────────────────────────────────────────────────────────
 async function mostrarPlanes() {
   ocultarTodo();
   document.getElementById('vista-planes').classList.add('visible');
 
-  const planes = await fetch('/api/planes').then(r => r.json());
-  if (!planes.length) {
-    document.getElementById('planes-lista').innerHTML = '<p style="color:var(--muted);font-size:14px">No hay planes disponibles por el momento.</p>';
-    return;
-  }
+  const lista = document.getElementById('planes-lista');
+  lista.innerHTML = '<div style="text-align:center;padding:24px 0;"><span class="spinner spinner-dark"></span></div>';
 
-  document.getElementById('planes-lista').innerHTML = planes.map(p => `
-    <div class="plan-option" id="plan-${p.id}" onclick="seleccionarPlan('${p.id}')">
-      <div class="plan-nombre">${p.nombre}</div>
-      <div class="plan-monto">$${Number(p.monto).toLocaleString('es-AR')}<span style="font-size:14px;font-weight:400;color:var(--muted)">/${p.tipoFrecuencia === 'months' ? (p.frecuencia === 1 ? 'mes' : p.frecuencia + ' meses') : p.frecuencia + ' días'}</span></div>
-      ${p.descripcion ? `<div class="plan-desc">${p.descripcion}</div>` : ''}
-    </div>
-  `).join('');
+  try {
+    const planes = await fetch(apiUrl('/api/planes')).then(r => r.json());
+    if (!planes.length) {
+      lista.innerHTML = '<p style="color:var(--muted);font-size:14px;text-align:center;padding:16px 0;">No hay planes disponibles por el momento.</p>';
+      return;
+    }
+    lista.innerHTML = planes.filter(p => p.activo).map(p => `
+      <div class="plan-option" id="plan-${p.id}" onclick="seleccionarPlan('${p.id}')">
+        <div class="plan-nombre">${esc(p.nombre)}</div>
+        <div class="plan-monto">$${fmtNum(p.monto)}<span style="font-size:14px;font-weight:400;color:var(--muted)">/${freqLabel(p)}</span></div>
+        ${p.descripcion ? `<div class="plan-desc">${esc(p.descripcion)}</div>` : ''}
+      </div>
+    `).join('');
+  } catch (e) {
+    lista.innerHTML = '<p style="color:var(--red);font-size:14px;">Error al cargar los planes.</p>';
+  }
 }
 
 function seleccionarPlan(id) {
-  planSeleccionadoId = id;
+  planSeleccionado = id;
   document.querySelectorAll('.plan-option').forEach(el => el.classList.remove('selected'));
   document.getElementById('plan-' + id).classList.add('selected');
   const form = document.getElementById('form-email-sub');
   form.style.display = 'block';
   if (emailActual) document.getElementById('sub-email').value = emailActual;
+  form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 async function iniciarSuscripcion() {
   const email = document.getElementById('sub-email').value.trim();
-  if (!email || !planSeleccionadoId) { alert('Seleccioná un plan e ingresá tu email'); return; }
+  if (!email || !planSeleccionado) { alert('Seleccioná un plan e ingresá tu email'); return; }
 
   const btn = document.getElementById('btn-suscribir');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Redirigiendo...';
+  btn.innerHTML = '<span class="spinner"></span> Redirigiendo a Mercado Pago...';
 
-  const res = await fetch('/api/subscripciones/crear', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ planId: planSeleccionadoId, email }),
-  }).then(r => r.json());
+  try {
+    const body = { planId: planSeleccionado, email };
+    if (SHOP) body.shopDomain = SHOP;
 
-  if (res.initPoint) {
-    window.location.href = res.initPoint;
-  } else {
-    alert('Error al crear la suscripción: ' + (res.error || 'intente nuevamente'));
+    const res = await fetch('/api/subscripciones/crear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).then(r => r.json());
+
+    if (res.initPoint) {
+      window.location.href = res.initPoint;
+    } else {
+      throw new Error(res.error || 'Error al crear la suscripción');
+    }
+  } catch (e) {
+    alert(e.message);
     btn.disabled = false;
-    btn.innerHTML = 'Suscribirme con Mercado Pago';
+    btn.textContent = 'Suscribirme con Mercado Pago';
   }
 }
 
-function nuevaSub() { mostrarPlanes(); }
+// ── HELPERS ───────────────────────────────────────────────────────────────────
 function mostrarInicio() { ocultarTodo(); document.getElementById('vista-inicio').classList.add('visible'); }
 function ocultarTodo() {
   ['vista-inicio','vista-planes','vista-mis-subs'].forEach(id =>
     document.getElementById(id).classList.remove('visible'));
 }
 
-// ===================== HELPERS =====================
-const fecha = d => new Date(d).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' });
+const fmtNum  = n => Number(n || 0).toLocaleString('es-AR');
+const fecha   = d => new Date(d).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' });
+const esc     = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function freqLabel(plan) {
+  if (!plan) return 'mes';
+  if (plan.tipoFrecuencia === 'months') {
+    return plan.frecuencia === 1 ? 'mes' : plan.frecuencia + ' meses';
+  }
+  return plan.frecuencia + ' días';
+}
+
 function badge(status) {
-  const map = { authorized:['badge-green','Activo'], pending:['badge-yellow','Pendiente'], paused:['badge-yellow','Pausado'], cancelled:['badge-red','Cancelado'], approved:['badge-green','Aprobado'], rejected:['badge-red','Rechazado'] };
+  const map = {
+    authorized: ['badge-green',  'Activa'],
+    pending:    ['badge-yellow', 'Pendiente'],
+    paused:     ['badge-yellow', 'Pausada'],
+    cancelled:  ['badge-red',    'Cancelada'],
+    approved:   ['badge-green',  'Aprobado'],
+    rejected:   ['badge-red',    'Rechazado'],
+  };
   const [cls, lbl] = map[status] || ['badge-gray', status];
   return `<span class="badge ${cls}">${lbl}</span>`;
 }
