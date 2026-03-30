@@ -13,7 +13,8 @@ const clienteRoutes = require('./routes/cliente');
 const authRoutes = require('./routes/auth');
 const userAuthRoutes = require('./routes/userAuth');
 const klaviyoAuthRoutes = require('./routes/klaviyoAuth');
-const adminAuth  = require('./middleware/adminAuth');
+const clienteAuthRoutes = require('./routes/clienteAuth');
+const adminAuth   = require('./middleware/adminAuth');
 const shopContext = require('./middleware/shopContext');
 
 const app = express();
@@ -33,7 +34,7 @@ app.use(cors({
 app.use(cookieSession({
   name: 'ziklo_admin',
   keys: [process.env.SESSION_SECRET || 'ziklo-secret-dev-key-change-in-prod'],
-  maxAge: 8 * 60 * 60 * 1000, // 8 horas
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días (admin + cliente)
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax',
 }));
@@ -63,6 +64,9 @@ app.use('/auth', userAuthRoutes);
 
 // Klaviyo OAuth — protegido por adminAuth (sólo merchants logueados)
 app.use('/auth/klaviyo', adminAuth, klaviyoAuthRoutes);
+
+// Auth del portal cliente (magic link) — pública, sin adminAuth
+app.use('/api/cliente', clienteAuthRoutes);
 
 // Rutas de UI — admin protegido con auth
 app.use('/admin', adminAuth, adminRoutes);

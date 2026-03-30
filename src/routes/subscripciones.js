@@ -1,12 +1,16 @@
-const express = require('express');
-const router  = express.Router();
-const prisma  = require('../lib/prisma');
-const mp      = require('../services/mercadopago');
-const klaviyo = require('../services/klaviyo');
+const express     = require('express');
+const router      = express.Router();
+const prisma      = require('../lib/prisma');
+const mp          = require('../services/mercadopago');
+const klaviyo     = require('../services/klaviyo');
+const clienteAuth = require('../middleware/clienteAuth');
 
 // Helpers
 const getShopDomain = (req) => req.shop?.domain || req.session?.shopDomain || null;
 const getMpToken    = (req) => req.shop?.mpAccessToken || null;
+
+// Helper: determina si la request viene del panel admin
+const isAdmin = (req) => !!req.session?.adminLoggedIn;
 
 // GET /api/subscripciones — listar (filtrado por shop)
 router.get('/', async (req, res) => {
@@ -23,9 +27,13 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/subscripciones/cliente/:email
-router.get('/cliente/:email', async (req, res) => {
+// GET /api/subscripciones/cliente/:email — requiere auth del cliente
+router.get('/cliente/:email', clienteAuth, async (req, res) => {
   try {
+    // Clientes solo pueden ver sus propias suscripciones
+    if (!isAdmin(req) && req.clienteEmail !== req.params.email.toLowerCase()) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
     const shopDomain = getShopDomain(req);
     const subs = await prisma.subscription.findMany({
       where:   { shopifyCustomerEmail: req.params.email, shopDomain },
@@ -196,8 +204,8 @@ router.get('/retention-config', async (req, res) => {
   }
 });
 
-// POST /api/subscripciones/:id/cancelar-motivo — guarda motivo de cancelación (sin auth)
-router.post('/:id/cancelar-motivo', async (req, res) => {
+// POST /api/subscripciones/:id/cancelar-motivo
+router.post('/:id/cancelar-motivo', clienteAuth, async (req, res) => {
   try {
     const { motivo } = req.body;
     if (!motivo) return res.status(400).json({ error: 'motivo requerido' });
@@ -213,8 +221,8 @@ router.post('/:id/cancelar-motivo', async (req, res) => {
   }
 });
 
-// POST /api/subscripciones/:id/aplicar-descuento — marca descuento de retención aplicado
-router.post('/:id/aplicar-descuento', async (req, res) => {
+// POST /api/subscripciones/:id/aplicar-descuento
+router.post('/:id/aplicar-descuento', clienteAuth, async (req, res) => {
   try {
     const sub = await prisma.subscription.findUnique({ where: { id: req.params.id } });
     if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
@@ -231,19 +239,21 @@ router.post('/:id/aplicar-descuento', async (req, res) => {
   }
 });
 
-// Helper: busca sub y verifica que pertenece al shop logueado
-async function findSubForShop(id, shopDomain) {
-  const sub = await prisma.subscription.findFirst({
-    where: { id, shopDomain },
-  });
-  return sub;
+// Helper: busca sub y verifica que pertenece al shop + (si es cliente) al email
+async function findSubForRequest(id, req) {
+  const shopDomain = getShopDomain(req);
+  const where = { id, shopDomain };
+  // Si es cliente (no admin), agregar verificación de email
+  if (!isAdmin(req) && req.clienteEmail) {
+    where.shopifyCustomerEmail = req.clienteEmail;
+  }
+  return prisma.subscription.findFirst({ where });
 }
 
 // POST /api/subscripciones/:id/cancelar
-router.post('/:id/cancelar', async (req, res) => {
+router.post('/:id/cancelar', clienteAuth, async (req, res) => {
   try {
-    const shopDomain = getShopDomain(req);
-    const sub = await findSubForShop(req.params.id, shopDomain);
+    const sub = await findSubForRequest(req.params.id, req);
     if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
 
     const mpToken = req.shop?.mpAccessToken || null;
@@ -261,10 +271,9 @@ router.post('/:id/cancelar', async (req, res) => {
 });
 
 // POST /api/subscripciones/:id/pausar
-router.post('/:id/pausar', async (req, res) => {
+router.post('/:id/pausar', clienteAuth, async (req, res) => {
   try {
-    const shopDomain = getShopDomain(req);
-    const sub = await findSubForShop(req.params.id, shopDomain);
+    const sub = await findSubForRequest(req.params.id, req);
     if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
 
     const mpToken = req.shop?.mpAccessToken || null;
@@ -282,10 +291,9 @@ router.post('/:id/pausar', async (req, res) => {
 });
 
 // POST /api/subscripciones/:id/reanudar
-router.post('/:id/reanudar', async (req, res) => {
+router.post('/:id/reanudar', clienteAuth, async (req, res) => {
   try {
-    const shopDomain = getShopDomain(req);
-    const sub = await findSubForShop(req.params.id, shopDomain);
+    const sub = await findSubForRequest(req.params.id, req);
     if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
 
     const mpToken = req.shop?.mpAccessToken || null;

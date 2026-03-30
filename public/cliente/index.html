@@ -245,8 +245,9 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ─── VISTAS ─── */
-    #vista-inicio, #vista-mis-subs, #vista-planes { display: none; }
-    #vista-inicio.visible, #vista-mis-subs.visible, #vista-planes.visible { display: block; }
+    #vista-inicio, #vista-mis-subs, #vista-planes, #vista-email-enviado, #vista-token-error { display: none; }
+    #vista-inicio.visible, #vista-mis-subs.visible, #vista-planes.visible,
+    #vista-email-enviado.visible, #vista-token-error.visible { display: block; }
 
     .section-header {
       display: flex;
@@ -380,6 +381,10 @@
   <a class="header-logo" href="#">
     Ziklo<span class="header-logo-dot">.</span>
   </a>
+  <div id="header-session" style="display:none;margin-left:auto;display:flex;align-items:center;gap:10px;">
+    <span id="header-email" style="font-size:12px;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
 </header>
 
 <!-- MODAL DE RETENCIÓN -->
@@ -493,24 +498,65 @@
 <!-- MAIN -->
 <div class="container">
 
-  <!-- VISTA INICIO -->
+  <!-- VISTA INICIO (email form para magic link) -->
   <div id="vista-inicio" class="visible">
     <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">Mis suscripciones</div>
-      <div style="font-size:13px;color:var(--muted);">Gestioná tu suscripción activa</div>
+      <div style="font-size:32px;margin-bottom:12px;">🔐</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">Mis suscripciones</div>
+      <div style="font-size:13px;color:var(--muted);">Ingresá tu email y te enviamos un link de acceso</div>
     </div>
     <div class="card">
       <div class="card-body">
-        <div style="font-size:14px;font-weight:500;margin-bottom:12px;">Ingresá tu email para continuar</div>
+        <div style="font-size:14px;font-weight:500;margin-bottom:12px;">Tu email de suscripción</div>
         <div class="email-form">
           <input type="email" id="input-email" placeholder="tu@email.com" autocomplete="email"
-            onkeydown="if(event.key==='Enter')buscarSubs()" />
-          <button class="btn btn-primary" id="btn-buscar" onclick="buscarSubs()">Ver suscripción</button>
+            onkeydown="if(event.key==='Enter')solicitarAcceso()" />
+          <button class="btn btn-primary" id="btn-acceder" onclick="solicitarAcceso()">Enviar link</button>
         </div>
-        <p style="font-size:13px;color:var(--muted);margin-top:14px;">
-          ¿Todavía no tenés una?
-          <button class="link-btn" onclick="mostrarPlanes()">Ver planes disponibles →</button>
+        <p style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5;">
+          Te enviamos un link seguro a tu email. Sin contraseña.
         </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISTA EMAIL ENVIADO -->
+  <div id="vista-email-enviado">
+    <div class="card">
+      <div class="card-body" style="text-align:center;padding:40px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">📬</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;">¡Revisá tu email!</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;">
+          Te enviamos un link de acceso a<br>
+          <strong id="email-enviado-a" style="color:var(--text);"></strong>
+        </p>
+        <div style="background:#f0f9ff;border:1px solid #bde5f7;border-radius:8px;padding:14px 16px;margin-bottom:20px;text-align:left;">
+          <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+            ⏱ El link expira en <strong style="color:var(--text);">15 minutos</strong><br>
+            🔒 Es de un solo uso y te autentica automáticamente<br>
+            📁 Revisá la carpeta de spam si no aparece
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-full" onclick="reenviarLink()" id="btn-reenviar" style="font-size:13px;">
+          No me llegó, reenviar →
+        </button>
+        <button class="back-link" onclick="mostrarInicio()" style="margin-top:12px;display:block;text-align:center;">
+          ← Cambiar email
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISTA TOKEN INVÁLIDO/EXPIRADO -->
+  <div id="vista-token-error">
+    <div class="card">
+      <div class="card-body" style="text-align:center;padding:40px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;" id="token-error-titulo">Link inválido</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;" id="token-error-msg">
+          Este link ya fue utilizado o expiró. Pedí uno nuevo.
+        </p>
+        <button class="btn btn-primary btn-full" onclick="mostrarInicio()">Pedir nuevo link</button>
       </div>
     </div>
   </div>
@@ -522,9 +568,6 @@
       <button class="link-btn" onclick="mostrarPlanes()">+ Nueva</button>
     </div>
     <div id="mis-subs-lista"></div>
-    <div style="text-align:center;">
-      <button class="back-link" onclick="mostrarInicio()">← Buscar con otro email</button>
-    </div>
   </div>
 
   <!-- VISTA PLANES -->
@@ -557,10 +600,10 @@
 // ── Estado global ──────────────────────────────────────────────────────────────
 let emailActual      = null;
 let planSeleccionado = null;
-let _retCfg          = null;   // config de retención cargada desde la API
-let _retSubId        = null;   // ID de la sub que se quiere cancelar
-let _retStep         = 0;      // paso actual del modal (1=pause, 2=discount, 3=survey)
-let _retSteps        = [];     // lista de pasos activos
+let _retCfg          = null;
+let _retSubId        = null;
+let _retStep         = 0;
+let _retSteps        = [];
 
 // Obtiene el shopDomain del query string (?shop=...)
 const SHOP = new URLSearchParams(window.location.search).get('shop') || '';
@@ -572,36 +615,174 @@ function apiUrl(path) {
   return path + sep + 'shop=' + encodeURIComponent(SHOP);
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────────
+// ── Init — magic link auth ─────────────────────────────────────────────────────
 (async function init() {
-  // Cargar config de retención al inicio (no bloquea la UI)
+  // Cargar config de retención (no bloquea)
   try {
     const r = await fetch(apiUrl('/api/subscripciones/retention-config'));
     if (r.ok) _retCfg = await r.json();
   } catch (_) {}
+
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('token');
+
+  // 1. Si hay token en la URL → verificar
+  if (token) {
+    // Limpiar token de la URL sin recargar
+    const urlLimpia = window.location.pathname + (SHOP ? `?shop=${encodeURIComponent(SHOP)}` : '');
+    history.replaceState(null, '', urlLimpia);
+
+    try {
+      const res  = await fetch('/api/cliente/verificar-token', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ token, shop: SHOP }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        emailActual = data.email;
+        mostrarSesionHeader(emailActual);
+        await cargarMisSubs();
+        return;
+      } else {
+        mostrarErrorToken(data.error || 'Link inválido o expirado.');
+        return;
+      }
+    } catch (_) {
+      mostrarErrorToken('Error al verificar el link. Intentá de nuevo.');
+      return;
+    }
+  }
+
+  // 2. Si ya hay sesión activa → cargar subs directamente
+  try {
+    const res  = await fetch('/api/cliente/session');
+    const data = await res.json();
+    if (data.loggedIn && (!SHOP || data.shopDomain === SHOP)) {
+      emailActual = data.email;
+      mostrarSesionHeader(emailActual);
+      await cargarMisSubs();
+      return;
+    }
+  } catch (_) {}
+
+  // 3. Sin token ni sesión → mostrar formulario de email
+  ocultarTodo();
+  document.getElementById('vista-inicio').classList.add('visible');
 })();
 
-// ── VISTA INICIO ───────────────────────────────────────────────────────────────
-async function buscarSubs() {
-  const input = document.getElementById('input-email');
-  const email = input.value.trim();
-  if (!email) { input.focus(); return; }
-  emailActual = email;
+// ── HELPER: mostrar email en header ───────────────────────────────────────────
+function mostrarSesionHeader(email) {
+  const hdr = document.getElementById('header-session');
+  const em  = document.getElementById('header-email');
+  if (hdr) hdr.style.display = 'flex';
+  if (em)  em.textContent = email;
+}
 
-  const btn = document.getElementById('btn-buscar');
+// ── HELPER: mostrar error de token ────────────────────────────────────────────
+function mostrarErrorToken(msg) {
+  ocultarTodo();
+  document.getElementById('token-error-msg').textContent = msg;
+  document.getElementById('vista-token-error').classList.add('visible');
+}
+
+// ── AUTH: solicitar magic link ─────────────────────────────────────────────────
+async function solicitarAcceso() {
+  const input = document.getElementById('input-email');
+  const em    = input.value.trim();
+  if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+    input.focus();
+    input.style.borderColor = 'var(--red)';
+    setTimeout(() => { input.style.borderColor = ''; }, 1500);
+    return;
+  }
+
+  const btn = document.getElementById('btn-acceder');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>';
 
   try {
-    const subs = await fetch(apiUrl(`/api/subscripciones/cliente/${encodeURIComponent(email)}`)).then(r => r.json());
+    const res  = await fetch('/api/cliente/solicitar-acceso', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email: em, shop: SHOP }),
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || 'Error al enviar el email.');
+      return;
+    }
+
+    // Guardar email para el mensaje de confirmación
+    emailActual = em;
+    document.getElementById('email-enviado-a').textContent = em;
     ocultarTodo();
-    document.getElementById('vista-mis-subs').classList.add('visible');
-    renderSubs(subs);
-  } catch (e) {
-    alert('Error al buscar suscripciones. Intentá nuevamente.');
+    document.getElementById('vista-email-enviado').classList.add('visible');
+
+  } catch (_) {
+    alert('Error de red. Revisá tu conexión.');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Ver suscripción';
+    btn.textContent = 'Enviar link';
+  }
+}
+
+// ── AUTH: reenviar link ────────────────────────────────────────────────────────
+async function reenviarLink() {
+  const btn = document.getElementById('btn-reenviar');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    await fetch('/api/cliente/solicitar-acceso', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email: emailActual, shop: SHOP }),
+    });
+    btn.textContent = '✓ Link reenviado';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'No me llegó, reenviar →'; }, 4000);
+  } catch (_) {
+    btn.disabled = false;
+    btn.textContent = 'Error, intentá de nuevo';
+  }
+}
+
+// ── AUTH: cerrar sesión ────────────────────────────────────────────────────────
+async function cerrarSesion() {
+  await fetch('/api/cliente/logout', { method: 'POST' }).catch(() => {});
+  emailActual = null;
+  document.getElementById('header-session').style.display = 'none';
+  ocultarTodo();
+  document.getElementById('vista-inicio').classList.add('visible');
+  document.getElementById('input-email').value = '';
+}
+
+// ── CARGAR SUBS (autenticado) ──────────────────────────────────────────────────
+async function cargarMisSubs() {
+  ocultarTodo();
+  document.getElementById('vista-mis-subs').classList.add('visible');
+  document.getElementById('mis-subs-lista').innerHTML =
+    '<div class="empty"><div class="spinner spinner-dark" style="margin:0 auto;"></div></div>';
+
+  try {
+    const subs = await fetch(apiUrl(`/api/subscripciones/cliente/${encodeURIComponent(emailActual)}`))
+      .then(r => {
+        if (r.status === 401) throw new Error('UNAUTH');
+        return r.json();
+      });
+    renderSubs(subs);
+  } catch (e) {
+    if (e.message === 'UNAUTH') {
+      // Sesión expirada en el servidor
+      emailActual = null;
+      document.getElementById('header-session').style.display = 'none';
+      ocultarTodo();
+      document.getElementById('vista-inicio').classList.add('visible');
+    } else {
+      document.getElementById('mis-subs-lista').innerHTML =
+        '<div class="empty"><div class="empty-title">Error al cargar</div><div class="empty-text">Intentá recargar la página.</div></div>';
+    }
   }
 }
 
@@ -688,11 +869,12 @@ async function accionConShop(id, tipo) {
 async function ejecutarAccion(id, tipo) {
   try {
     const r = await fetch(apiUrl(`/api/subscripciones/${id}/${tipo}`), { method: 'POST' });
+    if (r.status === 401) { cerrarSesion(); return; }
     if (!r.ok) {
       const d = await r.json().catch(() => ({}));
       throw new Error(d.error || 'Error desconocido');
     }
-    buscarSubs();
+    await cargarMisSubs();
   } catch (e) {
     alert('Error: ' + e.message);
   }
@@ -755,7 +937,7 @@ async function aceptarDescuento() {
     await fetch(apiUrl(`/api/subscripciones/${_retSubId}/aplicar-descuento`), { method: 'POST' });
     cerrarModal();
     alert('¡Genial! Tu descuento fue aplicado al próximo cobro. ¡Gracias por quedarte!');
-    buscarSubs();
+    await cargarMisSubs();
   } catch (e) {
     alert('Error al aplicar el descuento. Intentá nuevamente.');
   }
@@ -862,10 +1044,18 @@ async function iniciarSuscripcion() {
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-function mostrarInicio() { ocultarTodo(); document.getElementById('vista-inicio').classList.add('visible'); }
+function mostrarInicio() {
+  ocultarTodo();
+  document.getElementById('vista-inicio').classList.add('visible');
+}
+function mostrarPlanes() {
+  // declarada después pero disponible por hoisting
+}
 function ocultarTodo() {
-  ['vista-inicio','vista-planes','vista-mis-subs'].forEach(id =>
-    document.getElementById(id).classList.remove('visible'));
+  ['vista-inicio','vista-email-enviado','vista-token-error','vista-planes','vista-mis-subs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('visible');
+  });
 }
 
 const fmtNum  = n => Number(n || 0).toLocaleString('es-AR');

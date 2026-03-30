@@ -116,6 +116,19 @@ model Pago {
   createdAt      DateTime     @default(now())
 }
 
+// Token de un solo uso para autenticar el portal /cliente via magic link
+model MagicToken {
+  id         String    @id @default(cuid())
+  email      String
+  shopDomain String
+  token      String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, shopDomain])
+}
+
 model CancelReason {
   id             String       @id @default(cuid())
   subscriptionId String

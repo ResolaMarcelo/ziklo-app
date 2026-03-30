@@ -247,4 +247,84 @@ async function enviarResetPassword({ email, resetUrl }) {
   });
 }
 
-module.exports = { enviarConfirmacionSuscripcion, enviarVerificacionEmail, enviarResetPassword };
+async function enviarMagicLink({ email: toEmail, magicUrl, storeName }) {
+  const store = storeName || 'Tu tienda';
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="margin:0;padding:0;background:#f6f6f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#009ee3;padding:32px 40px;text-align:center;">
+              <div style="font-size:40px;">🔑</div>
+              <h1 style="color:white;margin:12px 0 0;font-size:20px;font-weight:700;">Accedé a tus suscripciones</h1>
+              <p style="color:rgba(255,255,255,.85);margin:6px 0 0;font-size:13px;">${store}</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:32px 40px;">
+              <p style="font-size:15px;color:#202223;margin:0 0 8px;font-weight:600;">Tu link de acceso está listo</p>
+              <p style="font-size:14px;color:#6d7175;margin:0 0 28px;line-height:1.6;">
+                Hacé clic en el botón para ver y gestionar tus suscripciones activas.<br>
+                El link expira en <strong style="color:#202223;">15 minutos</strong> y es de un solo uso.
+              </p>
+
+              <!-- CTA -->
+              <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:28px;">
+                <tr>
+                  <td align="center">
+                    <a href="${magicUrl}"
+                      style="display:inline-block;background:#009ee3;color:white;font-weight:700;font-size:15px;padding:14px 36px;border-radius:8px;text-decoration:none;letter-spacing:-.1px;">
+                      Ver mis suscripciones →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Alternativa texto -->
+              <div style="background:#f6f6f7;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+                <p style="font-size:11px;font-weight:600;color:#6d7175;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px;">¿El botón no funciona? Copiá este link:</p>
+                <p style="font-size:12px;color:#009ee3;margin:0;word-break:break-all;font-family:'Courier New',monospace;">${magicUrl}</p>
+              </div>
+
+              <p style="font-size:12px;color:#8c9196;margin:0;line-height:1.6;">
+                Si no pediste acceso a tus suscripciones, podés ignorar este email con seguridad.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 40px;border-top:1px solid #e1e3e5;text-align:center;">
+              <p style="font-size:12px;color:#8c9196;margin:0;">${store} · Este es un email automático</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`.trim();
+
+  await resend.emails.send({
+    from:    FROM,
+    to:      toEmail,
+    subject: `🔑 Tu link de acceso a tus suscripciones — ${store}`,
+    html,
+  });
+}
+
+module.exports = { enviarConfirmacionSuscripcion, enviarVerificacionEmail, enviarResetPassword, enviarMagicLink };
