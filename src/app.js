@@ -69,6 +69,37 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
+// ── SETUP TEMPORAL — crear primer superadmin ──────────────────────────────────
+// Eliminar este bloque después de crear el usuario
+if (process.env.SETUP_SECRET) {
+  const bcrypt = require('bcryptjs');
+  const prisma = require('./lib/prisma');
+  app.get('/setup/init', async (req, res) => {
+    if (req.query.secret !== process.env.SETUP_SECRET) {
+      return res.status(403).send('Forbidden');
+    }
+    try {
+      const count = await prisma.user.count();
+      if (count > 0) return res.send('Ya existen usuarios. Endpoint deshabilitado.');
+      const shopDomain = process.env.SHOPIFY_SHOP_DOMAIN;
+      const hash = await bcrypt.hash(req.query.password || 'Ziklo2024!', 10);
+      const user = await prisma.user.create({
+        data: {
+          email:        req.query.email || 'admin@ziklo.app',
+          passwordHash: hash,
+          name:         'Marcelo',
+          role:         'superadmin',
+          shops:        shopDomain ? { create: { shopDomain } } : undefined,
+        },
+      });
+      res.send(`Usuario creado: ${user.email} — Shop: ${shopDomain || 'ninguno'}<br>Ya podés loguearte en /admin/login`);
+    } catch (e) {
+      res.status(500).send('Error: ' + e.message);
+    }
+  });
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 app.listen(PORT, () => {
   console.log(`\n🚀 App corriendo en http://localhost:${PORT}`);
   console.log(`📦 Panel admin: http://localhost:${PORT}/admin`);
