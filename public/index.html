@@ -466,6 +466,28 @@
     }
     .chart-bar.active { background: var(--green); }
 
+    /* ─── WAITLIST MODAL ─── */
+    #waitlist-overlay { padding: 16px; }
+    .waitlist-modal {
+      background: #1a1a1a; border: 1px solid #333; border-radius: 16px;
+      padding: 40px; max-width: 460px; width: 100%; position: relative;
+    }
+    @media (max-width: 600px) {
+      #waitlist-overlay {
+        align-items: flex-end !important;
+        padding: 0 !important;
+      }
+      .waitlist-modal {
+        border-radius: 20px 20px 0 0 !important;
+        padding: 24px 20px 32px !important;
+        max-width: 100% !important;
+        max-height: 88vh;
+        overflow-y: auto;
+      }
+      .waitlist-modal h2 { font-size: 18px !important; }
+      .waitlist-modal p  { font-size: 13px !important; margin-bottom: 18px !important; }
+    }
+
     /* Retention modal mockup */
     .retention-mockup {
       margin: 0 16px 16px;
@@ -1692,7 +1714,7 @@
 
 <!-- ── Modal Lista de Espera ─────────────────────────────────────────────── -->
 <div id="waitlist-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;">
-  <div style="background:#1a1a1a;border:1px solid #333;border-radius:16px;padding:40px;max-width:460px;width:90%;position:relative;">
+  <div class="waitlist-modal">
     <button onclick="closeWaitlist()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#888;font-size:20px;cursor:pointer;line-height:1;">✕</button>
 
     <!-- Estado: formulario -->
