@@ -403,11 +403,46 @@ router.post('/gdpr/customers-data', express.raw({ type: '*/*' }), async (req, re
 
   try {
     const body = JSON.parse(req.body.toString());
-    const { shop_domain, customer } = body;
-    console.log(`GDPR data_request — shop: ${shop_domain} | customer: ${customer?.email}`);
+    const { shop_domain, customer, orders_requested } = body;
+    const email = customer?.email;
+    console.log(`GDPR data_request — shop: ${shop_domain} | customer: ${email}`);
 
-    // Registrar la solicitud en los logs (en producción enviarías un email con los datos)
-    // Por ahora solo logueamos; en una app completa deberías enviar los datos por email
+    if (!email || !shop_domain) return;
+
+    // Recopilar todos los datos que tenemos del cliente
+    const suscripciones = await prisma.subscription.findMany({
+      where: { shopDomain: shop_domain, shopifyCustomerEmail: email },
+      include: { plan: true, pagos: true, cancelReasons: true },
+    });
+
+    const datosCliente = {
+      solicitud: 'customers/data_request',
+      shop: shop_domain,
+      customer_email: email,
+      customer_id: customer?.id,
+      orders_requested: orders_requested || [],
+      datos_almacenados: suscripciones.map(sub => ({
+        subscription_id: sub.id,
+        status: sub.status,
+        plan: sub.plan?.nombre,
+        datos_envio: sub.datosEnvio ? JSON.parse(sub.datosEnvio) : null,
+        fecha_inicio: sub.startDate,
+        pagos: sub.pagos.map(p => ({
+          id: p.id,
+          monto: p.monto,
+          status: p.status,
+          fecha: p.createdAt,
+        })),
+        motivos_cancelacion: sub.cancelReasons.map(r => ({
+          razon: r.reason,
+          fecha: r.createdAt,
+        })),
+      })),
+    };
+
+    // Logueamos los datos recopilados — Shopify no requiere envío automático,
+    // pero sí que la app pueda recopilarlos para entregarlos si se solicitan.
+    console.log(`GDPR data_request: datos recopilados para ${email}:`, JSON.stringify(datosCliente, null, 2));
   } catch (err) {
     console.error('Error GDPR customers-data:', err.message);
   }
@@ -427,19 +462,24 @@ router.post('/gdpr/customers-redact', express.raw({ type: '*/*' }), async (req, 
     const { shop_domain, customer } = body;
     console.log(`GDPR customers/redact — shop: ${shop_domain} | customer: ${customer?.email}`);
 
-    if (!customer?.email) return;
+    if (!customer?.email || !shop_domain) return;
 
-    // Anonimizar suscripciones del cliente (no borramos para mantener integridad financiera)
-    await prisma.subscription.updateMany({
+    // Anonimizar suscripciones (no borramos para mantener integridad financiera de pagos)
+    const { count } = await prisma.subscription.updateMany({
       where: { shopDomain: shop_domain, shopifyCustomerEmail: customer.email },
       data: {
-        shopifyCustomerEmail: 'redacted@gdpr.ziklo',
-        shopifyCustomerId:    'redacted',
+        shopifyCustomerEmail: 'redacted@removed.invalid',
+        shopifyCustomerId:    'REDACTED',
         datosEnvio:           null,
       },
     });
 
-    console.log(`GDPR: datos de ${customer.email} anonimizados en ${shop_domain}`);
+    // Borrar magic tokens del cliente en esa tienda
+    await prisma.magicToken.deleteMany({
+      where: { email: customer.email, shopDomain: shop_domain },
+    });
+
+    console.log(`GDPR: ${count} suscripciones anonimizadas + tokens eliminados para ${customer.email} en ${shop_domain}`);
   } catch (err) {
     console.error('Error GDPR customers-redact:', err.message);
   }
@@ -459,8 +499,9 @@ router.post('/gdpr/shop-redact', express.raw({ type: '*/*' }), async (req, res) 
     const { shop_domain } = body;
     console.log(`GDPR shop/redact — shop: ${shop_domain}`);
 
+    if (!shop_domain) return;
+
     // Borrar en orden para respetar foreign keys
-    // 1. Pagos de las suscripciones del shop
     const subs = await prisma.subscription.findMany({
       where:  { shopDomain: shop_domain },
       select: { id: true },
@@ -468,19 +509,31 @@ router.post('/gdpr/shop-redact', express.raw({ type: '*/*' }), async (req, res) 
     const subIds = subs.map(s => s.id);
 
     if (subIds.length > 0) {
+      // 1. CancelReasons (FK → Subscription)
+      await prisma.cancelReason.deleteMany({ where: { subscriptionId: { in: subIds } } });
+      // 2. Pagos (FK → Subscription)
       await prisma.pago.deleteMany({ where: { subscriptionId: { in: subIds } } });
     }
 
-    // 2. Suscripciones
+    // 3. Suscripciones
     await prisma.subscription.deleteMany({ where: { shopDomain: shop_domain } });
 
-    // 3. Planes del shop
+    // 4. Magic tokens de esa tienda
+    await prisma.magicToken.deleteMany({ where: { shopDomain: shop_domain } });
+
+    // 5. Productos con suscripción activada
+    await prisma.productSubscription.deleteMany({ where: { shopDomain: shop_domain } });
+
+    // 6. Planes del shop
     await prisma.plan.deleteMany({ where: { shopDomain: shop_domain } });
 
-    // 4. Registro del shop
+    // 7. Relación usuario-tienda
+    await prisma.userShop.deleteMany({ where: { shopDomain: shop_domain } });
+
+    // 8. Registro del shop
     await prisma.shop.deleteMany({ where: { domain: shop_domain } });
 
-    console.log(`GDPR: todos los datos de ${shop_domain} eliminados`);
+    console.log(`GDPR: todos los datos de ${shop_domain} eliminados (subs, pagos, planes, tokens, productos, userShop, shop)`);
   } catch (err) {
     console.error('Error GDPR shop-redact:', err.message);
   }
