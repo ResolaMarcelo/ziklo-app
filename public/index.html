@@ -105,6 +105,36 @@
       border-radius: 7px; padding: 6px 8px; cursor: pointer; color: var(--muted3);
     }
 
+    /* Mobile menu */
+    .nav-mobile-menu {
+      display: none; flex-direction: column;
+      position: fixed; top: 57px; left: 0; right: 0; bottom: 0;
+      background: rgba(10,10,15,.97); backdrop-filter: blur(16px);
+      padding: 16px 24px; gap: 2px; z-index: 99;
+      border-top: 1px solid var(--border); overflow-y: auto;
+    }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-menu a {
+      font-size: 16px; font-weight: 500; color: var(--muted3);
+      text-decoration: none; padding: 14px 0;
+      border-bottom: 1px solid var(--border); transition: color .15s;
+    }
+    .nav-mobile-menu a:hover { color: var(--white); }
+    .nav-mobile-menu .mobile-cta {
+      margin-top: 16px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .nav-mobile-menu .mobile-cta a {
+      border: none; padding: 13px; border-radius: 10px;
+      font-weight: 700; text-align: center; font-size: 15px;
+    }
+    .nav-mobile-menu .mobile-cta .m-ghost {
+      background: transparent; color: var(--muted3);
+      border: 1px solid var(--border-s) !important;
+    }
+    .nav-mobile-menu .mobile-cta .m-primary {
+      background: var(--green); color: #000;
+    }
+
     /* ─── HERO ─── */
     .hero {
       position: relative; overflow: hidden;
@@ -113,7 +143,7 @@
     .hero::before {
       content: '';
       position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
-      width: 800px; height: 600px;
+      width: min(800px, 100vw); height: 600px;
       background: radial-gradient(ellipse, rgba(0,200,122,.13) 0%, transparent 60%);
       pointer-events: none;
     }
@@ -682,6 +712,7 @@
     }
     @media (max-width: 768px) {
       .hero { padding: 70px 0 60px; }
+      .hero-mockup { width: 100%; overflow: hidden; }
       .mockup-body { grid-template-columns: repeat(2, 1fr); }
       .mockup-chart-row { grid-template-columns: 1fr; }
       .compare-cols, .compare-row { grid-template-columns: 1fr; }
@@ -690,7 +721,7 @@
       .compare-cell.good { border-radius: 0 0 10px 10px; }
       .vs-grid { grid-template-columns: 1fr; }
       .vs-divider-col { padding: 8px 0; }
-      .pricing-grid { grid-template-columns: 1fr; max-width: 380px; }
+      .pricing-grid { grid-template-columns: 1fr; width: 100%; max-width: 100%; }
       .testimonials-grid { grid-template-columns: 1fr; }
       .stats-grid { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
@@ -703,12 +734,18 @@
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
       .hero-metrics { gap: 20px; }
       .hero-metric-sep { display: none; }
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .btn-hero-primary, .btn-hero-ghost { justify-content: center; }
+      .vs-card { padding: 24px 20px; }
     }
     @media (max-width: 480px) {
       .hero { padding: 50px 0 40px; }
       .footer-inner { grid-template-columns: 1fr; }
       .footer-bottom { flex-direction: column; text-align: center; }
       .pricing-grid { max-width: 100%; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .mockup-body { grid-template-columns: 1fr 1fr; gap: 6px; }
+      .hero-metric-val { font-size: 22px; }
     }
   </style>
 </head>
@@ -747,6 +784,19 @@
     </div>
   </div>
 </nav>
+
+<!-- Mobile nav menu -->
+<div class="nav-mobile-menu" id="nav-mobile-menu">
+  <a href="#como-funciona" onclick="closeMobileMenu()">Cómo funciona</a>
+  <a href="#producto" onclick="closeMobileMenu()">Plataforma</a>
+  <a href="#features" onclick="closeMobileMenu()">Funcionalidades</a>
+  <a href="#precios" onclick="closeMobileMenu()">Precios</a>
+  <a href="#faqs" onclick="closeMobileMenu()">FAQs</a>
+  <div class="mobile-cta">
+    <a href="https://app.zikloapp.com/admin/login" class="m-ghost" onclick="closeMobileMenu()">Ingresar</a>
+    <a href="#" onclick="openWaitlist(); closeMobileMenu(); return false;" class="m-primary">Probá la beta →</a>
+  </div>
+</div>
 
 <!-- ─────────────────────── HERO ─────────────────────── -->
 <section class="hero">
@@ -1690,6 +1740,26 @@
 </div>
 
 <script>
+  // ── Mobile nav ──
+  const navHam = document.querySelector('.nav-ham');
+  const mobileMenu = document.getElementById('nav-mobile-menu');
+  const hamIcon = navHam.querySelector('svg');
+
+  navHam.addEventListener('click', function() {
+    const isOpen = mobileMenu.classList.toggle('open');
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    // Toggle icon: hamburger ↔ X
+    hamIcon.innerHTML = isOpen
+      ? '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
+      : '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+  });
+
+  function closeMobileMenu() {
+    mobileMenu.classList.remove('open');
+    document.body.style.overflow = '';
+    hamIcon.innerHTML = '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+  }
+
   function toggleLandingFAQ(qEl) {
     const item = qEl.closest('.faq-landing-item');
     const isOpen = item.classList.contains('open');

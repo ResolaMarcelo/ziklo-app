@@ -1389,6 +1389,10 @@
     Lista de espera
     <span id="wl-badge" style="display:none;background:#39e07a;color:#000;font-size:10px;font-weight:700;border-radius:99px;padding:1px 7px;margin-left:auto;">0</span>
   </div>
+  <div class="nav-item" id="nav-register-shop" onclick="showTab('register-shop')">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Registrar tienda
+  </div>
   <div class="nav-item" onclick="showTab('configuracion')">
     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     Configuración
@@ -2380,6 +2384,59 @@
       </div>
     </div><!-- /tab-waitlist -->
 
+    <!-- Registrar tienda manualmente (superadmin) -->
+    <div id="tab-register-shop" class="page">
+      <div class="page-header" style="margin-bottom:24px;">
+        <div>
+          <div class="page-title">Registrar tienda</div>
+          <div class="page-sub">Conectá una tienda manualmente usando un token de Shopify (para clientes beta).</div>
+        </div>
+      </div>
+
+      <div style="max-width:520px;">
+        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+
+          <div style="font-size:13px;color:var(--muted2);line-height:1.6;background:rgba(0,200,122,.06);border:1px solid rgba(0,200,122,.15);border-radius:8px;padding:12px 14px;">
+            <strong style="color:var(--white);">¿Cómo obtener el token?</strong><br>
+            El cliente va a su Shopify → Configuración → Apps → Desarrollar apps → crea una app llamada "Ziklo" → activa permisos de clientes, pedidos y productos → instala la app → copia el token (<code style="color:var(--green);">shpat_...</code>).
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;">Dominio de la tienda</label>
+            <div style="position:relative;">
+              <input id="rs-domain" type="text" placeholder="mi-tienda"
+                style="width:100%;background:var(--card2,#1a1a2e);border:1px solid var(--border);border-radius:8px;padding:10px 130px 10px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;box-sizing:border-box;"
+                onfocus="this.style.borderColor='#00C87A'" onblur="this.style.borderColor='var(--border)'"/>
+              <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted2);pointer-events:none;">.myshopify.com</span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;">Access Token</label>
+            <input id="rs-token" type="text" placeholder="shpat_xxxxxxxxxxxxxxxxxxxxxxxx"
+              style="width:100%;background:var(--card2,#1a1a2e);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;box-sizing:border-box;"
+              onfocus="this.style.borderColor='#00C87A'" onblur="this.style.borderColor='var(--border)'"/>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;">Email del usuario en Ziklo</label>
+            <input id="rs-email" type="email" placeholder="cliente@ejemplo.com"
+              style="width:100%;background:var(--card2,#1a1a2e);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--white);font-family:Inter,sans-serif;font-size:13px;outline:none;box-sizing:border-box;"
+              onfocus="this.style.borderColor='#00C87A'" onblur="this.style.borderColor='var(--border)'"/>
+            <span style="font-size:11px;color:var(--muted2);">La cuenta Ziklo del cliente (la que creó en el registro). Se vinculará automáticamente.</span>
+          </div>
+
+          <div id="rs-msg" style="display:none;font-size:13px;border-radius:8px;padding:10px 14px;"></div>
+
+          <button onclick="registrarTienda()" id="rs-btn"
+            style="background:#00C87A;border:none;border-radius:8px;padding:11px 20px;font-family:Inter,sans-serif;font-size:13px;font-weight:700;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Conectar tienda
+          </button>
+        </div>
+      </div>
+    </div><!-- /tab-register-shop -->
+
     <!-- FAQs -->
     <div id="tab-faqs" class="page">
 
@@ -2706,6 +2763,7 @@ const TITLES = {
   widget:         ['Instalar Widget', 'Instrucciones de integración'],
   retencion:      ['Retención', 'Flujo para retener suscriptores antes de que cancelen'],
   waitlist:       ['Lista de espera', 'Solicitudes de acceso beta pendientes de aprobación'],
+  'register-shop': ['Registrar tienda', 'Conectar una tienda manualmente con token de Shopify'],
   configuracion:  ['Configuración', 'Ajustes de la cuenta y la app'],
   faqs:           ['Ayuda & FAQs', 'Preguntas frecuentes sobre Ziklo'],
 };
@@ -4160,6 +4218,58 @@ async function guardarMpToken() {
   }
 }
 
+// ===================== REGISTRAR TIENDA =====================
+async function registrarTienda() {
+  const domain    = (document.getElementById('rs-domain').value || '').trim()
+    .replace(/^https?:\/\//, '').replace(/\/$/, '').replace(/\.myshopify\.com$/, '');
+  const token     = (document.getElementById('rs-token').value || '').trim();
+  const userEmail = (document.getElementById('rs-email').value || '').trim();
+  const msgEl     = document.getElementById('rs-msg');
+  const btn       = document.getElementById('rs-btn');
+
+  msgEl.style.display = 'none';
+
+  if (!domain) { showRsMsg('error', 'Ingresá el dominio de la tienda.'); return; }
+  if (!token)  { showRsMsg('error', 'Ingresá el access token.'); return; }
+  if (!userEmail) { showRsMsg('error', 'Ingresá el email del usuario en Ziklo.'); return; }
+
+  btn.textContent = 'Conectando...';
+  btn.style.opacity = '0.6';
+  btn.disabled = true;
+
+  try {
+    const r = await fetch('/admin/api/register-shop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain: domain + '.myshopify.com', accessToken: token, userEmail }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      showRsMsg('error', d.error || 'Error desconocido');
+    } else {
+      showRsMsg('ok', `✅ Tienda <strong>${d.shopName}</strong> conectada y vinculada a <strong>${userEmail}</strong>`);
+      document.getElementById('rs-domain').value = '';
+      document.getElementById('rs-token').value  = '';
+      document.getElementById('rs-email').value  = '';
+    }
+  } catch (err) {
+    showRsMsg('error', 'Error de red: ' + err.message);
+  } finally {
+    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Conectar tienda';
+    btn.style.opacity = '1';
+    btn.disabled = false;
+  }
+}
+
+function showRsMsg(type, html) {
+  const el = document.getElementById('rs-msg');
+  el.style.display = 'block';
+  el.style.background = type === 'ok' ? 'rgba(0,200,122,.1)' : 'rgba(239,68,68,.1)';
+  el.style.border = type === 'ok' ? '1px solid rgba(0,200,122,.3)' : '1px solid rgba(239,68,68,.3)';
+  el.style.color = type === 'ok' ? '#39e07a' : '#f87171';
+  el.innerHTML = html;
+}
+
 // ===================== WAITLIST =====================
 async function cargarWaitlist() {
   const tbody = document.getElementById('wl-tbody');
@@ -4562,10 +4672,12 @@ async function initApp() {
 
   const me = await fetch('/admin/api/me').then(r => r.json()).catch(() => ({}));
 
-  // Ocultar "Lista de espera" para merchants (solo superadmin puede verla)
+  // Ocultar items exclusivos de superadmin para merchants
   if (me.userRole !== 'superadmin') {
     const navWl = document.getElementById('nav-waitlist');
     if (navWl) navWl.style.display = 'none';
+    const navRs = document.getElementById('nav-register-shop');
+    if (navRs) navRs.style.display = 'none';
   }
 
   if (!me.shopDomain) {
