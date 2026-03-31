@@ -373,19 +373,52 @@ router.post('/app-uninstalled', express.raw({ type: '*/*' }), async (req, res) =
 
     console.log(`[app/uninstalled] Tienda desinstalada: ${domain}`);
 
+    // Obtener shop para tener el mpAccessToken antes de invalidar
+    const shop = await prisma.shop.findUnique({ where: { domain } });
+
+    // Cancelar preaprobaciones activas en Mercado Pago (para que no sigan cobrando)
+    if (shop?.mpAccessToken) {
+      const activeSubs = await prisma.subscription.findMany({
+        where: { shopDomain: domain, status: 'authorized' },
+        select: { id: true, mpPreapprovalId: true, shopifyCustomerEmail: true },
+      });
+
+      for (const sub of activeSubs) {
+        try {
+          const resp = await fetch(`https://api.mercadopago.com/preapproval/${sub.mpPreapprovalId}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${shop.mpAccessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: 'cancelled' }),
+          });
+          if (resp.ok) {
+            console.log(`[app/uninstalled] ✅ Preaprobación ${sub.mpPreapprovalId} cancelada en MP`);
+          } else {
+            console.warn(`[app/uninstalled] ⚠ MP cancelar ${sub.mpPreapprovalId}: HTTP ${resp.status}`);
+          }
+        } catch (e) {
+          console.error(`[app/uninstalled] ❌ Error cancelando MP preapproval ${sub.mpPreapprovalId}:`, e.message);
+        }
+      }
+    } else {
+      console.warn(`[app/uninstalled] ${domain}: sin mpAccessToken, no se pueden cancelar preaprobaciones en MP`);
+    }
+
     // Invalidar access token
     await prisma.shop.update({
       where: { domain },
       data: { accessToken: null },
     });
 
-    // Pausar suscripciones activas (evita cobros fallidos)
+    // Marcar suscripciones como canceladas (ya se cancelaron en MP)
     const { count } = await prisma.subscription.updateMany({
       where: { shopDomain: domain, status: 'authorized' },
-      data: { status: 'paused' },
+      data: { status: 'cancelled' },
     });
 
-    console.log(`[app/uninstalled] ${domain}: token invalidado, ${count} suscripciones pausadas`);
+    console.log(`[app/uninstalled] ${domain}: token invalidado, ${count} suscripciones canceladas`);
   } catch (err) {
     console.error('[app/uninstalled] Error:', err.message);
   }

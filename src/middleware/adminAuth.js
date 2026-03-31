@@ -18,6 +18,16 @@ function adminAuth(req, res, next) {
   if (isPublic) return next();
 
   if (req.session && req.session.adminLoggedIn === true) {
+    // Timeout de inactividad: 2 horas sin actividad → sesión expirada
+    const INACTIVITY_MS = 2 * 60 * 60 * 1000;
+    if (req.session.lastActivity && Date.now() - req.session.lastActivity > INACTIVITY_MS) {
+      req.session = null;
+      if (req.path.startsWith('/api/')) {
+        return res.status(401).json({ error: 'Sesión expirada por inactividad', redirect: '/admin/login' });
+      }
+      return res.redirect('/admin/login');
+    }
+    req.session.lastActivity = Date.now();
     return next();
   }
 

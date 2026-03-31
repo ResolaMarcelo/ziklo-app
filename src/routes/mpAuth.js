@@ -4,7 +4,7 @@ const prisma  = require('../lib/prisma');
 
 const CLIENT_ID     = process.env.MP_CLIENT_ID;
 const CLIENT_SECRET = process.env.MP_CLIENT_SECRET;
-const APP_URL       = process.env.APP_URL || 'https://app-production-338a.up.railway.app';
+const APP_URL       = process.env.APP_URL || 'https://app.zikloapp.com';
 const REDIRECT_URI  = `${APP_URL}/auth/mp/callback`;
 
 // GET /auth/mp — inicia el OAuth flow de Mercado Pago

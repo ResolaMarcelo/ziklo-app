@@ -116,8 +116,7 @@ app.use(cors({
     if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost')) {
       return callback(null, true);
     }
-    // Cualquier origen HTTPS (custom domains de merchants con el widget)
-    if (origin.startsWith('https://')) return callback(null, true);
+    // Custom domains de merchants: deben agregarse en ALLOWED_ORIGINS
     callback(new Error('CORS: origen no permitido'));
   },
   credentials: false,
@@ -128,8 +127,8 @@ app.use(cors({
 // Sesión encriptada para el admin
 app.use(cookieSession({
   name: 'ziklo_admin',
-  keys: [process.env.SESSION_SECRET || 'ziklo-secret-dev-key-change-in-prod'],
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días (admin + cliente)
+  keys: [process.env.SESSION_SECRET || 'dev-only-key-change-in-prod'],
+  maxAge: 24 * 60 * 60 * 1000, // 24 horas
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax',
 }));
@@ -216,6 +215,18 @@ app.use((err, req, res, _next) => {
   }
   res.status(status).send('Error interno del servidor');
 });
+
+// ── Validar variables de entorno requeridas en producción ─────────────────
+if (process.env.NODE_ENV === 'production') {
+  const required = ['DATABASE_URL', 'SESSION_SECRET', 'APP_URL', 'SHOPIFY_CLIENT_ID', 'SHOPIFY_CLIENT_SECRET'];
+  const warnings = ['ENCRYPTION_KEY', 'TOKEN_ENCRYPTION_KEY', 'MP_WEBHOOK_SECRET'];
+  for (const key of required) {
+    if (!process.env[key]) { console.error(`FATAL: ${key} no configurada`); process.exit(1); }
+  }
+  for (const key of warnings) {
+    if (!process.env[key]) console.warn(`⚠ WARNING: ${key} no configurada`);
+  }
+}
 
 app.listen(PORT, () => {
   console.log(`\n🚀 App corriendo en http://localhost:${PORT}`);
