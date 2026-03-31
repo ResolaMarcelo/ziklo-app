@@ -1635,9 +1635,9 @@
               <span class="card-title">Últimas suscripciones</span>
             </div>
             <table>
-              <thead><tr><th>Cliente</th><th>Producto</th><th>Monto/mes</th><th>Estado</th><th>Fecha</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Producto</th><th>Monto/mes</th><th>Estado</th><th>Fecha</th><th>Órdenes</th></tr></thead>
               <tbody id="tabla-recientes">
-                <tr><td colspan="5" class="empty"><div class="spinner"></div></td></tr>
+                <tr><td colspan="6" class="empty"><div class="spinner"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -3177,6 +3177,14 @@ async function cargarDashboard() {
   document.getElementById('tabla-recientes').innerHTML = subs.slice(0,10).map(s => {
     const envio = s.datosEnvio ? JSON.parse(s.datosEnvio) : null;
     const nombre = envio ? `${envio.nombre||''} ${envio.apellido||''}`.trim() : '';
+    const ordenes = (s.pagos || [])
+      .filter(p => p.shopifyOrderNumber)
+      .map(p => `<a href="https://${s.shopDomain}/admin/orders/${p.shopifyOrderId}" target="_blank"
+          style="display:inline-block;color:var(--green);font-size:11px;font-family:monospace;
+                 background:rgba(57,224,122,.08);border:1px solid rgba(57,224,122,.2);
+                 border-radius:4px;padding:1px 6px;margin:1px 2px 1px 0;text-decoration:none;white-space:nowrap;">
+          #${p.shopifyOrderNumber}
+        </a>`).join('');
     return `<tr>
       <td>
         ${nombre ? `<span style="font-weight:600">${nombre}</span><br>` : ''}
@@ -3186,8 +3194,9 @@ async function cargarDashboard() {
       <td class="mono" style="color:var(--white)">${ARS(s.plan?.monto||0)}<span style="color:var(--muted2)">/mes</span></td>
       <td>${badge(s.status)}</td>
       <td style="color:var(--muted2)">${fecha(s.createdAt)}</td>
+      <td>${ordenes || '<span style="color:var(--muted);font-size:11px">—</span>'}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="5" class="empty">Sin suscripciones aún</td></tr>';
+  }).join('') || '<tr><td colspan="6" class="empty">Sin suscripciones aún</td></tr>';
 }
 
 // ===================== PLANES =====================
