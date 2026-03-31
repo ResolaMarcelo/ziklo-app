@@ -356,6 +356,40 @@ function verificarHMACShopify(req) {
   return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(hmacHeader));
 }
 
+// POST /webhooks/app-uninstalled — merchant desinstala la app
+router.post('/app-uninstalled', express.raw({ type: '*/*' }), async (req, res) => {
+  if (!verificarHMACShopify(req)) {
+    console.warn('[app/uninstalled] HMAC inválido');
+    return res.status(401).send('Unauthorized');
+  }
+
+  res.status(200).send('OK'); // Responder rápido a Shopify
+
+  try {
+    const body = JSON.parse(req.body.toString());
+    const domain = body.myshopify_domain;
+    if (!domain) return console.warn('[app/uninstalled] Sin myshopify_domain en body');
+
+    console.log(`[app/uninstalled] Tienda desinstalada: ${domain}`);
+
+    // Invalidar access token
+    await prisma.shop.update({
+      where: { domain },
+      data: { accessToken: null },
+    });
+
+    // Pausar suscripciones activas (evita cobros fallidos)
+    const { count } = await prisma.subscription.updateMany({
+      where: { shopDomain: domain, status: 'authorized' },
+      data: { status: 'paused' },
+    });
+
+    console.log(`[app/uninstalled] ${domain}: token invalidado, ${count} suscripciones pausadas`);
+  } catch (err) {
+    console.error('[app/uninstalled] Error:', err.message);
+  }
+});
+
 // POST /webhooks/gdpr/customers-data — cliente pide ver sus datos
 router.post('/gdpr/customers-data', express.raw({ type: '*/*' }), async (req, res) => {
   if (!verificarHMACShopify(req)) {

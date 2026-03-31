@@ -197,7 +197,32 @@ router.get('/callback', async (req, res) => {
 
     console.log(`✅ Shop autenticado: ${shop} (${savedShop.shopName})`);
 
-    // 7. Redirigir al panel admin
+    // 8. Registrar webhooks obligatorios en Shopify (fire & forget)
+    const APP_URL = process.env.APP_URL || 'https://app.zikloapp.com';
+    const webhooksToRegister = [
+      { topic: 'app/uninstalled',        address: `${APP_URL}/webhooks/app-uninstalled` },
+      { topic: 'customers/data_request',  address: `${APP_URL}/webhooks/gdpr/customers-data` },
+      { topic: 'customers/redact',        address: `${APP_URL}/webhooks/gdpr/customers-redact` },
+      { topic: 'shop/redact',             address: `${APP_URL}/webhooks/gdpr/shop-redact` },
+    ];
+
+    for (const wh of webhooksToRegister) {
+      try {
+        await fetch(`https://${shop}/admin/api/2024-01/webhooks.json`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': accessToken,
+          },
+          body: JSON.stringify({ webhook: { topic: wh.topic, address: wh.address, format: 'json' } }),
+        });
+      } catch (e) {
+        console.warn(`⚠ No se pudo registrar webhook ${wh.topic}:`, e.message);
+      }
+    }
+    console.log(`📡 Webhooks registrados para ${shop}`);
+
+    // 9. Redirigir al panel admin
     res.redirect('/admin/');
 
   } catch (err) {
