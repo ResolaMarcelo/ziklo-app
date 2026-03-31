@@ -44,6 +44,24 @@ const limiterAPI = rateLimit({
   message: { error: 'Demasiadas solicitudes. Intentá de nuevo en un momento.' },
 });
 
+// OAuth flows: 15 intentos cada 15 min por IP (evita abuso de redirects)
+const limiterOAuth = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos de autorización. Esperá 15 minutos.' },
+});
+
+// Admin API: 60 requests por minuto por IP (protección adicional tras auth)
+const limiterAdmin = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes. Intentá de nuevo en un momento.' },
+});
+
 const planesRoutes = require('./routes/planes');
 const productsRoutes = require('./routes/products');
 const subscripcionesRoutes = require('./routes/subscripciones');
@@ -139,6 +157,9 @@ app.use('/api/products', productsRoutes);
 app.use('/api/subscripciones', subscripcionesRoutes);
 app.use('/webhooks', webhooksRoutes);
 
+// Rate limiting para OAuth flows (Shopify, MP, Klaviyo, Google)
+app.use('/auth', limiterOAuth);
+
 // OAuth Shopify (para obtener el access token)
 app.use('/auth', authRoutes);
 
@@ -158,7 +179,8 @@ app.post('/api/cliente/solicitar', limiterMagicLink);
 app.post('/api/cliente/verificar', limiterVerificar);
 app.use('/api/cliente', clienteAuthRoutes);
 
-// Rutas de UI — admin protegido con auth + CSRF
+// Rutas de UI — admin protegido con auth + CSRF + rate limiting
+app.use('/admin/api', limiterAdmin);
 app.use('/admin', adminAuth, csrfProtection, adminRoutes);
 app.use('/cliente', clienteRoutes);
 
