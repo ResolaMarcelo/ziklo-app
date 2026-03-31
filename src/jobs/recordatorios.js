@@ -18,8 +18,8 @@ const _storeNameCache = {};
 async function getStoreName(shopDomain, shopToken) {
   if (_storeNameCache[shopDomain]) return _storeNameCache[shopDomain];
   try {
-    const data = await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json');
-    const name = data?.shop?.name || shopDomain;
+    const info = await shopify.getShopInfo(shopDomain, shopToken);
+    const name = info?.name || shopDomain;
     _storeNameCache[shopDomain] = name;
     return name;
   } catch {

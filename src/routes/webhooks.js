@@ -185,36 +185,30 @@ router.post('/mp', async (req, res) => {
             mpPaymentId: String(pago.id),
           }).catch(() => {});
 
-          // Crear orden en Shopify usando el token del shop correcto
+          // Crear orden en Shopify usando GraphQL
           if (sub.variantId) {
             try {
               const envio = sub.datosEnvio ? JSON.parse(sub.datosEnvio) : null;
-              const orden = await shopify.shopifyRequestForShop(
-                shopDomain, shopifyToken, '/orders.json', 'POST',
-                {
-                  order: {
-                    customer:   { id: sub.shopifyCustomerId },
-                    email:      sub.shopifyCustomerEmail,
-                    line_items: [{ variant_id: sub.variantId, quantity: sub.qty || 1 }],
-                    financial_status: 'paid',
-                    note: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
-                    tags: 'suscripcion,mp-auto',
-                    ...(envio ? { shipping_address: {
-                      first_name: envio.nombre, last_name: envio.apellido,
-                      address1: envio.direccion, city: envio.ciudad,
-                      province: envio.provincia, zip: envio.cp, country: 'AR',
-                      phone: envio.telefono,
-                    }} : {}),
-                  },
-                }
-              );
-              if (orden?.order?.id) {
-                console.log('Orden Shopify creada:', orden.order.id, '- #' + orden.order.order_number);
+              const orden = await shopify.createOrder(shopDomain, shopifyToken, {
+                customerId: sub.shopifyCustomerId,
+                email:      sub.shopifyCustomerEmail,
+                lineItems:  [{ variant_id: sub.variantId, quantity: sub.qty || 1 }],
+                note: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
+                tags: 'suscripcion,mp-auto',
+                shippingAddress: envio ? {
+                  first_name: envio.nombre, last_name: envio.apellido,
+                  address1: envio.direccion, city: envio.ciudad,
+                  province: envio.provincia, zip: envio.cp, country: 'AR',
+                  phone: envio.telefono,
+                } : null,
+              });
+              if (orden?.id) {
+                console.log('Orden Shopify creada:', orden.id, '- #' + orden.orderNumber);
                 await prisma.pago.update({
                   where: { mpPaymentId: String(pago.id) },
                   data: {
-                    shopifyOrderId:     String(orden.order.id),
-                    shopifyOrderNumber: orden.order.order_number,
+                    shopifyOrderId:     String(orden.id),
+                    shopifyOrderNumber: orden.orderNumber,
                   },
                 });
               } else {
@@ -241,8 +235,8 @@ router.post('/mp', async (req, res) => {
           }
           const shopDomain = shop.domain;
           const shopToken  = shop.accessToken || null;
-          const shopData   = shopToken ? await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null) : null;
-          const storeName  = shopData?.shop?.name || shopDomain;
+          const shopInfo   = shopToken ? await shopify.getShopInfo(shopDomain, shopToken).catch(() => null) : null;
+          const storeName  = shopInfo?.name || shopDomain;
 
           // Email al cliente
           try {
@@ -312,8 +306,8 @@ router.post('/mp', async (req, res) => {
           }
           const shopDomain = shop.domain;
           const shopToken  = shop.accessToken || null;
-          const shopData   = shopToken ? await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null) : null;
-          const storeName  = shopData?.shop?.name || shopDomain;
+          const shopInfo   = shopToken ? await shopify.getShopInfo(shopDomain, shopToken).catch(() => null) : null;
+          const storeName  = shopInfo?.name || shopDomain;
           await email.enviarConfirmacionSuscripcion({
             email:      sub.shopifyCustomerEmail,
             nombre:     sub.datosEnvio ? JSON.parse(sub.datosEnvio).nombre : null,

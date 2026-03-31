@@ -3,6 +3,7 @@ const router = express.Router();
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const prisma = require('../lib/prisma');
+const shopify = require('../services/shopify');
 
 const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
@@ -140,12 +141,8 @@ router.get('/callback', async (req, res) => {
       return res.redirect('/admin/login?error=token_failed');
     }
 
-    // 4. Obtener info de la tienda
-    const shopRes = await fetch(`https://${shop}/admin/api/2024-01/shop.json`, {
-      headers: { 'X-Shopify-Access-Token': accessToken },
-    });
-    const shopData = await shopRes.json();
-    const shopInfo = shopData.shop || {};
+    // 4. Obtener info de la tienda (GraphQL)
+    const shopInfo = await shopify.getShopInfo(shop, accessToken);
 
     // 5. Guardar / actualizar la tienda en la DB (el middleware de Prisma encripta automáticamente)
     const savedShop = await prisma.shop.upsert({
@@ -196,40 +193,20 @@ router.get('/callback', async (req, res) => {
 
     console.log(`✅ Shop autenticado: ${shop} (${savedShop.shopName})`);
 
-    // 8. Registrar webhooks obligatorios en Shopify (con retry)
+    // 8. Registrar webhooks obligatorios en Shopify (GraphQL)
     const APP_URL = process.env.APP_URL || 'https://app.zikloapp.com';
     const webhooksToRegister = [
-      { topic: 'app/uninstalled',        address: `${APP_URL}/webhooks/app-uninstalled` },
-      { topic: 'customers/data_request',  address: `${APP_URL}/webhooks/gdpr/customers-data` },
-      { topic: 'customers/redact',        address: `${APP_URL}/webhooks/gdpr/customers-redact` },
-      { topic: 'shop/redact',             address: `${APP_URL}/webhooks/gdpr/shop-redact` },
+      { topic: 'app/uninstalled',        callbackUrl: `${APP_URL}/webhooks/app-uninstalled` },
+      { topic: 'customers/data_request',  callbackUrl: `${APP_URL}/webhooks/gdpr/customers-data` },
+      { topic: 'customers/redact',        callbackUrl: `${APP_URL}/webhooks/gdpr/customers-redact` },
+      { topic: 'shop/redact',             callbackUrl: `${APP_URL}/webhooks/gdpr/shop-redact` },
     ];
 
-    const MAX_RETRIES = 2;
     for (const wh of webhooksToRegister) {
-      let registered = false;
-      for (let attempt = 0; attempt <= MAX_RETRIES && !registered; attempt++) {
-        try {
-          const resp = await fetch(`https://${shop}/admin/api/2024-01/webhooks.json`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Shopify-Access-Token': accessToken,
-            },
-            body: JSON.stringify({ webhook: { topic: wh.topic, address: wh.address, format: 'json' } }),
-          });
-          if (resp.ok || resp.status === 422) {
-            // 422 = webhook ya existe (mismo topic+address), cuenta como éxito
-            registered = true;
-          } else {
-            console.warn(`⚠ Webhook ${wh.topic} intento ${attempt + 1}: HTTP ${resp.status}`);
-          }
-        } catch (e) {
-          console.warn(`⚠ Webhook ${wh.topic} intento ${attempt + 1}: ${e.message}`);
-        }
-      }
-      if (!registered) {
-        console.error(`❌ No se pudo registrar webhook ${wh.topic} tras ${MAX_RETRIES + 1} intentos`);
+      try {
+        await shopify.createWebhookSubscription(shop, accessToken, wh.topic, wh.callbackUrl);
+      } catch (e) {
+        console.error(`❌ Webhook ${wh.topic}: ${e.message}`);
       }
     }
     console.log(`📡 Webhooks registrados para ${shop}`);

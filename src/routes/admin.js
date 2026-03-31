@@ -90,8 +90,8 @@ router.get('/api/shop', async (req, res) => {
       return res.status(400).json({ error: 'Token de acceso no encontrado para esta tienda' });
     }
 
-    const data = await shopify.shopifyRequestForShop(domain, token, '/shop.json');
-    res.json({ name: data.shop.name, domain: data.shop.domain, email: data.shop.email });
+    const info = await shopify.getShopInfo(domain, token);
+    res.json({ name: info.name, domain: info.domain, email: info.email });
   } catch (err) {
     console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
@@ -303,22 +303,16 @@ router.get('/api/products', async (req, res) => {
       return res.status(400).json({ error: 'No hay tienda en sesión' });
     }
 
-    // Traer productos desde Shopify
-    let data;
+    // Traer productos desde Shopify (GraphQL)
+    let shopifyProducts;
     try {
-      data = await shopify.shopifyRequestForShop(
-        shopDomain, accessToken,
-        '/products.json?limit=250&fields=id,title,image'
-      );
+      shopifyProducts = await shopify.getProducts(shopDomain, accessToken);
     } catch (shopifyErr) {
-      // Token sin scope read_products u otro error de Shopify
-      if (shopifyErr.message && shopifyErr.message.includes('403')) {
+      if (shopifyErr.message && (shopifyErr.message.includes('403') || shopifyErr.message.includes('access'))) {
         return res.status(400).json({ error: 'El token de Shopify no tiene permiso para leer productos. Reconectá tu tienda via OAuth.' });
       }
       throw shopifyErr;
     }
-
-    const shopifyProducts = data?.products || [];
 
     // Traer estados guardados en BD
     const dbRecords = await prisma.productSubscription.findMany({
@@ -330,7 +324,7 @@ router.get('/api/products', async (req, res) => {
     const products = shopifyProducts.map(p => ({
       id:          String(p.id),
       title:       p.title,
-      image:       p.image?.src || null,
+      image:       p.image || null,
       enabled:     dbMap[String(p.id)]?.enabled ?? false,
       benefitType:  dbMap[String(p.id)]?.benefitType  || null,
       benefitValue: dbMap[String(p.id)]?.benefitValue || null,

@@ -297,8 +297,8 @@ router.post('/:id/cancelar', clienteAuth, async (req, res) => {
     try {
       const shopDomain = req.shop?.domain || process.env.SHOPIFY_SHOP_DOMAIN;
       const shopToken  = req.shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN;
-      const shopData   = await shopify.shopifyRequestForShop(shopDomain, shopToken, '/shop.json').catch(() => null);
-      const storeName  = shopData?.shop?.name || process.env.STORE_NAME || shopDomain;
+      const shopInfo   = await shopify.getShopInfo(shopDomain, shopToken).catch(() => null);
+      const storeName  = shopInfo?.name || process.env.STORE_NAME || shopDomain;
       const nombre     = subWithPlan?.datosEnvio ? JSON.parse(subWithPlan.datosEnvio).nombre : null;
       await email.enviarCancelacionConfirmacion({
         email:      subWithPlan.shopifyCustomerEmail,

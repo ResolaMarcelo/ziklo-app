@@ -1,112 +1,219 @@
 const fetch = require('node-fetch');
 
-const SHOP = process.env.SHOPIFY_SHOP_DOMAIN;
-const TOKEN = process.env.SHOPIFY_ACCESS_TOKEN;
-const BASE = `https://${SHOP}/admin/api/2024-01`;
+const API_VERSION = '2025-01';
 
-/**
- * Llamada a Shopify API usando las credenciales del .env (app de un solo shop).
- * Compatibilidad hacia atrás con el código existente.
- */
-async function shopifyRequest(endpoint, method = 'GET', body = null) {
-  const options = {
-    method,
+// ── GraphQL wrapper ──────────────────────────────────────────────────────────
+
+async function graphqlRequest(domain, token, query, variables = {}) {
+  if (!domain || !token) throw new Error('Shop domain o access token no disponibles');
+
+  const url = `https://${domain}/admin/api/${API_VERSION}/graphql.json`;
+  const res = await fetch(url, {
+    method: 'POST',
     headers: {
-      'X-Shopify-Access-Token': TOKEN,
       'Content-Type': 'application/json',
+      'X-Shopify-Access-Token': token,
     },
-  };
-  if (body) options.body = JSON.stringify(body);
+    body: JSON.stringify({ query, variables }),
+  });
 
-  const res = await fetch(`${BASE}${endpoint}`, options);
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Shopify API error ${res.status}: ${err}`);
+    const text = await res.text();
+    throw new Error(`Shopify GraphQL error ${res.status}: ${text}`);
   }
-  return res.json();
+
+  const json = await res.json();
+
+  if (json.errors?.length) {
+    const msg = json.errors.map(e => e.message).join('; ');
+    throw new Error(`Shopify GraphQL: ${msg}`);
+  }
+
+  return json.data;
 }
 
-/**
- * Llamada a Shopify API para un shop específico (multi-tenant).
- * Si no se proveen domain/token, cae al env var.
- */
-async function shopifyRequestForShop(domain, token, endpoint, method = 'GET', body = null) {
-  const d = domain || SHOP;
-  const t = token || TOKEN;
-  if (!d || !t) throw new Error('Shop domain o access token no disponibles');
+// ── Helper: extraer ID numérico de un GID ────────────────────────────────────
+function numericId(gid) {
+  if (!gid) return null;
+  return gid.split('/').pop();
+}
 
-  const base = `https://${d}/admin/api/2024-01`;
-  const options = {
-    method,
-    headers: {
-      'X-Shopify-Access-Token': t,
-      'Content-Type': 'application/json',
-    },
+// ── Shop info ────────────────────────────────────────────────────────────────
+
+async function getShopInfo(domain, token) {
+  const data = await graphqlRequest(domain, token, `{
+    shop {
+      name
+      email
+      myshopifyDomain
+    }
+  }`);
+  return {
+    name:   data.shop.name,
+    email:  data.shop.email,
+    domain: data.shop.myshopifyDomain,
   };
-  if (body) options.body = JSON.stringify(body);
-
-  const res = await fetch(`${base}${endpoint}`, options);
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Shopify API error ${res.status}: ${err}`);
-  }
-  return res.json();
 }
 
-async function getCustomer(customerId) {
-  const data = await shopifyRequest(`/customers/${customerId}.json`);
-  return data.customer;
+// ── Products ─────────────────────────────────────────────────────────────────
+
+async function getProducts(domain, token) {
+  const data = await graphqlRequest(domain, token, `{
+    products(first: 250) {
+      edges {
+        node {
+          id
+          title
+          featuredImage {
+            url
+          }
+        }
+      }
+    }
+  }`);
+  return data.products.edges.map(({ node }) => ({
+    id:    numericId(node.id),
+    title: node.title,
+    image: node.featuredImage?.url || null,
+  }));
 }
 
-async function getCustomers() {
-  const data = await shopifyRequest('/customers.json?limit=250');
-  return data.customers;
-}
+// ── Create order ─────────────────────────────────────────────────────────────
 
-async function crearOrden({ customerId, lineItems, nota = '', envio = null, email = null }) {
-  const order = {
-    line_items: lineItems,
-    financial_status: 'paid',
-    note: nota || 'Orden creada automáticamente por suscripción',
-    send_receipt: true,
-    tags: 'suscripcion,mp-auto',
+async function createOrder(domain, token, { customerId, email, lineItems, note, tags, shippingAddress }) {
+  // Construir input para draftOrderCreate + draftOrderComplete
+  // Usamos draftOrder porque orderCreate requiere scope write_orders y es más flexible
+  const lineItemsInput = lineItems.map(li => ({
+    variantId: `gid://shopify/ProductVariant/${li.variant_id}`,
+    quantity:  li.quantity || 1,
+  }));
+
+  const input = {
+    email,
+    note,
+    tags: Array.isArray(tags) ? tags : (tags || '').split(',').map(t => t.trim()),
+    lineItems: lineItemsInput,
   };
 
   if (customerId && customerId !== 'desconocido') {
-    order.customer = { id: customerId };
-  } else if (email) {
-    order.email = email;
+    input.customerId = `gid://shopify/Customer/${customerId}`;
   }
 
-  if (envio) {
-    order.shipping_address = {
-      first_name: envio.nombre || '',
-      last_name:  envio.apellido || '',
-      address1:   envio.direccion || '',
-      city:       envio.ciudad || '',
-      province:   envio.provincia || '',
-      zip:        envio.cp || '',
-      country:    'Argentina',
-      country_code: 'AR',
-      phone:      envio.telefono || '',
+  if (shippingAddress) {
+    input.shippingAddress = {
+      firstName:  shippingAddress.first_name || '',
+      lastName:   shippingAddress.last_name || '',
+      address1:   shippingAddress.address1 || '',
+      city:       shippingAddress.city || '',
+      province:   shippingAddress.province || '',
+      zip:        shippingAddress.zip || '',
+      country:    shippingAddress.country || 'AR',
+      phone:      shippingAddress.phone || '',
     };
   }
 
-  const data = await shopifyRequest('/orders.json', 'POST', { order });
-  return data.order;
+  // Paso 1: Crear draft order
+  const draftData = await graphqlRequest(domain, token, `
+    mutation draftOrderCreate($input: DraftOrderInput!) {
+      draftOrderCreate(input: $input) {
+        draftOrder {
+          id
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `, { input });
+
+  const draftResult = draftData.draftOrderCreate;
+  if (draftResult.userErrors?.length) {
+    throw new Error(`Shopify draftOrderCreate: ${draftResult.userErrors.map(e => e.message).join('; ')}`);
+  }
+
+  const draftOrderId = draftResult.draftOrder.id;
+
+  // Paso 2: Completar el draft order (lo convierte en orden real marcada como paid)
+  const completeData = await graphqlRequest(domain, token, `
+    mutation draftOrderComplete($id: ID!, $paymentPending: Boolean) {
+      draftOrderComplete(id: $id, paymentPending: $paymentPending) {
+        draftOrder {
+          order {
+            id
+            name
+          }
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `, { id: draftOrderId, paymentPending: false });
+
+  const completeResult = completeData.draftOrderComplete;
+  if (completeResult.userErrors?.length) {
+    throw new Error(`Shopify draftOrderComplete: ${completeResult.userErrors.map(e => e.message).join('; ')}`);
+  }
+
+  const order = completeResult.draftOrder.order;
+  return {
+    id:          numericId(order.id),
+    orderNumber: parseInt(order.name.replace('#', ''), 10) || null,
+  };
 }
 
-async function getOrdenes() {
-  const data = await shopifyRequest('/orders.json?limit=50&status=any');
-  return data.orders;
+// ── Webhook subscription ─────────────────────────────────────────────────────
+
+// Mapeo de topics REST → GraphQL enum
+const TOPIC_MAP = {
+  'app/uninstalled':       'APP_UNINSTALLED',
+  'customers/data_request': 'CUSTOMERS_DATA_REQUEST',
+  'customers/redact':      'CUSTOMERS_REDACT',
+  'shop/redact':           'SHOP_REDACT',
+};
+
+async function createWebhookSubscription(domain, token, topic, callbackUrl) {
+  const gqlTopic = TOPIC_MAP[topic] || topic;
+
+  const data = await graphqlRequest(domain, token, `
+    mutation webhookSubscriptionCreate($topic: WebhookSubscriptionTopic!, $webhookSubscription: WebhookSubscriptionInput!) {
+      webhookSubscriptionCreate(topic: $topic, webhookSubscription: $webhookSubscription) {
+        webhookSubscription {
+          id
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `, {
+    topic: gqlTopic,
+    webhookSubscription: {
+      callbackUrl,
+      format: 'JSON',
+    },
+  });
+
+  const result = data.webhookSubscriptionCreate;
+  if (result.userErrors?.length) {
+    // "already exists" no es un error real
+    const msgs = result.userErrors.map(e => e.message).join('; ');
+    if (msgs.toLowerCase().includes('already') || msgs.toLowerCase().includes('exists')) {
+      return { ok: true, alreadyExists: true };
+    }
+    throw new Error(`Shopify webhookSubscriptionCreate: ${msgs}`);
+  }
+
+  return { ok: true };
 }
 
-let _shopName = null;
-async function getShopName() {
-  if (_shopName) return _shopName;
-  const data = await shopifyRequest('/shop.json');
-  _shopName = data.shop.name;
-  return _shopName;
-}
-
-module.exports = { getCustomer, getCustomers, crearOrden, getOrdenes, shopifyRequest, shopifyRequestForShop, getShopName };
+module.exports = {
+  graphqlRequest,
+  getShopInfo,
+  getProducts,
+  createOrder,
+  createWebhookSubscription,
+};
