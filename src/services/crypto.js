@@ -8,8 +8,17 @@
 const crypto = require('crypto');
 
 const ALGO = 'aes-256-gcm';
-const KEY_HEX = process.env.TOKEN_ENCRYPTION_KEY; // 64 hex chars = 32 bytes
+const KEY_HEX = (process.env.TOKEN_ENCRYPTION_KEY || '').trim(); // 64 hex chars = 32 bytes
 const PREFIX = 'enc:';                             // marca tokens encriptados
+
+// Diagnóstico al arranque
+if (KEY_HEX && KEY_HEX.length === 64) {
+  console.log('[crypto] ✅ TOKEN_ENCRYPTION_KEY configurada correctamente (64 chars)');
+} else if (KEY_HEX) {
+  console.warn(`[crypto] ⚠ TOKEN_ENCRYPTION_KEY tiene ${KEY_HEX.length} chars (esperado: 64) — encriptación desactivada`);
+} else {
+  console.warn('[crypto] ⚠ TOKEN_ENCRYPTION_KEY no configurada — tokens sin encriptar');
+}
 
 function getKey() {
   if (!KEY_HEX || KEY_HEX.length !== 64) return null;
