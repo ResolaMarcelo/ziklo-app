@@ -173,3 +173,16 @@ model ProductSubscription {
   @@unique([shopDomain, productId])
   @@index([shopDomain])
 }
+
+// Log de acciones de admin para auditoría
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  action     String
+  userId     String?
+  shopDomain String?
+  details    String?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([shopDomain])
+}

@@ -4,6 +4,7 @@ const path    = require('path');
 const fs      = require('fs');
 const shopify = require('../services/shopify');
 const prisma  = require('../lib/prisma');
+const { logAction } = require('../lib/auditLog');
 
 // ── Rutas públicas (sin auth) ──────────────────────────────────────────────
 
@@ -32,6 +33,7 @@ router.get('/api/login-status', (req, res) => {
 
 // POST /admin/api/logout
 router.post('/api/logout', (req, res) => {
+  logAction(req, 'logout');
   req.session = null;
   res.json({ ok: true, redirect: '/admin/login' });
 });
@@ -121,6 +123,8 @@ router.post('/api/disconnect-shop', async (req, res) => {
       where: { userId_shopDomain: { userId, shopDomain } },
     });
 
+    logAction(req, 'disconnect_shop', { shopDomain });
+
     // Limpiar shopDomain de la sesión
     req.session.shopDomain = null;
     req.session.shopId     = null;
@@ -153,6 +157,7 @@ router.post('/api/mp-token', async (req, res) => {
       },
     });
 
+    logAction(req, 'update_mp_token');
     res.json({ ok: true });
   } catch (err) {
     console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
@@ -217,6 +222,7 @@ router.post('/api/subscription-benefit', async (req, res) => {
       },
     });
 
+    logAction(req, 'update_subscription_benefit', { benefitType, benefitValue });
     res.json({ ok: true });
   } catch (err) {
     console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
@@ -270,6 +276,7 @@ router.post('/api/retention-config', async (req, res) => {
       },
     });
 
+    logAction(req, 'update_retention_config', { pauseEnabled, discountEnabled, surveyEnabled });
     res.json({ ok: true });
   } catch (err) {
     console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
@@ -358,6 +365,7 @@ router.post('/api/products/toggle', async (req, res) => {
       },
     });
 
+    logAction(req, 'toggle_product', { productId, enabled: !!enabled });
     res.json({ ok: true });
   } catch (err) {
     console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
@@ -444,6 +452,7 @@ router.post('/api/waitlist/:id/aprobar', async (req, res) => {
     const entry = await prisma.waitlistEntry.findUnique({ where: { id: req.params.id } });
     if (!entry) return res.status(404).json({ error: 'No encontrado' });
     await prisma.waitlistEntry.update({ where: { id: req.params.id }, data: { status: 'approved' } });
+    logAction(req, 'waitlist_approve', { email: entry.email });
     const registerUrl = `${process.env.APP_URL}/admin/login?tab=register`;
     await emailSvc.enviarEmail({
       to: entry.email,
@@ -461,8 +470,26 @@ router.post('/api/waitlist/:id/aprobar', async (req, res) => {
 router.post('/api/waitlist/:id/rechazar', async (req, res) => {
   try {
     await prisma.waitlistEntry.update({ where: { id: req.params.id }, data: { status: 'rejected' } });
+    logAction(req, 'waitlist_reject', { id: req.params.id });
     res.json({ ok: true });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' }); }
+});
+
+// GET /admin/api/audit-log — últimos 100 registros de auditoría del shop
+router.get('/api/audit-log', async (req, res) => {
+  try {
+    const shopDomain = req.session?.shopDomain;
+    if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
+
+    const logs = await prisma.auditLog.findMany({
+      where: { shopDomain },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    res.json(logs);
+  } catch (err) {
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
+  }
 });
 
 // Sirve el panel admin (HTML estático que consume la API)

@@ -8,7 +8,8 @@
     "start": "prisma generate && prisma migrate deploy && node src/app.js",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test": "jest --forceExit"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
@@ -26,6 +27,7 @@
     "resend": "^6.9.4"
   },
   "devDependencies": {
+    "jest": "^30.3.0",
     "nodemon": "^3.0.3"
   }
 }

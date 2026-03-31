@@ -105,7 +105,7 @@
   <div class="hero-tag">LEGAL</div>
   <h1>Política de Privacidad</h1>
   <p>Cómo recopilamos, usamos y protegemos tu información al usar Ziklo.</p>
-  <div class="hero-date">Última actualización: 28 de marzo de 2026</div>
+  <div class="hero-date">Última actualización: 31 de marzo de 2026</div>
 </div>
 
 <div class="content">
@@ -124,6 +124,7 @@
       <li>Email de contacto de la tienda</li>
       <li>Access token de Shopify (para crear órdenes en su nombre)</li>
       <li>Access token de Mercado Pago (para procesar cobros)</li>
+      <li>Access token de Klaviyo (para email marketing automatizado, si el merchant lo conecta)</li>
     </ul>
     <p style="margin-top:16px"><strong>De los suscriptores finales (clientes de las tiendas):</strong></p>
     <ul>
@@ -155,8 +156,10 @@
     <ul>
       <li><strong>Shopify:</strong> para crear órdenes y acceder a datos de clientes autorizados</li>
       <li><strong>Mercado Pago:</strong> para procesar cobros recurrentes</li>
+      <li><strong>Klaviyo:</strong> para automatización de email marketing (si el merchant lo conecta)</li>
+      <li><strong>Google:</strong> para autenticación OAuth de merchants</li>
       <li><strong>Railway / PostgreSQL:</strong> proveedor de infraestructura donde se almacenan los datos con cifrado en reposo</li>
-      <li><strong>Servicio SMTP:</strong> para enviar emails de confirmación</li>
+      <li><strong>Resend:</strong> para enviar emails transaccionales (confirmaciones, recordatorios, magic links)</li>
     </ul>
   </div>
 
@@ -177,7 +180,7 @@
       <li>Los access tokens se almacenan cifrados en la base de datos</li>
       <li>El panel de administración requiere autenticación</li>
       <li>Los webhooks de Shopify se verifican usando HMAC-SHA256</li>
-      <li>Las sesiones tienen expiración automática de 8 horas</li>
+      <li>Las sesiones tienen expiración automática</li>
     </ul>
   </div>
 
@@ -196,7 +199,7 @@
 
   <div class="section">
     <h2>8. Cookies</h2>
-    <p>Ziklo usa únicamente cookies de sesión estrictamente necesarias para mantener la autenticación en el panel de administración. No usamos cookies de seguimiento ni publicidad.</p>
+    <p>Ziklo usa únicamente cookies de sesión estrictamente necesarias para mantener la autenticación en el panel de administración y en el portal de clientes (suscriptores). No usamos cookies de seguimiento ni publicidad.</p>
   </div>
 
   <div class="section">

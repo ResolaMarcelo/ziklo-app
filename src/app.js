@@ -57,6 +57,7 @@ const mpAuthRoutes      = require('./routes/mpAuth');
 const clienteAuthRoutes = require('./routes/clienteAuth');
 const waitlistRoutes    = require('./routes/waitlist');
 const adminAuth        = require('./middleware/adminAuth');
+const csrfProtection   = require('./middleware/csrfProtection');
 const shopContext       = require('./middleware/shopContext');
 const recordatoriosJob = require('./jobs/recordatorios');
 
@@ -69,7 +70,18 @@ app.set('trust proxy', 1);
 
 // ── Security headers ──────────────────────────────────────────────────────
 app.use(helmet({
-  contentSecurityPolicy: false, // desactivado: el admin y widget usan inline scripts/styles
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:    ["'self'"],
+      scriptSrc:     ["'self'", "'unsafe-inline'", "https://accounts.google.com", "https://apis.google.com"],
+      styleSrc:      ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc:       ["'self'", "https://fonts.gstatic.com"],
+      imgSrc:        ["'self'", "data:", "https:"],
+      connectSrc:    ["'self'", "https://api.mercadopago.com", "https://accounts.google.com"],
+      frameSrc:      ["'self'", "https://accounts.google.com"],
+      frameAncestors: ["'self'", "https://*.myshopify.com", "https://admin.shopify.com"],
+    },
+  },
   crossOriginEmbedderPolicy: false, // desactivado: el widget se carga en tiendas externas
 }));
 
@@ -157,8 +169,8 @@ app.post('/api/cliente/solicitar', limiterMagicLink);
 app.post('/api/cliente/verificar', limiterVerificar);
 app.use('/api/cliente', clienteAuthRoutes);
 
-// Rutas de UI — admin protegido con auth
-app.use('/admin', adminAuth, adminRoutes);
+// Rutas de UI — admin protegido con auth + CSRF
+app.use('/admin', adminAuth, csrfProtection, adminRoutes);
 app.use('/cliente', clienteRoutes);
 
 // Waitlist beta — solo el endpoint público POST /api/waitlist
