@@ -70,18 +70,7 @@ app.set('trust proxy', 1);
 
 // ── Security headers ──────────────────────────────────────────────────────
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc:    ["'self'"],
-      scriptSrc:     ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://accounts.google.com", "https://apis.google.com"],
-      styleSrc:      ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc:       ["'self'", "https://fonts.gstatic.com"],
-      imgSrc:        ["'self'", "data:", "https:"],
-      connectSrc:    ["'self'", "https://api.mercadopago.com", "https://accounts.google.com"],
-      frameSrc:      ["'self'", "https://accounts.google.com"],
-      frameAncestors: ["'self'", "https://*.myshopify.com", "https://admin.shopify.com"],
-    },
-  },
+  contentSecurityPolicy: false, // desactivado: el admin usa inline scripts/styles y CDN externo (Chart.js)
   crossOriginEmbedderPolicy: false, // desactivado: el widget se carga en tiendas externas
 }));
 
