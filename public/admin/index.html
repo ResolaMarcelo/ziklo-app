@@ -4609,23 +4609,11 @@ async function initApp() {
 }
 
 function promptShopifyConnect() {
-  // Si el campo de dominio del onboarding existe y está visible, enfocarlo
   const input = document.getElementById('onb-domain');
-  if (input && input.offsetParent !== null) {
-    input.focus();
+  if (input) {
     input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
+    setTimeout(() => input.focus(), 400);
   }
-  // Si no, pedir el dominio con prompt
-  const raw = prompt('Ingresá tu dominio de Shopify (ej: mi-tienda)');
-  if (!raw) return;
-  const domain = raw.trim().toLowerCase()
-    .replace(/^https?:\/\//, '').replace(/\/$/, '').replace(/\.myshopify\.com$/, '');
-  if (!domain || !/^[a-zA-Z0-9][a-zA-Z0-9\-]*$/.test(domain)) {
-    alert('Dominio inválido. Ingresá solo el nombre (ej: mi-tienda).');
-    return;
-  }
-  window.location.href = `/auth?shop=${domain}.myshopify.com`;
 }
 
 function conectarShopify() {
