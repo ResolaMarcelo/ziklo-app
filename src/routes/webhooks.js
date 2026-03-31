@@ -109,12 +109,8 @@ router.post('/mp', async (req, res) => {
     // Helper: carga el shop de una suscripción para obtener sus tokens
     async function getShopForSub(sub) {
       if (!sub?.shopDomain) return null;
-      const shop = await prisma.shop.findUnique({ where: { domain: sub.shopDomain } });
-      if (shop) {
-        shop.accessToken   = decrypt(shop.accessToken);
-        shop.mpAccessToken = decrypt(shop.mpAccessToken);
-      }
-      return shop;
+      const raw = await prisma.shop.findUnique({ where: { domain: sub.shopDomain } });
+      return raw ? { ...raw, accessToken: decrypt(raw.accessToken), mpAccessToken: decrypt(raw.mpAccessToken) } : null;
     }
 
     // Notificación de pago

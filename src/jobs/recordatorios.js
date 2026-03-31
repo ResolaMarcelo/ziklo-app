@@ -56,10 +56,10 @@ async function enviarRecordatorios() {
   for (const sub of subs) {
     try {
       // Obtener datos del shop
-      let shop = sub.shopDomain
+      const shopRaw = sub.shopDomain
         ? await prisma.shop.findUnique({ where: { domain: sub.shopDomain } })
         : null;
-      if (shop) { shop.accessToken = decrypt(shop.accessToken); }
+      const shop = shopRaw ? { ...shopRaw, accessToken: decrypt(shopRaw.accessToken) } : null;
 
       if (!shop || !shop.domain) {
         console.error(`[Recordatorios] Shop no encontrado para sub ${sub.id} (shopDomain: ${sub.shopDomain}) — saltando`);

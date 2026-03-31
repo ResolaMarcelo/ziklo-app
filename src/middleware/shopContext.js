@@ -53,12 +53,12 @@ module.exports = async function shopContext(req, res, next) {
   if (!domain) return next();
 
   try {
-    const shop = await prisma.shop.findUnique({ where: { domain } });
-    if (shop) {
-      shop.accessToken   = decrypt(shop.accessToken);
-      shop.mpAccessToken = decrypt(shop.mpAccessToken);
-    }
-    req.shop = shop;
+    const shopRaw = await prisma.shop.findUnique({ where: { domain } });
+    req.shop = shopRaw ? {
+      ...shopRaw,
+      accessToken:   decrypt(shopRaw.accessToken),
+      mpAccessToken: decrypt(shopRaw.mpAccessToken),
+    } : null;
   } catch (err) {
     console.error('shopContext error:', err.message);
   }
