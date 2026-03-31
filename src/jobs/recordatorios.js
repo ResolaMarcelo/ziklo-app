@@ -11,6 +11,7 @@
 const prisma   = require('../lib/prisma');
 const email    = require('../services/email');
 const shopify  = require('../services/shopify');
+const { decrypt } = require('../services/crypto');
 
 // Cache simple de nombre de tienda para no llamar a Shopify en cada iteración
 const _storeNameCache = {};
@@ -55,9 +56,10 @@ async function enviarRecordatorios() {
   for (const sub of subs) {
     try {
       // Obtener datos del shop
-      const shop = sub.shopDomain
+      let shop = sub.shopDomain
         ? await prisma.shop.findUnique({ where: { domain: sub.shopDomain } })
         : null;
+      if (shop) { shop.accessToken = decrypt(shop.accessToken); }
 
       if (!shop || !shop.domain) {
         console.error(`[Recordatorios] Shop no encontrado para sub ${sub.id} (shopDomain: ${sub.shopDomain}) — saltando`);

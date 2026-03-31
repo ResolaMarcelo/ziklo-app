@@ -5,6 +5,7 @@ const fs      = require('fs');
 const crypto  = require('crypto');
 const shopify = require('../services/shopify');
 const prisma  = require('../lib/prisma');
+const { encrypt } = require('../services/crypto');
 
 // ── Rutas públicas (sin auth) ──────────────────────────────────────────────
 
@@ -118,7 +119,7 @@ router.get('/api/shop', async (req, res) => {
     const data = await shopify.shopifyRequestForShop(domain, token, '/shop.json');
     res.json({ name: data.shop.name, domain: data.shop.domain, email: data.shop.email });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -155,7 +156,7 @@ router.post('/api/disconnect-shop', async (req, res) => {
 
     return res.json({ ok: true });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -171,18 +172,18 @@ router.post('/api/mp-token', async (req, res) => {
     // Upsert: crea el registro Shop si no existe aún
     await prisma.shop.upsert({
       where:  { domain: shopDomain },
-      update: { mpAccessToken: token },
+      update: { mpAccessToken: encrypt(token) },
       create: {
         domain:       shopDomain,
         accessToken:  '',
-        mpAccessToken: token,
+        mpAccessToken: encrypt(token),
         shopName:     shopDomain,
       },
     });
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -246,7 +247,7 @@ router.post('/api/subscription-benefit', async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -299,7 +300,7 @@ router.post('/api/retention-config', async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -358,7 +359,7 @@ router.get('/api/products', async (req, res) => {
 
     res.json({ products });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -387,7 +388,7 @@ router.post('/api/products/toggle', async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -451,7 +452,7 @@ router.get('/api/pagos', async (req, res) => {
       };
     }));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -463,7 +464,7 @@ router.get('/api/waitlist', async (req, res) => {
   try {
     const entries = await prisma.waitlistEntry.findMany({ orderBy: { createdAt: 'desc' } });
     res.json(entries);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' }); }
 });
 
 router.post('/api/waitlist/:id/aprobar', async (req, res) => {
@@ -482,14 +483,14 @@ router.post('/api/waitlist/:id/aprobar', async (req, res) => {
         <br><br><p style="color:#888;font-size:14px;">— El equipo de Ziklo</p></div>`,
     });
     res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' }); }
 });
 
 router.post('/api/waitlist/:id/rechazar', async (req, res) => {
   try {
     await prisma.waitlistEntry.update({ where: { id: req.params.id }, data: { status: 'rejected' } });
     res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' }); }
 });
 
 // Sirve el panel admin (HTML estático que consume la API)

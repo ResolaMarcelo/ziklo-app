@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
     });
     res.json(subs);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -44,7 +44,7 @@ router.get('/cliente/:email', clienteAuth, async (req, res) => {
     });
     res.json(subs);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -62,7 +62,7 @@ router.get('/por-preapproval/:preapprovalId', async (req, res) => {
     if (!sub) return res.status(404).json({ error: 'No encontrada' });
     res.json(sub);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -103,7 +103,7 @@ router.post('/crear', async (req, res) => {
     res.json({ subscripcionId: sub.id, initPoint: preapproval.init_point });
   } catch (err) {
     console.error('Error al crear suscripción:', err);
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -144,7 +144,7 @@ router.post('/crear-dinamico', async (req, res) => {
     res.json({ subscripcionId: sub.id, initPoint: preapproval.init_point });
   } catch (err) {
     console.error('Error al crear suscripción dinámica:', err);
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -227,7 +227,7 @@ router.get('/retention-config', async (req, res) => {
       message:         shop?.retentionMessage         ?? null,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -244,7 +244,7 @@ router.post('/:id/cancelar-motivo', clienteAuth, async (req, res) => {
     });
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -262,7 +262,7 @@ router.post('/:id/aplicar-descuento', clienteAuth, async (req, res) => {
     });
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -311,7 +311,7 @@ router.post('/:id/cancelar', clienteAuth, async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -331,7 +331,7 @@ router.post('/:id/pausar', clienteAuth, async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -351,7 +351,7 @@ router.post('/:id/reanudar', clienteAuth, async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 

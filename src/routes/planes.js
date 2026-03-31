@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
     });
     res.json(planes);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -31,7 +31,7 @@ router.get('/todos', async (req, res) => {
     });
     res.json(planes);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -57,7 +57,7 @@ router.post('/', async (req, res) => {
     });
     res.status(201).json(plan);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -88,7 +88,7 @@ router.put('/:id', async (req, res) => {
     });
     res.json(plan);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -108,7 +108,7 @@ router.delete('/:id', async (req, res) => {
     });
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 

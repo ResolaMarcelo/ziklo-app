@@ -76,7 +76,7 @@ router.post('/', async (req, res) => {
     res.json({ ok: true, id: entry.id });
   } catch (err) {
     console.error('Error waitlist:', err);
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -88,7 +88,7 @@ router.get('/admin/api/waitlist', adminAuth, async (req, res) => {
     });
     res.json(entries);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -125,7 +125,7 @@ router.post('/admin/api/waitlist/:id/aprobar', adminAuth, async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -138,7 +138,7 @@ router.post('/admin/api/waitlist/:id/rechazar', adminAuth, async (req, res) => {
     });
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 

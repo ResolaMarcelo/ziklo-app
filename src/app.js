@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const cookieSession = require('cookie-session');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 
 // ── Rate limiters ────────────────────────────────────────────────────────────
 
@@ -65,6 +66,12 @@ const PORT = process.env.PORT || 3000;
 // Railway termina SSL en su proxy — necesario para que req.secure sea true
 // y para que las cookies con secure:true se setteen correctamente
 app.set('trust proxy', 1);
+
+// ── Security headers ──────────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: false, // desactivado: el admin y widget usan inline scripts/styles
+  crossOriginEmbedderPolicy: false, // desactivado: el widget se carga en tiendas externas
+}));
 
 // Forzar HTTPS en producción (solo si viene del proxy externo de Railway)
 if (process.env.NODE_ENV === 'production') {
@@ -170,6 +177,21 @@ app.get('/widget.js', (req, res) => {
 // Landing page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// ── Error handler global — no exponer datos internos ─────────────────────
+app.use((err, req, res, _next) => {
+  console.error(`[ERROR] ${req.method} ${req.path}:`, err.message || err);
+  const status = err.status || err.statusCode || 500;
+  if (req.path.startsWith('/api/') || req.path.startsWith('/webhooks/') || req.path.startsWith('/auth/')) {
+    return res.status(status).json({
+      error: status === 401 ? 'No autorizado'
+           : status === 403 ? 'Acceso denegado'
+           : status === 404 ? 'No encontrado'
+           : 'Ocurrió un error interno. Intentá de nuevo más tarde.',
+    });
+  }
+  res.status(status).send('Error interno del servidor');
 });
 
 app.listen(PORT, () => {

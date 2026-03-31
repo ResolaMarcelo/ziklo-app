@@ -45,7 +45,7 @@ router.post('/user/login', async (req, res) => {
 
     return res.json({ ok: true });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -102,7 +102,7 @@ router.post('/user/register', async (req, res) => {
 
     return res.json({ ok: true, needsVerification: true, email: user.email });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -145,7 +145,7 @@ router.post('/user/verify-email', async (req, res) => {
 
     return res.json({ ok: true });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -232,7 +232,7 @@ router.post('/user/reset-password', async (req, res) => {
 
     return res.json({ ok: true });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
@@ -379,7 +379,7 @@ router.post('/user/create', async (req, res) => {
     return res.json({ ok: true, userId: user.id, tempPassword: passwordToUse });
   } catch (err) {
     if (err.code === 'P2002') return res.status(400).json({ error: 'Ese email ya está registrado' });
-    return res.status(500).json({ error: err.message });
+    return console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 

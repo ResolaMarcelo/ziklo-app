@@ -53,7 +53,7 @@ router.get('/enabled', async (req, res) => {
     });
     res.json({ count });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
