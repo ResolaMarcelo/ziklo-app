@@ -132,7 +132,7 @@ router.post('/api/disconnect-shop', async (req, res) => {
 
     return res.json({ ok: true });
   } catch (err) {
-    return console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
+    console.error(err); return res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });
 
