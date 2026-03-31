@@ -79,7 +79,7 @@ router.post('/user/register', async (req, res) => {
     }
 
     const passwordHash       = await bcrypt.hash(password, 10);
-    const verificationCode   = String(Math.floor(100000 + Math.random() * 900000));
+    const verificationCode   = String(crypto.randomInt(100000, 1000000));
     const verificationExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 min
 
     const user = await prisma.user.create({
@@ -160,7 +160,7 @@ router.post('/user/resend-verification', async (req, res) => {
 
     if (user.emailVerified) return res.json({ ok: true });
 
-    const verificationCode   = String(Math.floor(100000 + Math.random() * 900000));
+    const verificationCode   = String(crypto.randomInt(100000, 1000000));
     const verificationExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
     await prisma.user.update({

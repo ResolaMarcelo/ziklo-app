@@ -2692,6 +2692,9 @@
 </div>
 
 <script>
+// Escape HTML para prevenir XSS al inyectar datos de usuario en el DOM
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
 const API = '';
 const TITLES = {
   dashboard:      ['Dashboard', 'Resumen de tu negocio'],
@@ -3186,8 +3189,8 @@ async function cargarDashboard() {
         </a>`).join('');
     return `<tr>
       <td>
-        ${nombre ? `<span style="font-weight:600">${nombre}</span><br>` : ''}
-        <span style="color:var(--muted2)">${s.shopifyCustomerEmail}</span>
+        ${nombre ? `<span style="font-weight:600">${esc(nombre)}</span><br>` : ''}
+        <span style="color:var(--muted2)">${esc(s.shopifyCustomerEmail)}</span>
       </td>
       <td style="color:var(--muted2);font-size:13px">${s.plan?.nombre || '—'}</td>
       <td class="mono" style="color:var(--white)">${ARS(s.plan?.monto||0)}<span style="color:var(--muted2)">/mes</span></td>
@@ -3204,15 +3207,15 @@ async function cargarPlanes() {
   document.getElementById('tabla-planes').innerHTML = planes.length
     ? planes.map(p => `<tr>
         <td>
-          <span style="font-weight:600">${p.nombre}</span>
-          ${p.descripcion ? `<br><span style="color:var(--muted2);font-size:12px">${p.descripcion}</span>` : ''}
+          <span style="font-weight:600">${esc(p.nombre)}</span>
+          ${p.descripcion ? `<br><span style="color:var(--muted2);font-size:12px">${esc(p.descripcion)}</span>` : ''}
         </td>
         <td class="mono" style="color:var(--white)">${ARS(p.monto)}</td>
         <td style="color:var(--muted2)">Cada ${p.frecuencia} ${p.tipoFrecuencia === 'months' ? (p.frecuencia===1?'mes':'meses') : 'días'}</td>
         <td style="color:var(--muted2)">${p._count?.subscriptions||0}</td>
         <td>${p.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-gray">Inactivo</span>'}</td>
         <td class="actions">
-          <button class="btn btn-ghost" onclick="editarPlan('${p.id}','${p.nombre}','${p.descripcion||''}',${p.monto},${p.frecuencia},'${p.tipoFrecuencia}',${JSON.stringify(p.beneficios||'')})">Editar</button>
+          <button class="btn btn-ghost" onclick="editarPlan('${p.id}',${JSON.stringify(p.nombre)},${JSON.stringify(p.descripcion||'')},${p.monto},${p.frecuencia},'${p.tipoFrecuencia}',${JSON.stringify(p.beneficios||'')})">Editar</button>
           ${p.activo ? `<button class="btn btn-danger" onclick="desactivarPlan('${p.id}')">Desactivar</button>` : ''}
         </td>
       </tr>`).join('')
@@ -3348,8 +3351,8 @@ function renderSubs(subs) {
             </a>`).join('');
         return `<tr>
           <td>
-            ${nombre ? `<span style="font-weight:600">${nombre}</span><br>` : ''}
-            <span style="color:var(--muted2)">${s.shopifyCustomerEmail}</span>
+            ${nombre ? `<span style="font-weight:600">${esc(nombre)}</span><br>` : ''}
+            <span style="color:var(--muted2)">${esc(s.shopifyCustomerEmail)}</span>
             ${ciudad ? `<br><span style="color:var(--muted);font-size:11px">📍 ${ciudad}</span>` : ''}
           </td>
           <td style="color:var(--muted2);font-size:13px">${s.plan?.nombre || '—'}</td>
@@ -3388,7 +3391,7 @@ async function cargarPagos() {
     renderPagos(_todosPagos);
   } catch (err) {
     document.getElementById('tabla-pagos').innerHTML =
-      `<tr><td colspan="6" class="empty" style="color:var(--danger)">Error al cargar: ${err.message}</td></tr>`;
+      `<tr><td colspan="6" class="empty" style="color:var(--danger)">Error al cargar: ${esc(err.message)}</td></tr>`;
   }
 }
 
@@ -3425,8 +3428,8 @@ function renderPagos(pagos) {
     ? pagos.map(p => `<tr>
         <td style="color:var(--muted2)">${fecha(p.createdAt)}</td>
         <td>
-          <div style="font-size:12px">${p.email}</div>
-          ${p.nombre ? `<div style="font-size:11px;color:var(--muted2)">${p.nombre}</div>` : ''}
+          <div style="font-size:12px">${esc(p.email)}</div>
+          ${p.nombre ? `<div style="font-size:11px;color:var(--muted2)">${esc(p.nombre)}</div>` : ''}
         </td>
         <td style="color:var(--muted2);font-size:12px">${p.productTitle || p.productId || '—'}</td>
         <td class="mono" style="color:var(--white)">${ARS(p.monto)}</td>
@@ -3886,7 +3889,7 @@ async function cargarProductos(force = false) {
       </div>
       <div class="product-list">${rows}</div>`;
   } catch (err) {
-    body.innerHTML = `<div class="empty" style="color:var(--danger)">Error al cargar productos: ${err.message}</div>`;
+    body.innerHTML = `<div class="empty" style="color:var(--danger)">Error al cargar productos: ${esc(err.message)}</div>`;
   }
 }
 
@@ -4215,7 +4218,7 @@ async function cargarWaitlist() {
       </tr>
     `).join('');
   } catch(err) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#f87171;">Error: ${err.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#f87171;">Error: ${esc(err.message)}</td></tr>`;
   }
 }
 

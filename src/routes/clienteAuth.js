@@ -108,10 +108,10 @@ router.post('/verificar-token', async (req, res) => {
     data:  { usedAt: new Date() },
   });
 
-  // Establecer sesión del cliente (dura 7 días)
+  // Establecer sesión del cliente (dura 24 horas)
   req.session.clienteEmail  = record.email;
   req.session.clienteShop   = record.shopDomain;
-  req.session.clienteExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  req.session.clienteExpiry = Date.now() + 24 * 60 * 60 * 1000;
 
   res.json({ ok: true, email: record.email });
 });

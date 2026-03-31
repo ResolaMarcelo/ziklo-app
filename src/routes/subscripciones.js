@@ -52,10 +52,11 @@ router.get('/cliente/:email', clienteAuth, async (req, res) => {
 router.get('/por-preapproval/:preapprovalId', async (req, res) => {
   try {
     const shopDomain = getShopDomain(req);
+    if (!shopDomain) return res.status(400).json({ error: 'Shop no identificado' });
     const sub = await prisma.subscription.findFirst({
       where: {
         mpPreapprovalId: req.params.preapprovalId,
-        ...(shopDomain ? { shopDomain } : {}),
+        shopDomain,
       },
       include: { plan: true },
     });
@@ -236,8 +237,8 @@ router.post('/:id/cancelar-motivo', clienteAuth, async (req, res) => {
   try {
     const { motivo } = req.body;
     if (!motivo) return res.status(400).json({ error: 'motivo requerido' });
-    // Verificar que la sub existe
-    const sub = await prisma.subscription.findUnique({ where: { id: req.params.id } });
+    // Verificar que la sub pertenece al shop + cliente
+    const sub = await findSubForRequest(req.params.id, req);
     if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
     await prisma.cancelReason.create({
       data: { subscriptionId: req.params.id, reason: motivo },
@@ -251,7 +252,8 @@ router.post('/:id/cancelar-motivo', clienteAuth, async (req, res) => {
 // POST /api/subscripciones/:id/aplicar-descuento
 router.post('/:id/aplicar-descuento', clienteAuth, async (req, res) => {
   try {
-    const sub = await prisma.subscription.findUnique({ where: { id: req.params.id } });
+    // Verificar que la sub pertenece al shop + cliente
+    const sub = await findSubForRequest(req.params.id, req);
     if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
     if (sub.retentionDiscountApplied) {
       return res.status(400).json({ error: 'El descuento ya fue aplicado anteriormente' });
