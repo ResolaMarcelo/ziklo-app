@@ -3125,7 +3125,7 @@ async function renderChecklist(data) {
 
   body.innerHTML = steps.map(step => `
     <div class="checklist-step ${step.optional ? 'optional' : ''} ${step.done ? 'done' : ''} ${(!step.done && step === firstPending) ? 'active-step' : ''}"
-         ${step.actionTab && !step.done ? (step.actionTab === '__shopify_focus__' ? `onclick="document.getElementById('onb-domain')?.focus();document.getElementById('onb-domain')?.scrollIntoView({behavior:'smooth',block:'center'})"` : `onclick="showTab('${step.actionTab}')"`) : ''}>
+         ${step.actionTab && !step.done ? (step.actionTab === '__shopify_focus__' ? `onclick="promptShopifyConnect()"` : `onclick="showTab('${step.actionTab}')"`) : ''}>
       <div class="step-icon ${step.done ? 'done' : 'pending'}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
         <div class="step-dot"></div>
@@ -4606,6 +4606,26 @@ async function initApp() {
   cargarDashboard();
   // Cargar badge de waitlist al iniciar
   cargarWaitlist().catch(() => {});
+}
+
+function promptShopifyConnect() {
+  // Si el campo de dominio del onboarding existe y está visible, enfocarlo
+  const input = document.getElementById('onb-domain');
+  if (input && input.offsetParent !== null) {
+    input.focus();
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  // Si no, pedir el dominio con prompt
+  const raw = prompt('Ingresá tu dominio de Shopify (ej: mi-tienda)');
+  if (!raw) return;
+  const domain = raw.trim().toLowerCase()
+    .replace(/^https?:\/\//, '').replace(/\/$/, '').replace(/\.myshopify\.com$/, '');
+  if (!domain || !/^[a-zA-Z0-9][a-zA-Z0-9\-]*$/.test(domain)) {
+    alert('Dominio inválido. Ingresá solo el nombre (ej: mi-tienda).');
+    return;
+  }
+  window.location.href = `/auth?shop=${domain}.myshopify.com`;
 }
 
 function conectarShopify() {
