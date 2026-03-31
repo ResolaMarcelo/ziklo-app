@@ -206,7 +206,18 @@ router.post('/mp', async (req, res) => {
                   },
                 }
               );
-              console.log('Orden Shopify creada:', orden?.order?.id);
+              if (orden?.order?.id) {
+                console.log('Orden Shopify creada:', orden.order.id, '- #' + orden.order.order_number);
+                await prisma.pago.update({
+                  where: { mpPaymentId: String(pago.id) },
+                  data: {
+                    shopifyOrderId:     String(orden.order.id),
+                    shopifyOrderNumber: orden.order.order_number,
+                  },
+                });
+              } else {
+                console.log('Orden Shopify creada sin ID en respuesta');
+              }
             } catch (err) {
               console.error('Error al crear orden Shopify:', err.message);
             }

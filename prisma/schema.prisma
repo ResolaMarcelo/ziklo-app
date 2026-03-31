@@ -113,13 +113,15 @@ model Subscription {
 }
 
 model Pago {
-  id             String       @id @default(cuid())
-  mpPaymentId    String       @unique
-  monto          Float
-  status         String       // approved | rejected | pending
-  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
-  subscriptionId String
-  createdAt      DateTime     @default(now())
+  id                  String       @id @default(cuid())
+  mpPaymentId         String       @unique
+  monto               Float
+  status              String       // approved | rejected | pending
+  shopifyOrderId      String?      // ID interno de la orden Shopify
+  shopifyOrderNumber  Int?         // Nro de orden legible (#1001, #1002...)
+  subscription        Subscription @relation(fields: [subscriptionId], references: [id])
+  subscriptionId      String
+  createdAt           DateTime     @default(now())
 }
 
 // Token de un solo uso para autenticar el portal /cliente via magic link
