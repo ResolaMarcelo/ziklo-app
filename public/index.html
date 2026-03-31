@@ -775,6 +775,22 @@
       .mockup-body { grid-template-columns: 1fr 1fr; gap: 6px; }
       .hero-metric-val { font-size: 22px; }
     }
+
+    /* ─── Scroll Reveal ─── */
+    .sr {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity .65s cubic-bezier(.22,1,.36,1),
+                  transform .65s cubic-bezier(.22,1,.36,1);
+      transition-delay: var(--sr-delay, 0ms);
+    }
+    .sr.sr--in {
+      opacity: 1;
+      transform: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sr { opacity: 1; transform: none; }
+    }
   </style>
 </head>
 <body>
@@ -1832,6 +1848,79 @@
       btn.disabled = false;
     }
   }
+</script>
+
+<!-- ─── Scroll Reveal ──────────────────────────────────────────────── -->
+<script>
+(function () {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('sr--in');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -48px 0px' });
+
+  /* Aplica clase sr + delay opcional y empieza a observar */
+  function reveal(selector, staggerMs) {
+    document.querySelectorAll(selector).forEach(function (el, i) {
+      el.classList.add('sr');
+      if (staggerMs != null) el.style.setProperty('--sr-delay', (i * staggerMs) + 'ms');
+      obs.observe(el);
+    });
+  }
+
+  /* Grids: stagger interno por fila/columna en vez de globalmente */
+  function revealGrid(gridSelector, itemSelector, staggerMs) {
+    document.querySelectorAll(gridSelector).forEach(function (grid) {
+      grid.querySelectorAll(itemSelector || ':scope > *').forEach(function (el, i) {
+        el.classList.add('sr');
+        el.style.setProperty('--sr-delay', (i * staggerMs) + 'ms');
+        obs.observe(el);
+      });
+    });
+  }
+
+  /* ── Títulos de sección ── */
+  reveal('.section-title');
+  reveal('.section-sub');
+
+  /* ── Sección de stats ── */
+  revealGrid('.stats-grid', '.stat-box', 90);
+
+  /* ── Pasos "Cómo funciona" ── */
+  reveal('.step-card', 100);
+
+  /* ── Feature cards ── */
+  revealGrid('.features-grid', '.feature-card', 70);
+
+  /* ── Pricing cards ── */
+  revealGrid('.pricing-grid', '.pricing-card', 90);
+
+  /* ── Testimonios ── */
+  revealGrid('.testimonials-grid', null, 80);
+
+  /* ── FAQs ── */
+  reveal('.faq-landing-item', 45);
+
+  /* ── Hero mockup ── */
+  reveal('.hero-mockup');
+
+  /* ── Logo carousel completo ── */
+  reveal('.logos-bar');
+
+  /* ── CTA final ── */
+  reveal('.cta-inner');
+
+  /* ── Sección "problema" ── */
+  reveal('.problem-section .section-title');
+
+  /* ── Product section ── */
+  reveal('.product-section .section-title');
+}());
 </script>
 </body>
 </html>
