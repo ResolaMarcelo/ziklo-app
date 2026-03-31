@@ -48,16 +48,21 @@ function decrypt(stored) {
     return stored;
   }
 
-  const parts = stored.slice(PREFIX.length).split(':');
-  if (parts.length !== 3) return stored;
+  try {
+    const parts = stored.slice(PREFIX.length).split(':');
+    if (parts.length !== 3) return stored;
 
-  const [ivHex, authTagHex, ciphertext] = parts;
-  const decipher = crypto.createDecipheriv(ALGO, key, Buffer.from(ivHex, 'hex'));
-  decipher.setAuthTag(Buffer.from(authTagHex, 'hex'));
-  let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
+    const [ivHex, authTagHex, ciphertext] = parts;
+    const decipher = crypto.createDecipheriv(ALGO, key, Buffer.from(ivHex, 'hex'));
+    decipher.setAuthTag(Buffer.from(authTagHex, 'hex'));
+    let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
 
-  return decrypted;
+    return decrypted;
+  } catch (err) {
+    console.error('[crypto] Decryption failed:', err.message);
+    return null; // token irrecuperable — forzar reconexión
+  }
 }
 
 module.exports = { encrypt, decrypt };
