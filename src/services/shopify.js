@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const API_VERSION = '2025-01';
+const API_VERSION = '2025-04';
 
 // ── GraphQL wrapper ──────────────────────────────────────────────────────────
 
