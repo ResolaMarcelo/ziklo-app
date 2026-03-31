@@ -945,6 +945,14 @@
       .config-grid { grid-template-columns: 1fr; }
       .integ-grid { grid-template-columns: 1fr; }
 
+      /* Inline grids → 1 col */
+      .beneficio-grid { grid-template-columns: 1fr !important; }
+      .retencion-grid { grid-template-columns: 1fr !important; }
+      .wl-stats-grid { grid-template-columns: repeat(3,1fr) !important; }
+
+      /* Connect banner */
+      #connect-shop-banner { padding: 12px 16px !important; gap: 12px !important; }
+
       /* Tables: horizontal scroll */
       .card { overflow-x: auto; }
       table { min-width: 480px; }
@@ -995,6 +1003,15 @@
       /* Charts */
       .chart-card { padding: 14px; }
       .chart-wrap { height: 150px; }
+
+      /* Inline grids → fully stacked */
+      .beneficio-grid { grid-template-columns: 1fr !important; }
+      .retencion-grid { grid-template-columns: 1fr !important; }
+      .wl-stats-grid { grid-template-columns: 1fr !important; }
+
+      /* Connect banner stacked */
+      #connect-shop-banner { flex-direction: column !important; padding: 12px !important; gap: 10px !important; }
+      #connect-shop-banner input { width: 100% !important; }
 
       /* Search input full width on mobile */
       .search-input { width: 100%; }
@@ -1802,7 +1819,7 @@
 
     <!-- BENEFICIO -->
     <div id="tab-beneficio" class="page">
-      <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start">
+      <div class="beneficio-grid" style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start">
 
         <!-- Columna izquierda: configuración -->
         <div style="display:flex;flex-direction:column;gap:16px;">
@@ -2252,7 +2269,7 @@
 
     <!-- RETENCIÓN -->
     <div id="tab-retencion" class="page">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;max-width:1100px;">
+      <div class="retencion-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;max-width:1100px;">
 
         <!-- ── Columna izquierda: config ── -->
         <div class="config-card">
@@ -2350,7 +2367,7 @@
       </div>
 
       <!-- Estadísticas rápidas -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+      <div class="wl-stats-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
         <div class="stat-card"><div class="stat-val" id="wl-total">—</div><div class="stat-label">Total solicitudes</div></div>
         <div class="stat-card"><div class="stat-val" id="wl-pending-count" style="color:var(--yellow,#f0a500)">—</div><div class="stat-label">Pendientes</div></div>
         <div class="stat-card"><div class="stat-val" id="wl-approved-count" style="color:var(--green)">—</div><div class="stat-label">Aprobadas</div></div>
