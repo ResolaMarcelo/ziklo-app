@@ -2,7 +2,6 @@ const express = require('express');
 const router  = express.Router();
 const path    = require('path');
 const fs      = require('fs');
-const crypto  = require('crypto');
 const shopify = require('../services/shopify');
 const prisma  = require('../lib/prisma');
 const { encrypt } = require('../services/crypto');
@@ -17,35 +16,9 @@ router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/admin/login.html'));
 });
 
-// POST /admin/api/login — usuario + contraseña desde env vars
-router.post('/api/login', (req, res) => {
-  if (!process.env.ADMIN_PASSWORD) {
-    return res.status(503).json({ error: 'Login legacy no configurado' });
-  }
-
-  const { username, password } = req.body;
-
-  const validUser = process.env.ADMIN_USER || 'admin';
-  const validPass = process.env.ADMIN_PASSWORD;
-
-  // Buffers de igual tamaño para timingSafeEqual
-  const uBuf = Buffer.alloc(64); Buffer.from(username || '').copy(uBuf);
-  const vBuf = Buffer.alloc(64); Buffer.from(validUser).copy(vBuf);
-  const pBuf = Buffer.alloc(64); Buffer.from(password || '').copy(pBuf);
-  const qBuf = Buffer.alloc(64); Buffer.from(validPass).copy(qBuf);
-
-  const userOk = crypto.timingSafeEqual(uBuf, vBuf);
-  const passOk = crypto.timingSafeEqual(pBuf, qBuf);
-
-  if (userOk && passOk) {
-    req.session.adminLoggedIn = true;
-    req.session.adminUser     = validUser;
-    // shopDomain se resuelve desde UserShop en /api/me (igual que otros logins)
-    req.session.shopDomain    = null;
-    return res.json({ ok: true });
-  }
-
-  return res.status(401).json({ error: 'Credenciales incorrectas' });
+// POST /admin/api/login — deshabilitado (usar registro con email o Google OAuth)
+router.post('/api/login', (_req, res) => {
+  res.status(410).json({ error: 'Login legacy deshabilitado. Usá registro con email o Google.' });
 });
 
 // GET /admin/api/login-status

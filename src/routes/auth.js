@@ -199,7 +199,7 @@ router.get('/callback', async (req, res) => {
 
     console.log(`✅ Shop autenticado: ${shop} (${savedShop.shopName})`);
 
-    // 8. Registrar webhooks obligatorios en Shopify (fire & forget)
+    // 8. Registrar webhooks obligatorios en Shopify (con retry)
     const APP_URL = process.env.APP_URL || 'https://app.zikloapp.com';
     const webhooksToRegister = [
       { topic: 'app/uninstalled',        address: `${APP_URL}/webhooks/app-uninstalled` },
@@ -208,18 +208,31 @@ router.get('/callback', async (req, res) => {
       { topic: 'shop/redact',             address: `${APP_URL}/webhooks/gdpr/shop-redact` },
     ];
 
+    const MAX_RETRIES = 2;
     for (const wh of webhooksToRegister) {
-      try {
-        await fetch(`https://${shop}/admin/api/2024-01/webhooks.json`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Shopify-Access-Token': accessToken,
-          },
-          body: JSON.stringify({ webhook: { topic: wh.topic, address: wh.address, format: 'json' } }),
-        });
-      } catch (e) {
-        console.warn(`⚠ No se pudo registrar webhook ${wh.topic}:`, e.message);
+      let registered = false;
+      for (let attempt = 0; attempt <= MAX_RETRIES && !registered; attempt++) {
+        try {
+          const resp = await fetch(`https://${shop}/admin/api/2024-01/webhooks.json`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shopify-Access-Token': accessToken,
+            },
+            body: JSON.stringify({ webhook: { topic: wh.topic, address: wh.address, format: 'json' } }),
+          });
+          if (resp.ok || resp.status === 422) {
+            // 422 = webhook ya existe (mismo topic+address), cuenta como éxito
+            registered = true;
+          } else {
+            console.warn(`⚠ Webhook ${wh.topic} intento ${attempt + 1}: HTTP ${resp.status}`);
+          }
+        } catch (e) {
+          console.warn(`⚠ Webhook ${wh.topic} intento ${attempt + 1}: ${e.message}`);
+        }
+      }
+      if (!registered) {
+        console.error(`❌ No se pudo registrar webhook ${wh.topic} tras ${MAX_RETRIES + 1} intentos`);
       }
     }
     console.log(`📡 Webhooks registrados para ${shop}`);
