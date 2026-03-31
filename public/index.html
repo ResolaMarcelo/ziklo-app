@@ -1734,11 +1734,6 @@
           <input id="wl-tienda" type="text" placeholder="mi-tienda.myshopify.com"
             style="width:100%;box-sizing:border-box;background:#2a2a2a;border:1px solid #444;border-radius:8px;padding:8px 12px;color:#fff;font-size:14px;outline:none;">
         </div>
-        <div style="margin-bottom:14px;">
-          <label style="display:block;color:#ccc;font-size:13px;margin-bottom:4px;">¿Qué necesitás? <span style="color:#666;">(opcional)</span></label>
-          <textarea id="wl-mensaje" placeholder="Contanos un poco sobre tu tienda..." rows="2"
-            style="width:100%;box-sizing:border-box;background:#2a2a2a;border:1px solid #444;border-radius:8px;padding:8px 12px;color:#fff;font-size:14px;outline:none;resize:vertical;"></textarea>
-        </div>
         <button type="submit" id="wl-submit"
           style="width:100%;background:#39e07a;color:#000;border:none;border-radius:10px;padding:11px;font-size:15px;font-weight:700;cursor:pointer;">
           Anotarme →
@@ -1818,7 +1813,6 @@
           nombre:  document.getElementById('wl-nombre').value,
           email:   document.getElementById('wl-email').value,
           tienda:  document.getElementById('wl-tienda').value,
-          mensaje: document.getElementById('wl-mensaje').value,
         }),
       });
       const data = await res.json();
