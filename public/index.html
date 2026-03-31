@@ -551,13 +551,14 @@
     }
 
     /* ─── FEATURES ─── */
-    .features-section { padding: 100px 0; }
+    .features-section { padding: 100px 0; overflow-x: clip; }
     .features-header { text-align: center; margin-bottom: 64px; }
     .features-header .section-sub { margin: 16px auto 0; }
     .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
     .feature-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 14px; padding: 28px; transition: border-color .2s, transform .2s;
+      min-width: 0;
     }
     .feature-card:hover { border-color: var(--green-border); transform: translateY(-2px); }
     .feature-icon {
@@ -575,14 +576,14 @@
     }
 
     /* ─── PRICING ─── */
-    .pricing-section { padding: 100px 0; }
+    .pricing-section { padding: 100px 0; overflow-x: clip; }
     .pricing-header { text-align: center; margin-bottom: 56px; }
     .pricing-header .section-sub { margin: 16px auto 0; }
-    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; margin: 0 auto; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 1100px; margin: 0 auto; }
     .pricing-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 16px; padding: 32px 28px; position: relative; transition: border-color .2s;
-      display: flex; flex-direction: column;
+      display: flex; flex-direction: column; min-width: 0;
     }
     .pricing-card:hover { border-color: var(--border-s); }
     .pricing-card.featured {
@@ -706,6 +707,7 @@
     @media (max-width: 1024px) {
       .steps-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
       .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid { grid-template-columns: repeat(2, 1fr); max-width: 100%; }
       .footer-inner { grid-template-columns: 1fr 1fr; }
       .bento-grid { grid-template-columns: 1fr; }
       .bento-card.wide { grid-column: auto; }
@@ -1418,7 +1420,7 @@
       <h2 class="section-title">Empezá gratis, crecé sin sorpresas</h2>
       <p class="section-sub">Precio fijo mensual según tus cobros procesados. Sin comisiones ocultas, sin fee por transacción.</p>
     </div>
-    <div class="pricing-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="pricing-grid">
 
       <!-- Gratis -->
       <div class="pricing-card">
