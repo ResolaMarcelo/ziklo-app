@@ -11,9 +11,22 @@ const ALGO = 'aes-256-gcm';
 const KEY_HEX = (process.env.TOKEN_ENCRYPTION_KEY || '').trim(); // 64 hex chars = 32 bytes
 const PREFIX = 'enc:';                             // marca tokens encriptados
 
-// Diagnóstico al arranque
+// Diagnóstico al arranque + self-test
 if (KEY_HEX && KEY_HEX.length === 64) {
-  console.log('[crypto] ✅ TOKEN_ENCRYPTION_KEY configurada correctamente (64 chars)');
+  console.log('[crypto] ✅ TOKEN_ENCRYPTION_KEY configurada (64 chars)');
+  // Self-test: verificar que encrypt/decrypt roundtrip funciona
+  try {
+    const testVal = 'shpca_test_selfcheck_' + Date.now();
+    const enc = encrypt(testVal);
+    const dec = decrypt(enc);
+    if (dec === testVal) {
+      console.log('[crypto] ✅ Self-test passed — encrypt/decrypt roundtrip OK');
+    } else {
+      console.error('[crypto] ❌ Self-test FAILED — decrypt devolvió:', dec?.substring(0, 20));
+    }
+  } catch (e) {
+    console.error('[crypto] ❌ Self-test CRASHED:', e.message);
+  }
 } else if (KEY_HEX) {
   console.warn(`[crypto] ⚠ TOKEN_ENCRYPTION_KEY tiene ${KEY_HEX.length} chars (esperado: 64) — encriptación desactivada`);
 } else {
