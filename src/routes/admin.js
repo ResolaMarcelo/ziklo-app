@@ -261,7 +261,7 @@ router.post('/api/retention-config', async (req, res) => {
       update: {
         retentionPauseEnabled:    !!pauseEnabled,
         retentionDiscountEnabled: !!discountEnabled,
-        retentionDiscountPct:     discountPct ? parseInt(discountPct) : null,
+        retentionDiscountPct:     discountPct ? parseInt(discountPct, 10) : null,
         retentionSurveyEnabled:   !!surveyEnabled,
         retentionMessage:         message || null,
       },
@@ -270,7 +270,7 @@ router.post('/api/retention-config', async (req, res) => {
         accessToken:              '',
         retentionPauseEnabled:    !!pauseEnabled,
         retentionDiscountEnabled: !!discountEnabled,
-        retentionDiscountPct:     discountPct ? parseInt(discountPct) : null,
+        retentionDiscountPct:     discountPct ? parseInt(discountPct, 10) : null,
         retentionSurveyEnabled:   !!surveyEnabled,
         retentionMessage:         message || null,
       },

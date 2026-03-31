@@ -38,7 +38,8 @@ function normalizarDominio(input) {
   let d = input.trim().toLowerCase();
   d = d.replace(/^https?:\/\//, '').replace(/\/$/, '');
   if (!d.includes('.')) d = `${d}.myshopify.com`;
-  if (!d.endsWith('.myshopify.com')) d = `${d}.myshopify.com`;
+  // Si tiene un punto pero no es .myshopify.com, rechazar (no es un shop válido)
+  if (!d.endsWith('.myshopify.com')) return null;
   return d;
 }
 

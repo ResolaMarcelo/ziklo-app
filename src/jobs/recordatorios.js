@@ -41,6 +41,11 @@ async function enviarRecordatorios() {
       where: {
         status:        'authorized',
         nextChargeDate: { gte: desde, lte: hasta },
+        // Evitar duplicados: solo subs que no recibieron recordatorio en las últimas 24h
+        OR: [
+          { lastReminderSentAt: null },
+          { lastReminderSentAt: { lt: new Date(ahora.getTime() - 24 * 60 * 60 * 1000) } },
+        ],
       },
       include: { plan: true },
     });
@@ -85,6 +90,12 @@ async function enviarRecordatorios() {
         monto:      sub.plan?.monto,
         storeName,
         fechaCobro: sub.nextChargeDate,
+      });
+
+      // Marcar para evitar reenvío si el server reinicia
+      await prisma.subscription.update({
+        where: { id: sub.id },
+        data:  { lastReminderSentAt: new Date() },
       });
 
       console.log(`[Recordatorios] ✅ Email enviado a ${sub.shopifyCustomerEmail} (cobro: ${sub.nextChargeDate?.toLocaleDateString('es-AR')})`);

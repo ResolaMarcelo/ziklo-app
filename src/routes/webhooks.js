@@ -114,8 +114,9 @@ router.post('/mp', async (req, res) => {
 
     // Notificación de pago
     if (type === 'payment' && data?.id) {
-      // Primero buscamos la sub para saber de qué shop es y usar su token de MP
-      // Como no sabemos el preapproval aún, usamos el token de env como fallback inicial
+      // NOTA: Esta primera llamada usa MP_ACCESS_TOKEN del env (fallback global)
+      // porque aún no sabemos de qué shop es el pago. En multi-tenant puro sin
+      // env var, esto fallaría. Se necesitaría un índice mpPaymentId→shop o iterar shops.
       const pago = await mp.getPago(data.id);
       console.log('Pago ID:', pago.id, '| Status:', pago.status, '| Preapproval:', pago.preapproval_id);
 
@@ -436,21 +437,21 @@ router.post('/gdpr/customers-data', express.raw({ type: '*/*' }), async (req, re
   try {
     const body = JSON.parse(req.body.toString());
     const { shop_domain, customer, orders_requested } = body;
-    const email = customer?.email;
-    console.log(`GDPR data_request — shop: ${shop_domain} | customer: ${email}`);
+    const customerEmail = customer?.email;
+    console.log(`GDPR data_request — shop: ${shop_domain} | customer: ${customerEmail}`);
 
-    if (!email || !shop_domain) return;
+    if (!customerEmail || !shop_domain) return;
 
     // Recopilar todos los datos que tenemos del cliente
     const suscripciones = await prisma.subscription.findMany({
-      where: { shopDomain: shop_domain, shopifyCustomerEmail: email },
+      where: { shopDomain: shop_domain, shopifyCustomerEmail: customerEmail },
       include: { plan: true, pagos: true, cancelReasons: true },
     });
 
     const datosCliente = {
       solicitud: 'customers/data_request',
       shop: shop_domain,
-      customer_email: email,
+      customer_email: customerEmail,
       customer_id: customer?.id,
       orders_requested: orders_requested || [],
       datos_almacenados: suscripciones.map(sub => ({
@@ -474,7 +475,7 @@ router.post('/gdpr/customers-data', express.raw({ type: '*/*' }), async (req, re
 
     // Logueamos los datos recopilados — Shopify no requiere envío automático,
     // pero sí que la app pueda recopilarlos para entregarlos si se solicitan.
-    console.log(`GDPR data_request: datos recopilados para ${email}:`, JSON.stringify(datosCliente, null, 2));
+    console.log(`GDPR data_request: datos recopilados para ${customerEmail}:`, JSON.stringify(datosCliente, null, 2));
   } catch (err) {
     console.error('Error GDPR customers-data:', err.message);
   }

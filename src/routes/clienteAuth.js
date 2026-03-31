@@ -10,12 +10,12 @@ const RATE_LIMIT_MS    =  2 * 60 * 1000;   // 1 token cada 2 minutos por email+s
 // ── GET /api/cliente/session ────────────────────────────────────────────────
 // Retorna el estado de la sesión actual del cliente (sin auth requerida)
 router.get('/session', (req, res) => {
-  const email      = req.session?.clienteEmail || null;
-  const shopDomain = req.session?.clienteShop  || null;
-  const expiry     = req.session?.clienteExpiry || 0;
+  const clientEmail = req.session?.clienteEmail || null;
+  const shopDomain  = req.session?.clienteShop  || null;
+  const expiry      = req.session?.clienteExpiry || 0;
 
-  if (email && shopDomain && Date.now() < expiry) {
-    return res.json({ loggedIn: true, email, shopDomain });
+  if (clientEmail && shopDomain && Date.now() < expiry) {
+    return res.json({ loggedIn: true, email: clientEmail, shopDomain });
   }
   res.json({ loggedIn: false });
 });

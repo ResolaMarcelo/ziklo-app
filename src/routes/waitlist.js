@@ -2,8 +2,6 @@ const express = require('express');
 const router  = express.Router();
 const prisma  = require('../lib/prisma');
 const email   = require('../services/email');
-const adminAuth = require('../middleware/adminAuth');
-
 const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e));
 
 // POST /api/waitlist — solicitud pública de acceso beta
@@ -76,68 +74,6 @@ router.post('/', async (req, res) => {
     res.json({ ok: true, id: entry.id });
   } catch (err) {
     console.error('Error waitlist:', err);
-    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
-  }
-});
-
-// GET /admin/api/waitlist — listar solicitudes (protegido)
-router.get('/admin/api/waitlist', adminAuth, async (req, res) => {
-  try {
-    const entries = await prisma.waitlistEntry.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    res.json(entries);
-  } catch (err) {
-    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
-  }
-});
-
-// POST /admin/api/waitlist/:id/aprobar — aprobar y enviar link de registro (protegido)
-router.post('/admin/api/waitlist/:id/aprobar', adminAuth, async (req, res) => {
-  try {
-    const entry = await prisma.waitlistEntry.findUnique({ where: { id: req.params.id } });
-    if (!entry) return res.status(404).json({ error: 'No encontrado' });
-
-    await prisma.waitlistEntry.update({
-      where: { id: req.params.id },
-      data:  { status: 'approved' },
-    });
-
-    const registerUrl = `${process.env.APP_URL}/admin/login?tab=register`;
-
-    await email.enviarEmail({
-      to:      entry.email,
-      subject: '🚀 Tu acceso a Ziklo Beta está listo',
-      html: `
-        <div style="font-family:Inter,sans-serif;max-width:500px;margin:0 auto;padding:32px;">
-          <h2 style="color:#202223;">¡Hola ${entry.nombre}!</h2>
-          <p style="color:#444;">Tu solicitud de acceso a la beta de Ziklo fue aprobada. Ya podés crear tu cuenta:</p>
-          <br>
-          <a href="${registerUrl}" style="background:#009ee3;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
-            Crear mi cuenta →
-          </a>
-          <br><br>
-          <p style="color:#888;font-size:14px;">Si el botón no funciona, copiá este link: ${registerUrl}</p>
-          <p style="color:#888;font-size:14px;">— El equipo de Ziklo</p>
-        </div>
-      `,
-    });
-
-    res.json({ ok: true });
-  } catch (err) {
-    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
-  }
-});
-
-// POST /admin/api/waitlist/:id/rechazar — rechazar solicitud (protegido)
-router.post('/admin/api/waitlist/:id/rechazar', adminAuth, async (req, res) => {
-  try {
-    await prisma.waitlistEntry.update({
-      where: { id: req.params.id },
-      data:  { status: 'rejected' },
-    });
-    res.json({ ok: true });
-  } catch (err) {
     console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
 });

@@ -104,6 +104,7 @@ model Subscription {
   qty                  Int?     @default(1)
   retentionDiscountApplied Boolean @default(false)
   nextChargeDate       DateTime?               // fecha estimada del próximo cobro (actualizada por webhook)
+  lastReminderSentAt   DateTime?               // última vez que se envió recordatorio de cobro (evita duplicados)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   pagos                Pago[]
