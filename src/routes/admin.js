@@ -4,7 +4,6 @@ const path    = require('path');
 const fs      = require('fs');
 const shopify = require('../services/shopify');
 const prisma  = require('../lib/prisma');
-const { encrypt } = require('../services/crypto');
 
 // ── Rutas públicas (sin auth) ──────────────────────────────────────────────
 
@@ -145,11 +144,11 @@ router.post('/api/mp-token', async (req, res) => {
     // Upsert: crea el registro Shop si no existe aún
     await prisma.shop.upsert({
       where:  { domain: shopDomain },
-      update: { mpAccessToken: encrypt(token) },
+      update: { mpAccessToken: token },
       create: {
         domain:       shopDomain,
         accessToken:  '',
-        mpAccessToken: encrypt(token),
+        mpAccessToken: token,
         shopName:     shopDomain,
       },
     });

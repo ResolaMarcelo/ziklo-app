@@ -39,7 +39,7 @@ model UserShop {
 model Shop {
   id            String         @id @default(cuid())
   domain        String         @unique  // ej: mi-tienda.myshopify.com
-  accessToken   String                  // token de Shopify Admin API
+  accessToken   String?                 // token de Shopify Admin API (null si desinstalaron)
   mpAccessToken   String?                 // token de Mercado Pago de esta tienda
   shopName        String?                 // nombre de la tienda (cacheado)
   email           String?                 // email del owner

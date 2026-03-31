@@ -1,5 +1,4 @@
 const prisma = require('../lib/prisma');
-const { decrypt } = require('../services/crypto');
 
 /**
  * Middleware que adjunta req.shop con el registro completo de la tienda.
@@ -53,12 +52,8 @@ module.exports = async function shopContext(req, res, next) {
   if (!domain) return next();
 
   try {
-    const shopRaw = await prisma.shop.findUnique({ where: { domain } });
-    req.shop = shopRaw ? {
-      ...shopRaw,
-      accessToken:   decrypt(shopRaw.accessToken),
-      mpAccessToken: decrypt(shopRaw.mpAccessToken),
-    } : null;
+    // El middleware de Prisma desencripta automáticamente los tokens
+    req.shop = await prisma.shop.findUnique({ where: { domain } });
   } catch (err) {
     console.error('shopContext error:', err.message);
   }

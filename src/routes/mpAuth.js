@@ -1,7 +1,6 @@
 const express = require('express');
 const router  = express.Router();
 const prisma  = require('../lib/prisma');
-const { encrypt } = require('../services/crypto');
 
 const CLIENT_ID     = process.env.MP_CLIENT_ID;
 const CLIENT_SECRET = process.env.MP_CLIENT_SECRET;
@@ -64,15 +63,14 @@ router.get('/callback', async (req, res) => {
       return res.redirect('/admin?mp_error=1#integraciones');
     }
 
-    // Guardar el access token en la DB (encriptado)
-    const encryptedMpToken = encrypt(tokenData.access_token);
+    // Guardar el access token en la DB (el middleware de Prisma encripta automáticamente)
     await prisma.shop.upsert({
       where:  { domain: shopDomain },
-      update: { mpAccessToken: encryptedMpToken },
+      update: { mpAccessToken: tokenData.access_token },
       create: {
         domain:        shopDomain,
         accessToken:   '',
-        mpAccessToken: encryptedMpToken,
+        mpAccessToken: tokenData.access_token,
         shopName:      shopDomain,
       },
     });

@@ -6,7 +6,6 @@ const mp      = require('../services/mercadopago');
 const shopify = require('../services/shopify');
 const email   = require('../services/email');
 const klaviyo = require('../services/klaviyo');
-const { decrypt } = require('../services/crypto');
 const { registrarCobro } = require('../lib/billing');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -109,8 +108,8 @@ router.post('/mp', async (req, res) => {
     // Helper: carga el shop de una suscripción para obtener sus tokens
     async function getShopForSub(sub) {
       if (!sub?.shopDomain) return null;
-      const raw = await prisma.shop.findUnique({ where: { domain: sub.shopDomain } });
-      return raw ? { ...raw, accessToken: decrypt(raw.accessToken), mpAccessToken: decrypt(raw.mpAccessToken) } : null;
+      // El middleware de Prisma desencripta automáticamente los tokens
+      return await prisma.shop.findUnique({ where: { domain: sub.shopDomain } });
     }
 
     // Notificación de pago

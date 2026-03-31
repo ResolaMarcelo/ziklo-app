@@ -2,10 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const fetch = require('node-fetch');
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
-const { encrypt } = require('../services/crypto');
+const prisma = require('../lib/prisma');
 
 const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
@@ -149,18 +146,17 @@ router.get('/callback', async (req, res) => {
     const shopData = await shopRes.json();
     const shopInfo = shopData.shop || {};
 
-    // 5. Guardar / actualizar la tienda en la DB (token encriptado)
-    const encryptedToken = encrypt(accessToken);
+    // 5. Guardar / actualizar la tienda en la DB (el middleware de Prisma encripta automáticamente)
     const savedShop = await prisma.shop.upsert({
       where: { domain: shop },
       update: {
-        accessToken: encryptedToken,
+        accessToken,
         shopName: shopInfo.name || shop,
         email: shopInfo.email || null,
       },
       create: {
         domain: shop,
-        accessToken: encryptedToken,
+        accessToken,
         shopName: shopInfo.name || shop,
         email: shopInfo.email || null,
       },

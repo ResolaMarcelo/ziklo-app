@@ -16,7 +16,7 @@ const ALGORITHM = 'aes-256-gcm';
 const PREFIX    = 'enc:';
 
 function getKey() {
-  const hex = process.env.ENCRYPTION_KEY;
+  const hex = process.env.ENCRYPTION_KEY || process.env.TOKEN_ENCRYPTION_KEY;
   if (!hex) {
     // In development without a key, skip encryption (log a warning once)
     return null;
@@ -32,7 +32,7 @@ function getKey() {
 // Warn once at startup if key is missing in production
 let _warnedOnce = false;
 function warnIfNeeded() {
-  if (!_warnedOnce && !process.env.ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
+  if (!_warnedOnce && !process.env.ENCRYPTION_KEY && !process.env.TOKEN_ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
     console.warn('[crypto] WARNING: ENCRYPTION_KEY is not set. Tokens are stored in plaintext!');
     _warnedOnce = true;
   }
