@@ -10,17 +10,43 @@ const prisma = require('../lib/prisma');
  *   manipule el contexto para acceder a datos de otra tienda.
  *
  * Para rutas públicas (widget, portal /cliente):
- *   1. req.session.clienteShop → portal /cliente autenticado
+ *   1. req.session.clienteShop → portal /cliente autenticado (confiable)
  *   2. req.query.shop          → widget que pasa ?shop= en la URL
  *   3. req.body.shopDomain     → peticiones POST del widget/checkout
+ *
+ *   En rutas públicas el dominio se valida (debe ser *.myshopify.com) y
+ *   los tokens sensibles se eliminan de req.shop para no exponer credenciales
+ *   si un atacante envía un shopDomain arbitrario.
  */
+
+const MYSHOPIFY_RE = /^[a-z0-9][a-z0-9\-]*\.myshopify\.com$/;
+
+function sanitizeDomain(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  const d = raw.trim().toLowerCase();
+  return MYSHOPIFY_RE.test(d) ? d : null;
+}
+
+/** Elimina tokens sensibles de un shop record para uso en rutas públicas */
+function stripSensitiveFields(shop) {
+  if (!shop) return shop;
+  const safe = { ...shop };
+  delete safe.accessToken;
+  delete safe.klaviyoAccessToken;
+  delete safe.klaviyoRefreshToken;
+  delete safe.klaviyoTokenExpiry;
+  return safe;
+}
+
 module.exports = async function shopContext(req, res, next) {
   req.shop = null;
 
   let domain = null;
+  let isAdmin = false;
 
   if (req.session?.adminLoggedIn) {
     // ── Rutas de admin: fuente de verdad = sesión únicamente ──────────────
+    isAdmin = true;
     domain = req.session.shopDomain || null;
 
     // Fallback: si el userId está en sesión pero shopDomain no fue seteado
@@ -42,18 +68,21 @@ module.exports = async function shopContext(req, res, next) {
     }
   } else {
     // ── Rutas públicas: widget, portal cliente, checkout ──────────────────
+    // clienteShop viene de la sesión (seteado al autenticar) — confiable
+    // query.shop y body.shopDomain vienen del cliente — validar formato
     domain =
-      req.session?.clienteShop ||
-      req.query?.shop          ||
-      req.body?.shopDomain     ||
+      req.session?.clienteShop              ||
+      sanitizeDomain(req.query?.shop)       ||
+      sanitizeDomain(req.body?.shopDomain)  ||
       null;
   }
 
   if (!domain) return next();
 
   try {
-    // El middleware de Prisma desencripta automáticamente los tokens
-    req.shop = await prisma.shop.findUnique({ where: { domain } });
+    const shop = await prisma.shop.findUnique({ where: { domain } });
+    // En rutas públicas, eliminar tokens sensibles del objeto shop
+    req.shop = isAdmin ? shop : stripSensitiveFields(shop);
   } catch (err) {
     console.error('shopContext error:', err.message);
   }
