@@ -49,6 +49,14 @@ async function reanudarPreapproval(preapprovalId, mpToken) {
   return preApproval.update({ id: preapprovalId, body: { status: 'authorized' } });
 }
 
+async function actualizarMontoPreapproval(preapprovalId, nuevoMonto, mpToken) {
+  const { preApproval } = getClients(mpToken);
+  return preApproval.update({
+    id: preapprovalId,
+    body: { auto_recurring: { transaction_amount: nuevoMonto } },
+  });
+}
+
 async function getPago(paymentId, mpToken) {
   const { payment } = getClients(mpToken);
   return payment.get({ id: paymentId });
@@ -60,5 +68,6 @@ module.exports = {
   cancelarPreapproval,
   pausarPreapproval,
   reanudarPreapproval,
+  actualizarMontoPreapproval,
   getPago,
 };
