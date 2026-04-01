@@ -171,6 +171,7 @@
   }
 
   var atcOriginalHTML = null;
+  var atcOriginalStyle = null;
 
   function getBuyNowBtn() {
     return document.querySelector('.shopify-payment-button, .dynamic-checkout__buttons, [data-shopify="dynamic-checkout-cart"]');
@@ -180,7 +181,10 @@
     var btn = getAtcBtn();
     if (!btn) return;
     if (!atcOriginalHTML) atcOriginalHTML = btn.innerHTML;
+    if (!atcOriginalStyle) atcOriginalStyle = btn.getAttribute('style') || '';
     btn.innerHTML = _widgetBtnText;
+    btn.style.backgroundColor = _accent;
+    btn.style.color = _bg;
     var buyNow = getBuyNowBtn();
     if (buyNow) buyNow.style.display = 'none';
   }
@@ -189,6 +193,7 @@
     var btn = getAtcBtn();
     if (!btn || !atcOriginalHTML) return;
     btn.innerHTML = atcOriginalHTML;
+    btn.setAttribute('style', atcOriginalStyle || '');
     var buyNow = getBuyNowBtn();
     if (buyNow) buyNow.style.display = '';
   }
@@ -319,10 +324,14 @@
 
   // ── Aplicar colores custom del merchant ───────────────────────────────────
   function aplicarWidgetColors(accent, bg, text) {
-    accent = accent || _accent;
-    bg     = bg     || _bg;
-    text   = text   || _text;
-    style.textContent = buildCss(accent, bg, text);
+    _accent = accent || _accent;
+    _bg     = bg     || _bg;
+    _text   = text   || _text;
+    style.textContent = buildCss(_accent, _bg, _text);
+    if (modoSub) {
+      var btn = getAtcBtn();
+      if (btn) { btn.style.backgroundColor = _accent; btn.style.color = _bg; }
+    }
   }
 
   // ── Verificar si producto tiene suscripciones activas ─────────────────────
