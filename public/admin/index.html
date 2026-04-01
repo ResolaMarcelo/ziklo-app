@@ -2061,11 +2061,11 @@
                     <span id="prev-ahorro-badge" style="font-size:10px;font-weight:700;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:20px;">Ahorrás $599</span>
                   </div>
                   <div style="font-size:11px;color:var(--muted2);margin-bottom:8px;">Tu pedido llega solo, cada mes.</div>
-                  <div id="prev-chips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;">
-                    <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">📦 Entrega mensual</span>
-                    <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">🔒 Precio fijo</span>
-                    <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">🚚 Envío incluido</span>
-                    <span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">✕ Cancelá cuando quieras</span>
+                  <div id="prev-chips" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">
+                    <span style="font-size:9px;padding:3px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);white-space:nowrap;">📦 Entrega mensual</span>
+                    <span style="font-size:9px;padding:3px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);white-space:nowrap;">🔒 Precio fijo</span>
+                    <span style="font-size:9px;padding:3px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);white-space:nowrap;">🚚 Envío incluido</span>
+                    <span style="font-size:9px;padding:3px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);white-space:nowrap;">✕ Cancelá cuando quieras</span>
                   </div>
                   <!-- Botón ATC mock -->
                   <div id="prev-btn-text" style="width:100%;padding:10px;background:rgba(255,255,255,.85);border-radius:6px;text-align:center;font-size:12px;font-weight:700;color:#111;">
@@ -3781,7 +3781,7 @@ function actualizarPreviewBeneficio() {
       return v || CHIP_DEFAULTS[i - 1];
     });
     chipsContainer.innerHTML = chipValues.map(c =>
-      `<span style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);">${c}</span>`
+      `<span style="font-size:9px;padding:3px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.12);color:var(--muted2);white-space:nowrap;">${c}</span>`
     ).join('');
   }
 
