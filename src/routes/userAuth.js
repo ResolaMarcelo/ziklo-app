@@ -25,9 +25,26 @@ router.post('/user/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
+    // Account lockout: 5 intentos fallidos → bloqueo 15 minutos
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const minutos = Math.ceil((user.lockedUntil - Date.now()) / 60000);
+      return res.status(429).json({ error: `Cuenta bloqueada temporalmente. Intentá de nuevo en ${minutos} minutos.` });
+    }
+
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
+      const attempts = user.failedLoginAttempts + 1;
+      const data = { failedLoginAttempts: attempts };
+      if (attempts >= 5) {
+        data.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
+      }
+      await prisma.user.update({ where: { id: user.id }, data });
       return res.status(401).json({ error: 'Credenciales incorrectas' });
+    }
+
+    // Login exitoso: resetear contador de intentos
+    if (user.failedLoginAttempts > 0) {
+      await prisma.user.update({ where: { id: user.id }, data: { failedLoginAttempts: 0, lockedUntil: null } });
     }
 
     if (!user.emailVerified) {
@@ -75,7 +92,8 @@ router.post('/user/register', async (req, res) => {
 
     const exists = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
     if (exists) {
-      return res.status(400).json({ error: 'Ya existe una cuenta con ese email' });
+      // Respuesta genérica para no revelar si el email ya está registrado
+      return res.json({ ok: true, needsVerification: true, email: email.toLowerCase().trim() });
     }
 
     const passwordHash       = await bcrypt.hash(password, 10);
@@ -122,6 +140,16 @@ router.post('/user/verify-email', async (req, res) => {
       // Ya verificado — crear sesión directamente
     } else {
       if (!user.verificationCode || user.verificationCode !== code.trim()) {
+        // Incrementar intentos fallidos; a los 5 se invalida el código
+        const attempts = user.failedLoginAttempts + 1;
+        if (attempts >= 5) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { verificationCode: null, verificationExpiry: null, failedLoginAttempts: 0 },
+          });
+          return res.status(400).json({ error: 'Demasiados intentos. Solicitá un nuevo código.' });
+        }
+        await prisma.user.update({ where: { id: user.id }, data: { failedLoginAttempts: attempts } });
         return res.status(400).json({ error: 'Código incorrecto' });
       }
       if (!user.verificationExpiry || user.verificationExpiry < new Date()) {
@@ -130,7 +158,7 @@ router.post('/user/verify-email', async (req, res) => {
 
       await prisma.user.update({
         where: { id: user.id },
-        data:  { emailVerified: true, verificationCode: null, verificationExpiry: null },
+        data:  { emailVerified: true, verificationCode: null, verificationExpiry: null, failedLoginAttempts: 0 },
       });
     }
 

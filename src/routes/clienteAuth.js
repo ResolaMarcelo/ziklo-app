@@ -102,11 +102,14 @@ router.post('/verificar-token', async (req, res) => {
     return res.status(401).json({ error: 'El link expiró. Pedí uno nuevo.' });
   }
 
-  // Marcar como usado
-  await prisma.magicToken.update({
-    where: { id: record.id },
+  // Marcar como usado atómicamente (previene race condition con requests simultáneos)
+  const { count } = await prisma.magicToken.updateMany({
+    where: { id: record.id, usedAt: null },
     data:  { usedAt: new Date() },
   });
+  if (count === 0) {
+    return res.status(401).json({ error: 'Este link ya fue utilizado. Pedí uno nuevo.' });
+  }
 
   // Establecer sesión del cliente (dura 24 horas)
   req.session.clienteEmail  = record.email;

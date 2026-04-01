@@ -163,8 +163,12 @@ app.use('/auth', limiterOAuth);
 app.use('/auth', authRoutes);
 
 // Auth de usuarios (email/pass + Google OAuth) — montado en /auth para compartir prefijo
-app.post('/auth/user/login',    limiterAuth);
-app.post('/auth/user/register', limiterAuth);
+app.post('/auth/user/login',            limiterAuth);
+app.post('/auth/user/register',         limiterAuth);
+app.post('/auth/user/forgot-password',  limiterAuth);
+app.post('/auth/user/reset-password',   limiterAuth);
+app.post('/auth/user/verify-email',     limiterAuth);
+app.post('/auth/user/resend-verification', limiterAuth);
 app.use('/auth', userAuthRoutes);
 
 // Klaviyo OAuth — protegido por adminAuth (sólo merchants logueados)

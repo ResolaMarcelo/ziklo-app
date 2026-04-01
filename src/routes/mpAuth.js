@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto  = require('crypto');
 const router  = express.Router();
 const prisma  = require('../lib/prisma');
 
@@ -7,20 +8,39 @@ const CLIENT_SECRET = process.env.MP_CLIENT_SECRET;
 const APP_URL       = process.env.APP_URL || 'https://app.zikloapp.com';
 const REDIRECT_URI  = `${APP_URL}/auth/mp/callback`;
 
+// State firmado con HMAC (mismo patrón que Shopify y Klaviyo OAuth)
+function crearState(shopDomain) {
+  const payload = Buffer.from(JSON.stringify({ shopDomain, ts: Date.now() })).toString('base64url');
+  const sig     = crypto.createHmac('sha256', CLIENT_SECRET).update(payload).digest('hex');
+  return `${payload}.${sig}`;
+}
+
+function verificarState(state) {
+  if (!state) return null;
+  const dot = state.lastIndexOf('.');
+  if (dot < 0) return null;
+  const payload  = state.slice(0, dot);
+  const sig      = state.slice(dot + 1);
+  const expected = crypto.createHmac('sha256', CLIENT_SECRET).update(payload).digest('hex');
+  if (!crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig))) return null;
+  try {
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    if (Date.now() - data.ts > 10 * 60 * 1000) return null; // expira en 10 min
+    return data.shopDomain;
+  } catch { return null; }
+}
+
 // GET /auth/mp — inicia el OAuth flow de Mercado Pago
 router.get('/', (req, res) => {
   const shopDomain = req.session?.shopDomain;
   if (!shopDomain) return res.redirect('/admin/login');
-
-  // Guardar shopDomain en sesión para usarlo en el callback
-  req.session.mpOAuthShop = shopDomain;
 
   const params = new URLSearchParams({
     client_id:     CLIENT_ID,
     response_type: 'code',
     platform_id:   'mp',
     redirect_uri:  REDIRECT_URI,
-    state:         shopDomain,
+    state:         crearState(shopDomain),
   });
 
   res.redirect(`https://auth.mercadopago.com/authorization?${params}`);
@@ -35,10 +55,10 @@ router.get('/callback', async (req, res) => {
     return res.redirect('/admin?mp_error=1#integraciones');
   }
 
-  // shopDomain viene del state param o de la sesión
-  const shopDomain = state || req.session?.mpOAuthShop || req.session?.shopDomain;
+  // Verificar state firmado — previene CSRF en OAuth
+  const shopDomain = verificarState(state);
   if (!shopDomain) {
-    console.error('[MP OAuth] No se encontró shopDomain');
+    console.error('[MP OAuth] State inválido o expirado');
     return res.redirect('/admin?mp_error=1#integraciones');
   }
 
@@ -76,9 +96,6 @@ router.get('/callback', async (req, res) => {
     });
 
     console.log(`[MP OAuth] Token guardado para ${shopDomain}`);
-
-    // Limpiar sesión temporal
-    delete req.session.mpOAuthShop;
 
     // Redirigir al admin con éxito
     res.redirect('/admin?mp_ok=1#integraciones');
