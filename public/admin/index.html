@@ -3734,6 +3734,87 @@ function toggleOverride(productId) {
   if (panel) panel.classList.toggle('open');
 }
 
+// ── Recomendaciones (upsell) ─────────────────────────────────────────────────
+const _recsCache = {}; // productId → [{productId, title, image, price, variantId}]
+
+function toggleRecsPanel(productId) {
+  const panel = document.querySelector(`[data-recs="${productId}"]`);
+  if (!panel) return;
+  const isOpen = panel.classList.toggle('open');
+  if (isOpen && !_recsCache[productId]) {
+    // Cargar recomendaciones existentes desde la API
+    fetch(`/admin/api/products/${productId}/recommendations`)
+      .then(r => r.json())
+      .then(recs => {
+        _recsCache[productId] = recs.map(r => ({
+          productId: r.targetProductId,
+          title: r.targetTitle || '',
+          image: r.targetImage || '',
+          price: r.targetPrice || null,
+          variantId: r.targetVariantId || '',
+        }));
+        renderRecChips(productId);
+      })
+      .catch(() => { _recsCache[productId] = []; });
+  }
+}
+
+function renderRecChips(productId) {
+  const container = document.getElementById('recs-chips-' + productId);
+  if (!container) return;
+  const items = _recsCache[productId] || [];
+  if (!items.length) {
+    container.innerHTML = '<span style="font-size:11px;color:var(--muted2)">Sin recomendaciones configuradas</span>';
+    return;
+  }
+  container.innerHTML = items.map((r, i) =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;font-size:12px">
+      ${esc(r.title || r.productId)}
+      <button onclick="_recsCache['${productId}'].splice(${i},1);renderRecChips('${productId}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--danger);padding:0;line-height:1">&times;</button>
+    </span>`
+  ).join('');
+}
+
+function addRecChip(productId) {
+  const select = document.getElementById('recs-select-' + productId);
+  if (!select || !select.value) return;
+  if (!_recsCache[productId]) _recsCache[productId] = [];
+  if (_recsCache[productId].length >= 4) {
+    showToast('Maximo 4 recomendaciones por producto', 'error');
+    return;
+  }
+  if (_recsCache[productId].some(r => r.productId === select.value)) {
+    showToast('Este producto ya esta agregado', 'error');
+    return;
+  }
+  const opt = select.options[select.selectedIndex];
+  _recsCache[productId].push({
+    productId: select.value,
+    title: opt.textContent,
+    image: opt.dataset.image || '',
+    price: opt.dataset.price ? parseFloat(opt.dataset.price) : null,
+    variantId: opt.dataset.variant || '',
+  });
+  select.value = '';
+  renderRecChips(productId);
+}
+
+async function guardarRecs(productId) {
+  const items = _recsCache[productId] || [];
+  try {
+    const res = await fetch(`/admin/api/products/${productId}/recommendations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recommendations: items }),
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || 'Error');
+    showToast('Recomendaciones guardadas', 'success');
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
 async function guardarOverride(productId) {
   const panel = document.querySelector(`[data-bop="${productId}"]`);
   if (!panel) return;
@@ -3859,6 +3940,7 @@ async function cargarProductos(force = false) {
           </div>
           <div class="benefit-override-row">
             <button class="benefit-override-btn" onclick="toggleOverride('${p.id}')">${overrideBtnLabel}</button>
+            <button class="benefit-override-btn" onclick="toggleRecsPanel('${p.id}')" style="margin-left:4px">Recomendaciones</button>
           </div>
           <div class="toggle-wrap">
             <span class="toggle-label ${labelClass}">${labelText}</span>
@@ -3879,6 +3961,23 @@ async function cargarProductos(force = false) {
             ${clearBtn}
           </div>
           <div style="font-size:11px;color:var(--muted2);margin-top:6px">Sobreescribe el beneficio global para este producto solamente. Dejá vacío para usar el global.</div>
+        </div>
+        <div class="benefit-override-panel" data-recs="${p.id}">
+          <div style="margin-bottom:8px">
+            <span style="font-size:12px;color:var(--muted2);font-weight:600">Productos recomendados (upsell):</span>
+            <span style="font-size:11px;color:var(--muted2)">Max 4. Se muestran en checkout y portal del cliente.</span>
+          </div>
+          <div id="recs-chips-${p.id}" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="recs-select-${p.id}" style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+              <option value="">Seleccionar producto...</option>
+              ${products.filter(pr => pr.id !== p.id).map(pr => `<option value="${pr.id}" data-title="${(pr.title||'').replace(/"/g,'&quot;')}" data-image="${(pr.image||'').replace(/"/g,'&quot;')}" data-price="${pr.price||''}" data-variant="${pr.variantId||''}">${pr.title}</option>`).join('')}
+            </select>
+            <button class="btn btn-xs btn-primary" onclick="addRecChip('${p.id}')">+ Agregar</button>
+          </div>
+          <div style="margin-top:8px">
+            <button class="btn btn-xs btn-primary" onclick="guardarRecs('${p.id}')">Guardar recomendaciones</button>
+          </div>
         </div>
       </div>`;
     }).join('');

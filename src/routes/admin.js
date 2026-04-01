@@ -484,6 +484,70 @@ router.get('/api/audit-log', async (req, res) => {
   }
 });
 
+// ══════════════════════════════════════════════════════════════════════════════
+// RECOMENDACIONES — upsell/cross-sell por producto
+// ══════════════════════════════════════════════════════════════════════════════
+
+// GET /admin/api/products/:productId/recommendations
+router.get('/api/products/:productId/recommendations', async (req, res) => {
+  try {
+    const shopDomain = req.session?.shopDomain;
+    if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
+
+    const recs = await prisma.productRecommendation.findMany({
+      where: { shopDomain, sourceProductId: req.params.productId },
+      orderBy: { position: 'asc' },
+    });
+    res.json(recs);
+  } catch (err) {
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
+  }
+});
+
+// POST /admin/api/products/:productId/recommendations — replace-all
+router.post('/api/products/:productId/recommendations', async (req, res) => {
+  try {
+    const shopDomain = req.session?.shopDomain;
+    if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
+
+    const { recommendations } = req.body;
+    if (!Array.isArray(recommendations)) {
+      return res.status(400).json({ error: 'recommendations debe ser un array' });
+    }
+    if (recommendations.length > 4) {
+      return res.status(400).json({ error: 'Máximo 4 recomendaciones por producto' });
+    }
+
+    const sourceProductId = req.params.productId;
+
+    // Delete existing + create new (transacción)
+    await prisma.$transaction([
+      prisma.productRecommendation.deleteMany({
+        where: { shopDomain, sourceProductId },
+      }),
+      ...recommendations.map((r, i) =>
+        prisma.productRecommendation.create({
+          data: {
+            shopDomain,
+            sourceProductId,
+            targetProductId: String(r.productId),
+            targetTitle:     r.title || null,
+            targetImage:     r.image || null,
+            targetPrice:     r.price ? parseFloat(r.price) : null,
+            targetVariantId: r.variantId ? String(r.variantId) : null,
+            position:        i,
+          },
+        })
+      ),
+    ]);
+
+    logAction(req, 'update_recommendations', { sourceProductId, count: recommendations.length });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
+  }
+});
+
 // Sirve el panel admin (HTML estático que consume la API)
 router.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/admin/index.html'));

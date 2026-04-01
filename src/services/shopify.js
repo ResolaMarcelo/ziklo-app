@@ -67,15 +67,28 @@ async function getProducts(domain, token) {
           featuredImage {
             url
           }
+          variants(first: 1) {
+            edges {
+              node {
+                id
+                price
+              }
+            }
+          }
         }
       }
     }
   }`);
-  return data.products.edges.map(({ node }) => ({
-    id:    numericId(node.id),
-    title: node.title,
-    image: node.featuredImage?.url || null,
-  }));
+  return data.products.edges.map(({ node }) => {
+    const firstVariant = node.variants?.edges?.[0]?.node || null;
+    return {
+      id:        numericId(node.id),
+      title:     node.title,
+      image:     node.featuredImage?.url || null,
+      price:     firstVariant ? parseFloat(firstVariant.price) : null,
+      variantId: firstVariant ? numericId(firstVariant.id) : null,
+    };
+  });
 }
 
 // ── Create order ─────────────────────────────────────────────────────────────

@@ -105,6 +105,7 @@ model Subscription {
   datosEnvio           String?  // JSON: nombre, apellido, telefono, direccion, ciudad, provincia, cp
   qty                  Int?     @default(1)
   retentionDiscountApplied Boolean @default(false)
+  pendingUpsells       String?                 // JSON: [{ productId, variantId, title, price, qty }]
   nextChargeDate       DateTime?               // fecha estimada del próximo cobro (actualizada por webhook)
   lastReminderSentAt   DateTime?               // última vez que se envió recordatorio de cobro (evita duplicados)
   createdAt            DateTime @default(now())
@@ -175,6 +176,23 @@ model ProductSubscription {
 
   @@unique([shopDomain, productId])
   @@index([shopDomain])
+}
+
+// Recomendaciones de productos (upsell/cross-sell configuradas por el merchant)
+model ProductRecommendation {
+  id              String   @id @default(cuid())
+  shopDomain      String
+  sourceProductId String   // producto con suscripción
+  targetProductId String   // producto recomendado
+  targetTitle     String?
+  targetImage     String?
+  targetPrice     Float?
+  targetVariantId String?  // para agregar al order de Shopify
+  position        Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@unique([shopDomain, sourceProductId, targetProductId])
+  @@index([shopDomain, sourceProductId])
 }
 
 // Log de acciones de admin para auditoría

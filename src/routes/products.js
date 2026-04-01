@@ -44,6 +44,43 @@ router.get('/check', async (req, res) => {
   }
 });
 
+// GET /api/products/recommendations — recomendaciones de upsell (público)
+router.get('/recommendations', async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+
+  try {
+    const { shop, productId } = req.query;
+    if (!shop || !productId) {
+      return res.json({ recommendations: [] });
+    }
+
+    const recs = await prisma.productRecommendation.findMany({
+      where: { shopDomain: shop, sourceProductId: String(productId) },
+      orderBy: { position: 'asc' },
+      select: {
+        targetProductId: true,
+        targetTitle:     true,
+        targetImage:     true,
+        targetPrice:     true,
+        targetVariantId: true,
+      },
+    });
+
+    res.json({
+      recommendations: recs.map(r => ({
+        productId: r.targetProductId,
+        title:     r.targetTitle,
+        image:     r.targetImage,
+        price:     r.targetPrice,
+        variantId: r.targetVariantId,
+      })),
+    });
+  } catch (err) {
+    console.error('products/recommendations error:', err.message);
+    res.json({ recommendations: [] });
+  }
+});
+
 // GET /api/products/enabled — cuántos productos tienen suscripciones activas (admin)
 router.get('/enabled', async (req, res) => {
   try {

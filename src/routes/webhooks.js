@@ -201,14 +201,30 @@ router.post('/mp', async (req, res) => {
             mpPaymentId: String(pago.id),
           }).catch(() => {});
 
-          // Crear orden en Shopify usando GraphQL
+          // Crear orden en Shopify usando GraphQL (producto principal + upsells)
           if (sub.variantId) {
             try {
               const envio = sub.datosEnvio ? JSON.parse(sub.datosEnvio) : null;
+              const lineItems = [{ variant_id: sub.variantId, quantity: sub.qty || 1 }];
+
+              // Agregar upsells pendientes como line items adicionales
+              if (sub.pendingUpsells) {
+                try {
+                  const upsells = JSON.parse(sub.pendingUpsells);
+                  for (const u of upsells) {
+                    if (u.variantId) {
+                      lineItems.push({ variant_id: u.variantId, quantity: u.qty || 1 });
+                    }
+                  }
+                } catch (e) {
+                  console.error('[webhook/mp] Error parsing pendingUpsells:', e.message);
+                }
+              }
+
               const orden = await shopify.createOrder(shopDomain, shopifyToken, {
                 customerId: sub.shopifyCustomerId,
                 email:      sub.shopifyCustomerEmail,
-                lineItems:  [{ variant_id: sub.variantId, quantity: sub.qty || 1 }],
+                lineItems,
                 note: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
                 tags: 'suscripcion,mp-auto',
                 shippingAddress: envio ? {
@@ -227,6 +243,14 @@ router.post('/mp', async (req, res) => {
                     shopifyOrderNumber: orden.orderNumber,
                   },
                 });
+
+                // Limpiar upsells pendientes después de incluirlos en la orden
+                if (sub.pendingUpsells) {
+                  await prisma.subscription.update({
+                    where: { id: sub.id },
+                    data:  { pendingUpsells: null },
+                  });
+                }
               } else {
                 console.log('Orden Shopify creada sin ID en respuesta');
               }
@@ -655,8 +679,9 @@ router.post('/gdpr/shop-redact', express.raw({ type: '*/*' }), async (req, res) 
     // 4. Magic tokens de esa tienda
     await prisma.magicToken.deleteMany({ where: { shopDomain: shop_domain } });
 
-    // 5. Productos con suscripción activada
+    // 5. Productos con suscripción activada + recomendaciones
     await prisma.productSubscription.deleteMany({ where: { shopDomain: shop_domain } });
+    await prisma.productRecommendation.deleteMany({ where: { shopDomain: shop_domain } });
 
     // 6. Planes del shop
     await prisma.plan.deleteMany({ where: { shopDomain: shop_domain } });

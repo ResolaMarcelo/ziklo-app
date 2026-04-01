@@ -176,6 +176,19 @@ router.post('/crear-con-envio', async (req, res) => {
       backUrl: `${process.env.APP_URL}/cliente/gracias`,
     });
 
+    // Si hay upsells seleccionados en el checkout, guardarlos como pending
+    const { upsells } = req.body;
+    let pendingUpsells = null;
+    if (Array.isArray(upsells) && upsells.length > 0) {
+      pendingUpsells = JSON.stringify(upsells.slice(0, 4).map(u => ({
+        productId: String(u.productId),
+        variantId: u.variantId ? String(u.variantId) : null,
+        title:     u.title || null,
+        price:     u.price ? parseFloat(u.price) : null,
+        qty:       1,
+      })));
+    }
+
     await prisma.subscription.create({
       data: {
         shopDomain,
@@ -184,6 +197,7 @@ router.post('/crear-con-envio', async (req, res) => {
         qty: Number(qty) || 1,
         mpPreapprovalId: preapproval.id, status: 'pending', planId: plan.id,
         datosEnvio: JSON.stringify(envio),
+        pendingUpsells,
       },
     });
 
@@ -352,6 +366,64 @@ router.post('/:id/reanudar', clienteAuth, async (req, res) => {
     klaviyo.subscriptionResumed(req.shop, subWithPlan).catch(() => {});
 
     res.json({ ok: true });
+  } catch (err) {
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
+  }
+});
+
+// ── Upsell: agregar/quitar productos al próximo pedido ───────────────────────
+
+// POST /api/subscripciones/:id/agregar-upsell
+router.post('/:id/agregar-upsell', clienteAuth, async (req, res) => {
+  try {
+    const sub = await findSubForRequest(req.params.id, req);
+    if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
+
+    const { productId, variantId, title, price } = req.body;
+    if (!productId) return res.status(400).json({ error: 'productId requerido' });
+
+    const current = sub.pendingUpsells ? JSON.parse(sub.pendingUpsells) : [];
+    if (current.length >= 4) {
+      return res.status(400).json({ error: 'Máximo 4 productos adicionales' });
+    }
+    if (current.some(u => u.productId === String(productId))) {
+      return res.status(400).json({ error: 'Este producto ya está agregado' });
+    }
+
+    current.push({
+      productId: String(productId),
+      variantId: variantId ? String(variantId) : null,
+      title:     title || null,
+      price:     price ? parseFloat(price) : null,
+      qty:       1,
+    });
+
+    await prisma.subscription.update({
+      where: { id: req.params.id },
+      data:  { pendingUpsells: JSON.stringify(current) },
+    });
+
+    res.json({ ok: true, pendingUpsells: current });
+  } catch (err) {
+    console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
+  }
+});
+
+// DELETE /api/subscripciones/:id/quitar-upsell/:productId
+router.delete('/:id/quitar-upsell/:productId', clienteAuth, async (req, res) => {
+  try {
+    const sub = await findSubForRequest(req.params.id, req);
+    if (!sub) return res.status(404).json({ error: 'Suscripción no encontrada' });
+
+    const current = sub.pendingUpsells ? JSON.parse(sub.pendingUpsells) : [];
+    const filtered = current.filter(u => u.productId !== req.params.productId);
+
+    await prisma.subscription.update({
+      where: { id: req.params.id },
+      data:  { pendingUpsells: filtered.length > 0 ? JSON.stringify(filtered) : null },
+    });
+
+    res.json({ ok: true, pendingUpsells: filtered });
   } catch (err) {
     console.error(err); res.status(500).json({ error: 'Error interno. Intentá de nuevo.' });
   }
