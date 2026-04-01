@@ -435,6 +435,97 @@ router.post('/app-uninstalled', express.raw({ type: '*/*' }), async (req, res) =
   }
 });
 
+// POST /webhooks/products-update — Shopify avisa que un producto cambió de precio
+router.post('/products-update', express.raw({ type: '*/*' }), async (req, res) => {
+  if (!verificarHMACShopify(req)) {
+    console.warn('[products/update] HMAC inválido');
+    return res.status(401).send('Unauthorized');
+  }
+
+  res.status(200).send('OK');
+
+  try {
+    const product = JSON.parse(req.body.toString());
+    const shopDomain = req.headers['x-shopify-shop-domain'];
+    const productId  = String(product.id);
+
+    if (!shopDomain || !productId) return;
+
+    // Buscar suscripciones activas vinculadas a este producto
+    const subs = await prisma.subscription.findMany({
+      where: {
+        shopDomain,
+        productId,
+        status: { in: ['authorized', 'pending'] },
+      },
+      include: { plan: true },
+    });
+
+    if (subs.length === 0) return;
+
+    // Obtener el shop para el token de MP y el beneficio configurado
+    const [shop, productConfig] = await Promise.all([
+      prisma.shop.findUnique({ where: { domain: shopDomain } }),
+      prisma.productSubscription.findUnique({
+        where: { shopDomain_productId: { shopDomain, productId } },
+      }),
+    ]);
+    if (!shop?.mpAccessToken) return;
+
+    // Armar mapa de variantes → precio
+    const variantPrices = {};
+    for (const v of (product.variants || [])) {
+      variantPrices[String(v.id)] = parseFloat(v.price);
+    }
+    // Si no hay variantes, usar el precio del primer variant (precio base)
+    const precioBase = product.variants?.[0] ? parseFloat(product.variants[0].price) : null;
+
+    // Beneficio: config por producto > config global del shop
+    const benefitType  = productConfig?.benefitType  || shop.subBenefitType  || 'discount';
+    const benefitValue = parseFloat(productConfig?.benefitValue || shop.subBenefitValue) || 0;
+
+    function aplicarDescuento(precio) {
+      if (benefitType === 'discount' && benefitValue > 0) {
+        return Math.round(precio * (1 - benefitValue / 100) * 100) / 100;
+      }
+      return precio;
+    }
+
+    let updated = 0;
+    for (const sub of subs) {
+      const precioVariante = sub.variantId ? variantPrices[sub.variantId] : precioBase;
+      if (!precioVariante) continue;
+
+      const qty        = sub.qty || 1;
+      const nuevoMonto = aplicarDescuento(precioVariante * qty);
+
+      // Si el monto no cambió, no hacer nada
+      if (sub.plan && Math.abs(sub.plan.monto - nuevoMonto) < 0.01) continue;
+
+      try {
+        // Actualizar plan en DB
+        await prisma.plan.update({
+          where: { id: sub.planId },
+          data:  { monto: nuevoMonto },
+        });
+
+        // Actualizar preapproval en MP
+        await mp.actualizarMontoPreapproval(sub.mpPreapprovalId, nuevoMonto, shop.mpAccessToken);
+        updated++;
+        console.log(`[products/update] Sub ${sub.id}: $${sub.plan.monto} → $${nuevoMonto}`);
+      } catch (err) {
+        console.error(`[products/update] Error actualizando sub ${sub.id}:`, err.message);
+      }
+    }
+
+    if (updated > 0) {
+      console.log(`[products/update] ${shopDomain}: ${updated} suscripciones actualizadas para producto ${productId}`);
+    }
+  } catch (err) {
+    console.error('[products/update] Error:', err.message);
+  }
+});
+
 // POST /webhooks/gdpr/customers-data — cliente pide ver sus datos
 router.post('/gdpr/customers-data', express.raw({ type: '*/*' }), async (req, res) => {
   if (!verificarHMACShopify(req)) {

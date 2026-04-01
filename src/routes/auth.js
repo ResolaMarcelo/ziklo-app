@@ -197,6 +197,7 @@ router.get('/callback', async (req, res) => {
     const APP_URL = process.env.APP_URL || 'https://app.zikloapp.com';
     const webhooksToRegister = [
       { topic: 'app/uninstalled',        callbackUrl: `${APP_URL}/webhooks/app-uninstalled` },
+      { topic: 'products/update',        callbackUrl: `${APP_URL}/webhooks/products-update` },
       { topic: 'customers/data_request',  callbackUrl: `${APP_URL}/webhooks/gdpr/customers-data` },
       { topic: 'customers/redact',        callbackUrl: `${APP_URL}/webhooks/gdpr/customers-redact` },
       { topic: 'shop/redact',             callbackUrl: `${APP_URL}/webhooks/gdpr/shop-redact` },
