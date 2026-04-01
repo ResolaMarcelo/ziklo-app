@@ -182,16 +182,20 @@ router.get('/api/subscription-benefit', (req, res) => {
   res.json({
     benefitType:  shop?.subBenefitType  || 'discount',
     benefitValue: shop?.subBenefitValue || '10',
-    widgetTitle:  shop?.widgetTitle     || '',
-    widgetChips:  shop?.widgetChips     || '',
-    widgetBtnText: shop?.widgetBtnText  || '',
+    widgetTitle:       shop?.widgetTitle       || '',
+    widgetChips:       shop?.widgetChips       || '',
+    widgetBtnText:     shop?.widgetBtnText     || '',
+    widgetAccentColor: shop?.widgetAccentColor || '',
+    widgetBgColor:     shop?.widgetBgColor     || '',
+    widgetTextColor:   shop?.widgetTextColor   || '',
   });
 });
 
 // POST /admin/api/subscription-benefit — guardar beneficio global del shop
 router.post('/api/subscription-benefit', async (req, res) => {
   try {
-    const { benefitType, benefitValue, widgetTitle, widgetChips, widgetBtnText } = req.body;
+    const { benefitType, benefitValue, widgetTitle, widgetChips, widgetBtnText,
+            widgetAccentColor, widgetBgColor, widgetTextColor } = req.body;
     const shopDomain = req.session?.shopDomain;
     if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
 
@@ -200,23 +204,33 @@ router.post('/api/subscription-benefit', async (req, res) => {
       return res.status(400).json({ error: 'Tipo de beneficio inválido' });
     }
 
+    // Validar colores hex si se proporcionan
+    const hexRegex = /^#[0-9a-fA-F]{6}$/;
+    const cleanColor = (v) => (v && hexRegex.test(v)) ? v : null;
+
     await prisma.shop.upsert({
       where:  { domain: shopDomain },
       update: {
-        subBenefitType:  benefitType,
-        subBenefitValue: benefitValue  || '',
-        widgetTitle:     widgetTitle   || null,
-        widgetChips:     widgetChips   || null,
-        widgetBtnText:   widgetBtnText || null,
+        subBenefitType:    benefitType,
+        subBenefitValue:   benefitValue  || '',
+        widgetTitle:       widgetTitle   || null,
+        widgetChips:       widgetChips   || null,
+        widgetBtnText:     widgetBtnText || null,
+        widgetAccentColor: cleanColor(widgetAccentColor),
+        widgetBgColor:     cleanColor(widgetBgColor),
+        widgetTextColor:   cleanColor(widgetTextColor),
       },
       create: {
-        domain:          shopDomain,
-        accessToken:     '',
-        subBenefitType:  benefitType,
-        subBenefitValue: benefitValue  || '',
-        widgetTitle:     widgetTitle   || null,
-        widgetChips:     widgetChips   || null,
-        widgetBtnText:   widgetBtnText || null,
+        domain:            shopDomain,
+        accessToken:       '',
+        subBenefitType:    benefitType,
+        subBenefitValue:   benefitValue  || '',
+        widgetTitle:       widgetTitle   || null,
+        widgetChips:       widgetChips   || null,
+        widgetBtnText:     widgetBtnText || null,
+        widgetAccentColor: cleanColor(widgetAccentColor),
+        widgetBgColor:     cleanColor(widgetBgColor),
+        widgetTextColor:   cleanColor(widgetTextColor),
       },
     });
 

@@ -1966,6 +1966,50 @@
                 <p style="font-size:11px;color:var(--muted2);margin:5px 0 0;">Dejalo vacío para usar: "Confirmar suscripción mensual"</p>
               </div>
 
+              <!-- Colores del widget -->
+              <div>
+                <p style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0 0 10px;">Colores del widget</p>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <!-- Acento -->
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <input type="color" id="widget-accent-picker" value="#222222"
+                      style="width:36px;height:36px;border:none;border-radius:6px;cursor:pointer;padding:0;background:transparent;">
+                    <div style="flex:1;">
+                      <label style="font-size:11px;color:var(--muted2);display:block;margin-bottom:3px;">Color de acento</label>
+                      <input type="text" id="widget-accent-color" value="#222222" maxlength="7" placeholder="#222222"
+                        oninput="syncColorPicker('accent')"
+                        style="width:90px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:6px 10px;color:var(--white);font-family:monospace;font-size:12px;outline:none;">
+                    </div>
+                    <button onclick="resetColor('accent','#222222')" style="font-size:11px;color:var(--muted2);background:none;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 10px;cursor:pointer;">Restaurar</button>
+                  </div>
+                  <!-- Fondo -->
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <input type="color" id="widget-bg-picker" value="#fafafa"
+                      style="width:36px;height:36px;border:none;border-radius:6px;cursor:pointer;padding:0;background:transparent;">
+                    <div style="flex:1;">
+                      <label style="font-size:11px;color:var(--muted2);display:block;margin-bottom:3px;">Fondo del widget</label>
+                      <input type="text" id="widget-bg-color" value="#fafafa" maxlength="7" placeholder="#fafafa"
+                        oninput="syncColorPicker('bg')"
+                        style="width:90px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:6px 10px;color:var(--white);font-family:monospace;font-size:12px;outline:none;">
+                    </div>
+                    <button onclick="resetColor('bg','#fafafa')" style="font-size:11px;color:var(--muted2);background:none;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 10px;cursor:pointer;">Restaurar</button>
+                  </div>
+                  <!-- Texto -->
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <input type="color" id="widget-text-picker" value="#111111"
+                      style="width:36px;height:36px;border:none;border-radius:6px;cursor:pointer;padding:0;background:transparent;">
+                    <div style="flex:1;">
+                      <label style="font-size:11px;color:var(--muted2);display:block;margin-bottom:3px;">Color de texto</label>
+                      <input type="text" id="widget-text-color" value="#111111" maxlength="7" placeholder="#111111"
+                        oninput="syncColorPicker('text')"
+                        style="width:90px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:6px 10px;color:var(--white);font-family:monospace;font-size:12px;outline:none;">
+                    </div>
+                    <button onclick="resetColor('text','#111111')" style="font-size:11px;color:var(--muted2);background:none;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 10px;cursor:pointer;">Restaurar</button>
+                  </div>
+                </div>
+                <p style="font-size:11px;color:var(--muted2);margin:8px 0 0;">Personalizá los colores para que el widget combine con tu tienda.</p>
+              </div>
+
               <button class="btn btn-primary" onclick="guardarBeneficio()">Guardar cambios</button>
             </div>
           </div>
@@ -3587,6 +3631,11 @@ async function cargarBeneficio() {
     const btnEl = document.getElementById('widget-btn-input');
     if (btnEl && benefitData.widgetBtnText) btnEl.value = benefitData.widgetBtnText;
 
+    // Cargar colores del widget
+    if (benefitData.widgetAccentColor) setColorInputs('accent', benefitData.widgetAccentColor);
+    if (benefitData.widgetBgColor)     setColorInputs('bg',     benefitData.widgetBgColor);
+    if (benefitData.widgetTextColor)   setColorInputs('text',   benefitData.widgetTextColor);
+
     actualizarPreviewBeneficio();
   } catch (_) {}
 }
@@ -3610,6 +3659,43 @@ function usarSugerencia(texto) {
     actualizarPreviewBeneficio();
   }
 }
+
+// ── Color picker helpers ────────────────────────────────────────────────
+function setColorInputs(key, hex) {
+  const textEl   = document.getElementById(`widget-${key}-color`);
+  const pickerEl = document.getElementById(`widget-${key}-picker`);
+  if (textEl)   textEl.value   = hex;
+  if (pickerEl) pickerEl.value = hex;
+}
+
+function syncColorPicker(key) {
+  const textEl   = document.getElementById(`widget-${key}-color`);
+  const pickerEl = document.getElementById(`widget-${key}-picker`);
+  if (textEl && /^#[0-9a-fA-F]{6}$/.test(textEl.value)) {
+    if (pickerEl) pickerEl.value = textEl.value;
+  }
+  actualizarPreviewBeneficio();
+}
+
+function syncColorText(key) {
+  const textEl   = document.getElementById(`widget-${key}-color`);
+  const pickerEl = document.getElementById(`widget-${key}-picker`);
+  if (pickerEl && textEl) textEl.value = pickerEl.value;
+  actualizarPreviewBeneficio();
+}
+
+function resetColor(key, defaultVal) {
+  setColorInputs(key, defaultVal);
+  actualizarPreviewBeneficio();
+}
+
+// Bind color pickers (input event for live update)
+document.addEventListener('DOMContentLoaded', () => {
+  ['accent', 'bg', 'text'].forEach(key => {
+    const picker = document.getElementById(`widget-${key}-picker`);
+    if (picker) picker.addEventListener('input', () => syncColorText(key));
+  });
+});
 
 function actualizarPreviewBeneficio() {
   actualizarContadorTitulo();
@@ -3671,6 +3757,13 @@ function actualizarPreviewBeneficio() {
   const btnEl = document.getElementById('prev-btn-text');
   const btnVal = document.getElementById('widget-btn-input')?.value?.trim() || '';
   if (btnEl) btnEl.textContent = btnVal || 'Confirmar suscripción mensual';
+
+  // Colores en el preview
+  const prevAccent = document.getElementById('widget-accent-color')?.value || '#222222';
+  const prevBg     = document.getElementById('widget-bg-color')?.value     || '#fafafa';
+  const prevText   = document.getElementById('widget-text-color')?.value   || '#111111';
+  if (btnEl) { btnEl.style.background = prevAccent; btnEl.style.color = prevBg; }
+  if (badge) { badge.style.background = prevAccent; badge.style.color = prevBg; }
 }
 
 async function guardarBeneficio() {
@@ -3703,11 +3796,16 @@ async function guardarBeneficio() {
   });
   const widgetChips = JSON.stringify(chips);
 
+  // Colores del widget
+  const widgetAccentColor = document.getElementById('widget-accent-color')?.value?.trim() || '';
+  const widgetBgColor     = document.getElementById('widget-bg-color')?.value?.trim() || '';
+  const widgetTextColor   = document.getElementById('widget-text-color')?.value?.trim() || '';
+
   try {
     const res = await fetch('/admin/api/subscription-benefit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ benefitType: type, benefitValue: value, widgetTitle, widgetChips, widgetBtnText }),
+      body: JSON.stringify({ benefitType: type, benefitValue: value, widgetTitle, widgetChips, widgetBtnText, widgetAccentColor, widgetBgColor, widgetTextColor }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error al guardar');

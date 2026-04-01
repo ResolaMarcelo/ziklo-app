@@ -9,27 +9,42 @@
   if (!container) return;
 
   // ── Inyectar CSS ────────────────────────────────────────────────────────────
-  var css = [
-    '#subs-widget{margin:16px 0;padding:16px;border:1.5px solid #e0e0e0;border-radius:10px;background:#fafafa}',
-    '#subs-widget *{box-sizing:border-box}',
-    '#subs-widget .subs-tabs{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid #d5d5d5;border-radius:8px;overflow:hidden;margin-bottom:14px}',
-    '#subs-widget .subs-tab{padding:12px 8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;background:#fff;color:inherit;opacity:.55;transition:background .2s,opacity .2s,box-shadow .2s;text-align:center;line-height:1.3}',
-    '#subs-widget .subs-tab:first-child{border-right:1.5px solid #d5d5d5}',
-    '#subs-widget .subs-tab.active{background:#f5f5f5;opacity:1;box-shadow:inset 0 -2.5px 0 #222}',
-    '#subs-widget .subs-tab:hover:not(.active){opacity:.75;background:#f9f9f9}',
-    '#subs-widget .subs-tab-badge{display:inline-block;font-size:10px;font-weight:700;background:#222;color:#fff;padding:2px 8px;border-radius:20px;margin-left:5px;vertical-align:middle;letter-spacing:.02em}',
-    '#subs-widget .subs-panel{display:none;padding-top:4px}',
-    '#subs-widget .subs-panel.visible{display:block}',
-    '#subs-widget .subs-precio-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}',
-    '#subs-widget .subs-precio-original{font-size:13px;text-decoration:line-through;color:#999}',
-    '#subs-widget .subs-precio-final{font-size:18px;font-weight:700;color:#111}',
-    '#subs-widget .subs-ahorro-badge{font-size:11px;font-weight:700;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:20px}',
-    '#subs-widget .subs-freq-title{font-size:12px;font-weight:600;color:#666;margin-bottom:8px}',
-    '#subs-widget .subs-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}',
-    '#subs-widget .subs-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:7px 13px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#555;box-shadow:0 1px 2px rgba(0,0,0,.04)}',
-    '#subs-widget .subs-chip-icon{display:inline-flex;font-size:13px;opacity:.6}',
-    '#subs-widget .subs-no-price{font-size:12px;color:#999;font-style:italic;margin-bottom:10px}',
-  ].join('');
+  // Helper: hex (#rrggbb) → rgba string con opacidad
+  function hexToRgba(hex, opacity) {
+    var r = parseInt(hex.slice(1,3), 16);
+    var g = parseInt(hex.slice(3,5), 16);
+    var b = parseInt(hex.slice(5,7), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+  }
+
+  // Defaults
+  var _accent = '#222222', _bg = '#fafafa', _text = '#111111';
+
+  function buildCss(accent, bg, text) {
+    return [
+      '#subs-widget{margin:16px 0;padding:16px;border:1.5px solid ' + hexToRgba(text, 0.15) + ';border-radius:10px;background:' + bg + '}',
+      '#subs-widget *{box-sizing:border-box}',
+      '#subs-widget .subs-tabs{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid ' + hexToRgba(text, 0.18) + ';border-radius:8px;overflow:hidden;margin-bottom:14px}',
+      '#subs-widget .subs-tab{padding:12px 8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;background:transparent;color:' + text + ';opacity:.55;transition:background .2s,opacity .2s,box-shadow .2s;text-align:center;line-height:1.3}',
+      '#subs-widget .subs-tab:first-child{border-right:1.5px solid ' + hexToRgba(text, 0.18) + '}',
+      '#subs-widget .subs-tab.active{background:' + hexToRgba(text, 0.06) + ';opacity:1;box-shadow:inset 0 -2.5px 0 ' + accent + '}',
+      '#subs-widget .subs-tab:hover:not(.active){opacity:.75;background:' + hexToRgba(text, 0.03) + '}',
+      '#subs-widget .subs-tab-badge{display:inline-block;font-size:10px;font-weight:700;background:' + accent + ';color:' + bg + ';padding:2px 8px;border-radius:20px;margin-left:5px;vertical-align:middle;letter-spacing:.02em}',
+      '#subs-widget .subs-panel{display:none;padding-top:4px}',
+      '#subs-widget .subs-panel.visible{display:block}',
+      '#subs-widget .subs-precio-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}',
+      '#subs-widget .subs-precio-original{font-size:13px;text-decoration:line-through;color:' + hexToRgba(text, 0.4) + '}',
+      '#subs-widget .subs-precio-final{font-size:18px;font-weight:700;color:' + text + '}',
+      '#subs-widget .subs-ahorro-badge{font-size:11px;font-weight:700;background:' + hexToRgba(accent, 0.12) + ';color:' + accent + ';padding:3px 10px;border-radius:20px}',
+      '#subs-widget .subs-freq-title{font-size:12px;font-weight:600;color:' + hexToRgba(text, 0.6) + ';margin-bottom:8px}',
+      '#subs-widget .subs-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}',
+      '#subs-widget .subs-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:7px 13px;border-radius:8px;border:1px solid ' + hexToRgba(text, 0.13) + ';background:' + bg + ';color:' + hexToRgba(text, 0.6) + ';box-shadow:0 1px 2px rgba(0,0,0,.04)}',
+      '#subs-widget .subs-chip-icon{display:inline-flex;font-size:13px;opacity:.6}',
+      '#subs-widget .subs-no-price{font-size:12px;color:' + hexToRgba(text, 0.4) + ';font-style:italic;margin-bottom:10px}',
+    ].join('');
+  }
+
+  var css = buildCss(_accent, _bg, _text);
 
   var style = document.createElement('style');
   style.textContent = css;
@@ -302,6 +317,14 @@
     }
   }
 
+  // ── Aplicar colores custom del merchant ───────────────────────────────────
+  function aplicarWidgetColors(accent, bg, text) {
+    accent = accent || _accent;
+    bg     = bg     || _bg;
+    text   = text   || _text;
+    style.textContent = buildCss(accent, bg, text);
+  }
+
   // ── Verificar si producto tiene suscripciones activas ─────────────────────
   function getProductId() {
     try {
@@ -327,6 +350,8 @@
         if (data.widgetTitle)   aplicarWidgetTitle(data.widgetTitle);
         if (data.widgetChips)   aplicarWidgetChips(data.widgetChips);
         if (data.widgetBtnText) _widgetBtnText = data.widgetBtnText.trim();
+        if (data.widgetAccentColor || data.widgetBgColor || data.widgetTextColor)
+          aplicarWidgetColors(data.widgetAccentColor, data.widgetBgColor, data.widgetTextColor);
         if (data.beneficios)    window._planBeneficios = data.beneficios;
         if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); }
         else { init(); }

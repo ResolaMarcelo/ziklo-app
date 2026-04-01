@@ -32,10 +32,13 @@ router.get('/check', async (req, res) => {
       enabled:       record?.enabled ?? false,
       benefitType:   record?.benefitType  || shopRecord?.subBenefitType  || 'discount',
       benefitValue:  record?.benefitValue || shopRecord?.subBenefitValue || '10',
-      widgetTitle:   shopRecord?.widgetTitle  || '',
-      widgetChips:   shopRecord?.widgetChips  || '',
-      widgetBtnText: shopRecord?.widgetBtnText || '',
-      beneficios:    primerPlan?.beneficios || null,
+      widgetTitle:       shopRecord?.widgetTitle       || '',
+      widgetChips:       shopRecord?.widgetChips       || '',
+      widgetBtnText:     shopRecord?.widgetBtnText     || '',
+      widgetAccentColor: shopRecord?.widgetAccentColor || '',
+      widgetBgColor:     shopRecord?.widgetBgColor     || '',
+      widgetTextColor:   shopRecord?.widgetTextColor   || '',
+      beneficios:        primerPlan?.beneficios || null,
     });
   } catch (err) {
     // En caso de error, no bloquear el widget — devolver enabled: false

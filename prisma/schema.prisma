@@ -49,8 +49,10 @@ model Shop {
   subBenefitValue String?                 // "10" | "Muestra de crema"
   widgetTitle     String?                 // Titular del tab de suscripción en el widget
   widgetChips     String?                 // JSON array de chips (["📦 Entrega mensual", ...])
-  widgetBtnText   String?                 // Texto del botón ATC en modo suscripción
-  // Retención
+  widgetBtnText     String?                 // Texto del botón ATC en modo suscripción
+  widgetAccentColor String?                 // Color de acento del widget (hex, ej: #222222)
+  widgetBgColor     String?                 // Color de fondo del widget (hex, ej: #fafafa)
+  widgetTextColor   String?                 // Color de texto del widget (hex, ej: #111111)
   // Klaviyo OAuth
   klaviyoAccessToken  String?
   klaviyoRefreshToken String?
