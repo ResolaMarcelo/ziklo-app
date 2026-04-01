@@ -38,7 +38,7 @@
       '#subs-widget .subs-ahorro-badge{font-size:11px;font-weight:700;background:' + hexToRgba(accent, 0.12) + ';color:' + accent + ';padding:3px 10px;border-radius:20px}',
       '#subs-widget .subs-freq-title{font-size:12px;font-weight:600;color:' + hexToRgba(text, 0.6) + ';margin-bottom:8px}',
       '#subs-widget .subs-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}',
-      '#subs-widget .subs-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:7px 13px;border-radius:8px;border:1px solid ' + hexToRgba(text, 0.13) + ';background:' + bg + ';color:' + hexToRgba(text, 0.6) + ';box-shadow:0 1px 2px rgba(0,0,0,.04)}',
+      '#subs-widget .subs-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:7px 13px;border-radius:999px;border:1px solid ' + hexToRgba(text, 0.13) + ';background:' + bg + ';color:' + hexToRgba(text, 0.6) + ';box-shadow:0 1px 2px rgba(0,0,0,.04)}',
       '#subs-widget .subs-chip-icon{display:inline-flex;font-size:13px;opacity:.6}',
       '#subs-widget .subs-no-price{font-size:12px;color:' + hexToRgba(text, 0.4) + ';font-style:italic;margin-bottom:10px}',
     ].join('');
