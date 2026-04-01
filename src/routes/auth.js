@@ -70,7 +70,7 @@ function verificarState(state, shop) {
 // ── Iniciar OAuth ──────────────────────────────────────────────────────────
 
 // GET /auth?shop=mi-tienda.myshopify.com
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   if (!CLIENT_ID || !CLIENT_SECRET) {
     return res.status(500).send(
       'Faltan SHOPIFY_CLIENT_ID y SHOPIFY_CLIENT_SECRET en las variables de entorno.'
@@ -82,6 +82,29 @@ router.get('/', (req, res) => {
 
   if (!/^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/.test(shop)) {
     return res.redirect('/admin/?error=invalid_shop');
+  }
+
+  // Si la tienda ya tiene token válido, skip OAuth y redirect al admin
+  try {
+    const existingShop = await prisma.shop.findUnique({ where: { domain: shop } });
+    if (existingShop && existingShop.accessToken) {
+      // Verificar que el token sigue siendo válido haciendo una request liviana
+      const testRes = await fetch(`https://${shop}/admin/api/2025-04/shop.json`, {
+        headers: { 'X-Shopify-Access-Token': existingShop.accessToken },
+      });
+      if (testRes.ok) {
+        // Token válido — crear sesión y redirect directo al admin
+        req.session.adminLoggedIn = true;
+        req.session.shopDomain = shop;
+        req.session.shopId = existingShop.id;
+        req.session.shopName = existingShop.shopName;
+        console.log(`⚡ Shop ${shop} ya autenticado, skip OAuth`);
+        return res.redirect('/admin/');
+      }
+    }
+  } catch (err) {
+    console.error('Error verificando token existente:', err.message);
+    // Si falla, seguir con OAuth normal
   }
 
   const redirectUri = `${process.env.APP_URL}/auth/callback`;
