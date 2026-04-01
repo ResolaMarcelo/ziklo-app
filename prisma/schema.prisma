@@ -50,6 +50,7 @@ model Shop {
   widgetTitle     String?                 // Titular del tab de suscripción en el widget
   widgetChips     String?                 // JSON array de chips (["📦 Entrega mensual", ...])
   widgetBtnText     String?                 // Texto del botón ATC en modo suscripción
+  widgetChipsVisible Boolean @default(true)  // Mostrar/ocultar chips de beneficios en el widget
   widgetAccentColor String?                 // Color de acento del widget (hex, ej: #222222)
   widgetBgColor     String?                 // Color de fondo del widget (hex, ej: #fafafa)
   widgetTextColor   String?                 // Color de texto del widget (hex, ej: #111111)

@@ -357,7 +357,12 @@
         if (!data.enabled) { hideWidget(); return; }
         aplicarBeneficio(data.benefitType, data.benefitValue);
         if (data.widgetTitle)   aplicarWidgetTitle(data.widgetTitle);
-        if (data.widgetChips)   aplicarWidgetChips(data.widgetChips);
+        if (data.widgetChipsVisible === false) {
+          var chipsEl = document.getElementById('subs-chips');
+          if (chipsEl) chipsEl.style.display = 'none';
+        } else if (data.widgetChips) {
+          aplicarWidgetChips(data.widgetChips);
+        }
         if (data.widgetBtnText) _widgetBtnText = data.widgetBtnText.trim();
         if (data.widgetAccentColor || data.widgetBgColor || data.widgetTextColor)
           aplicarWidgetColors(data.widgetAccentColor, data.widgetBgColor, data.widgetTextColor);

@@ -1935,7 +1935,14 @@
 
               <!-- Chips de beneficios -->
               <div>
-                <p style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px;">Chips de beneficios</p>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                  <p style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0;">Chips de beneficios</p>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--muted2);">
+                    Visible
+                    <input type="checkbox" id="widget-chips-visible" checked onchange="toggleChipsVisibility(); actualizarPreviewBeneficio()"
+                      style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);">
+                  </label>
+                </div>
                 <p style="font-size:11px;color:var(--muted2);margin:0 0 10px;">Los 4 puntos que aparecen debajo del precio. Podés incluir emojis.</p>
                 <div style="display:flex;flex-direction:column;gap:6px;" id="widget-chips-inputs">
                   <input type="text" id="wc-1" maxlength="40" placeholder="📦 Entrega mensual" oninput="actualizarPreviewBeneficio()"
@@ -3616,6 +3623,13 @@ async function cargarBeneficio() {
       actualizarContadorTitulo();
     }
 
+    // Cargar visibilidad de chips
+    const chipsToggle = document.getElementById('widget-chips-visible');
+    if (chipsToggle && benefitData.widgetChipsVisible === false) {
+      chipsToggle.checked = false;
+      toggleChipsVisibility();
+    }
+
     // Cargar chips personalizados
     if (benefitData.widgetChips) {
       try {
@@ -3658,6 +3672,14 @@ function usarSugerencia(texto) {
     actualizarContadorTitulo();
     actualizarPreviewBeneficio();
   }
+}
+
+// ── Chips visibility toggle ─────────────────────────────────────────────
+function toggleChipsVisibility() {
+  const visible = document.getElementById('widget-chips-visible')?.checked;
+  const inputs = document.getElementById('widget-chips-inputs');
+  if (inputs) inputs.style.opacity = visible ? '1' : '0.35';
+  if (inputs) inputs.style.pointerEvents = visible ? '' : 'none';
 }
 
 // ── Color picker helpers ────────────────────────────────────────────────
@@ -3741,8 +3763,10 @@ function actualizarPreviewBeneficio() {
   }
 
   // Chips en el preview
+  const chipsVisible = document.getElementById('widget-chips-visible')?.checked ?? true;
   const CHIP_DEFAULTS = ['📦 Entrega mensual', '🔒 Precio fijo', '🚚 Envío incluido', '✕ Cancelá cuando quieras'];
   const chipsContainer = document.getElementById('prev-chips');
+  if (chipsContainer) chipsContainer.style.display = chipsVisible ? '' : 'none';
   if (chipsContainer) {
     const chipValues = [1,2,3,4].map(i => {
       const v = document.getElementById(`wc-${i}`)?.value?.trim();
@@ -3796,6 +3820,9 @@ async function guardarBeneficio() {
   });
   const widgetChips = JSON.stringify(chips);
 
+  // Visibilidad de chips
+  const widgetChipsVisible = document.getElementById('widget-chips-visible')?.checked ?? true;
+
   // Colores del widget
   const widgetAccentColor = document.getElementById('widget-accent-color')?.value?.trim() || '';
   const widgetBgColor     = document.getElementById('widget-bg-color')?.value?.trim() || '';
@@ -3805,7 +3832,7 @@ async function guardarBeneficio() {
     const res = await fetch('/admin/api/subscription-benefit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ benefitType: type, benefitValue: value, widgetTitle, widgetChips, widgetBtnText, widgetAccentColor, widgetBgColor, widgetTextColor }),
+      body: JSON.stringify({ benefitType: type, benefitValue: value, widgetTitle, widgetChips, widgetBtnText, widgetChipsVisible, widgetAccentColor, widgetBgColor, widgetTextColor }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error al guardar');

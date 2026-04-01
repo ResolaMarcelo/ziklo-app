@@ -35,6 +35,7 @@ router.get('/check', async (req, res) => {
       widgetTitle:       shopRecord?.widgetTitle       || '',
       widgetChips:       shopRecord?.widgetChips       || '',
       widgetBtnText:     shopRecord?.widgetBtnText     || '',
+      widgetChipsVisible: shopRecord?.widgetChipsVisible ?? true,
       widgetAccentColor: shopRecord?.widgetAccentColor || '',
       widgetBgColor:     shopRecord?.widgetBgColor     || '',
       widgetTextColor:   shopRecord?.widgetTextColor   || '',

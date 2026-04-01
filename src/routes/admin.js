@@ -185,6 +185,7 @@ router.get('/api/subscription-benefit', (req, res) => {
     widgetTitle:       shop?.widgetTitle       || '',
     widgetChips:       shop?.widgetChips       || '',
     widgetBtnText:     shop?.widgetBtnText     || '',
+    widgetChipsVisible: shop?.widgetChipsVisible ?? true,
     widgetAccentColor: shop?.widgetAccentColor || '',
     widgetBgColor:     shop?.widgetBgColor     || '',
     widgetTextColor:   shop?.widgetTextColor   || '',
@@ -195,7 +196,7 @@ router.get('/api/subscription-benefit', (req, res) => {
 router.post('/api/subscription-benefit', async (req, res) => {
   try {
     const { benefitType, benefitValue, widgetTitle, widgetChips, widgetBtnText,
-            widgetAccentColor, widgetBgColor, widgetTextColor } = req.body;
+            widgetChipsVisible, widgetAccentColor, widgetBgColor, widgetTextColor } = req.body;
     const shopDomain = req.session?.shopDomain;
     if (!shopDomain) return res.status(400).json({ error: 'No hay tienda en sesión' });
 
@@ -216,6 +217,7 @@ router.post('/api/subscription-benefit', async (req, res) => {
         widgetTitle:       widgetTitle   || null,
         widgetChips:       widgetChips   || null,
         widgetBtnText:     widgetBtnText || null,
+        widgetChipsVisible: widgetChipsVisible !== false,
         widgetAccentColor: cleanColor(widgetAccentColor),
         widgetBgColor:     cleanColor(widgetBgColor),
         widgetTextColor:   cleanColor(widgetTextColor),
@@ -228,6 +230,7 @@ router.post('/api/subscription-benefit', async (req, res) => {
         widgetTitle:       widgetTitle   || null,
         widgetChips:       widgetChips   || null,
         widgetBtnText:     widgetBtnText || null,
+        widgetChipsVisible: widgetChipsVisible !== false,
         widgetAccentColor: cleanColor(widgetAccentColor),
         widgetBgColor:     cleanColor(widgetBgColor),
         widgetTextColor:   cleanColor(widgetTextColor),
