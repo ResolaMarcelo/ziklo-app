@@ -134,6 +134,16 @@ app.use(cookieSession({
   sameSite: 'lax',
 }));
 
+// Widget JS — servido ANTES de static para controlar cache headers
+app.get('/widget.js', (req, res) => {
+  res.set({
+    'Content-Type':  'application/javascript; charset=utf-8',
+    'Cache-Control': 'public, max-age=300',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
+  });
+  res.sendFile(path.join(__dirname, '../public/widget.js'));
+});
+
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Webhooks de MP necesitan el body raw
@@ -190,16 +200,6 @@ app.use('/cliente', clienteRoutes);
 
 // Waitlist beta — solo el endpoint público POST /api/waitlist
 app.use('/api/waitlist', waitlistRoutes);
-
-// Widget JS — servido con cache de 5 minutos para actualizaciones rápidas
-app.get('/widget.js', (req, res) => {
-  res.set({
-    'Content-Type':  'application/javascript',
-    'Cache-Control': 'public, max-age=300', // 5 minutos
-    'X-Widget-Version': '1.1.0',
-  });
-  res.sendFile(path.join(__dirname, '../public/widget.js'));
-});
 
 // Landing page
 app.get('/', (req, res) => {
