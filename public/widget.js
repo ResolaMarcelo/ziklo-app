@@ -155,17 +155,25 @@
 
   var atcOriginalHTML = null;
 
+  function getBuyNowBtn() {
+    return document.querySelector('.shopify-payment-button, .dynamic-checkout__buttons, [data-shopify="dynamic-checkout-cart"]');
+  }
+
   function setAtcModeSuscripcion() {
     var btn = getAtcBtn();
     if (!btn) return;
     if (!atcOriginalHTML) atcOriginalHTML = btn.innerHTML;
     btn.innerHTML = _widgetBtnText;
+    var buyNow = getBuyNowBtn();
+    if (buyNow) buyNow.style.display = 'none';
   }
 
   function setAtcModeNormal() {
     var btn = getAtcBtn();
     if (!btn || !atcOriginalHTML) return;
     btn.innerHTML = atcOriginalHTML;
+    var buyNow = getBuyNowBtn();
+    if (buyNow) buyNow.style.display = '';
   }
 
   function subsTab(tab) {
