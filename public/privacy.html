@@ -158,7 +158,7 @@
       <li><strong>Mercado Pago:</strong> para procesar cobros recurrentes</li>
       <li><strong>Klaviyo:</strong> para automatización de email marketing (si el merchant lo conecta)</li>
       <li><strong>Google:</strong> para autenticación OAuth de merchants</li>
-      <li><strong>Railway / PostgreSQL:</strong> proveedor de infraestructura donde se almacenan los datos con cifrado en reposo</li>
+      <li><strong>Railway / PostgreSQL:</strong> proveedor de infraestructura donde se almacenan los datos, con cifrado en reposo y acceso restringido por credenciales</li>
       <li><strong>Resend:</strong> para enviar emails transaccionales (confirmaciones, recordatorios, magic links)</li>
     </ul>
   </div>
@@ -177,10 +177,12 @@
     <h2>6. Seguridad</h2>
     <ul>
       <li>Todos los datos se transmiten usando HTTPS/TLS</li>
-      <li>Los access tokens se almacenan cifrados en la base de datos</li>
-      <li>El panel de administración requiere autenticación</li>
-      <li>Los webhooks de Shopify se verifican usando HMAC-SHA256</li>
+      <li>Los access tokens se almacenan en una base de datos protegida con acceso restringido</li>
+      <li>La base de datos utiliza cifrado en reposo provisto por el proveedor de infraestructura</li>
+      <li>El panel de administración requiere autenticación con protección contra fuerza bruta</li>
+      <li>Los webhooks de Shopify y Mercado Pago se verifican usando HMAC-SHA256</li>
       <li>Las sesiones tienen expiración automática</li>
+      <li>Los estados OAuth utilizan firma criptografica con expiración temporal</li>
     </ul>
   </div>
 
