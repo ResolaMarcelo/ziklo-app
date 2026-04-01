@@ -26,7 +26,8 @@
     '#subs-widget .subs-ahorro-badge{font-size:11px;font-weight:700;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:20px}',
     '#subs-widget .subs-freq-title{font-size:12px;font-weight:600;opacity:.65;margin-bottom:8px}',
     '#subs-widget .subs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}',
-    '#subs-widget .subs-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:5px 11px;border-radius:20px;border:1px solid rgba(var(--color-foreground),.15);background:rgba(var(--color-foreground),.03);opacity:.8}',
+    '#subs-widget .subs-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:6px 12px;border-radius:8px;border:1px solid rgba(var(--color-foreground),.13);background:rgb(var(--color-background));color:rgba(var(--color-foreground),.7)}',
+    '#subs-widget .subs-chip-icon{display:inline-flex;font-size:13px;opacity:.55}',
     '#subs-widget .subs-no-price{font-size:12px;opacity:.45;font-style:italic;margin-bottom:10px}',
   ].join('');
 
@@ -51,10 +52,10 @@
       '</div>',
       '<div class="subs-freq-title">Tu pedido llega solo, cada mes.</div>',
       '<div class="subs-chips" id="subs-chips">',
-        '<span class="subs-chip">📦 Entrega mensual</span>',
-        '<span class="subs-chip">🔒 Precio fijo</span>',
-        '<span class="subs-chip">🚚 Envío incluido</span>',
-        '<span class="subs-chip">✕ Cancelá cuando quieras</span>',
+        '<span class="subs-chip"><span class="subs-chip-icon">&#x1F4E6;</span> Entrega mensual</span>',
+        '<span class="subs-chip"><span class="subs-chip-icon">&#x1F4B2;</span> Precio fijo</span>',
+        '<span class="subs-chip"><span class="subs-chip-icon">&#x1F69A;</span> Envio incluido</span>',
+        '<span class="subs-chip"><span class="subs-chip-icon">&times;</span> Cancel\u00e1 cuando quieras</span>',
       '</div>',
     '</div>',
   ].join('');
@@ -255,7 +256,7 @@
     if (badge) tabBtn.appendChild(badge);
   }
 
-  var CHIP_DEFAULTS = ['📦 Entrega mensual', '🔒 Precio fijo', '🚚 Envío incluido', '✕ Cancelá cuando quieras'];
+  var CHIP_DEFAULTS = ['\u{1F4E6} Entrega mensual', '\u{1F4B2} Precio fijo', '\u{1F69A} Envio incluido', '\u00D7 Cancel\u00e1 cuando quieras'];
 
   function aplicarWidgetChips(chipsJson) {
     var chips;
