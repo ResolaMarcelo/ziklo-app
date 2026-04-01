@@ -1937,10 +1937,12 @@
               <div>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
                   <p style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0;">Chips de beneficios</p>
-                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--muted2);">
-                    Visible
-                    <input type="checkbox" id="widget-chips-visible" checked onchange="toggleChipsVisibility(); actualizarPreviewBeneficio()"
-                      style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);">
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;color:var(--muted2);user-select:none;">
+                    <span id="chips-visible-label">Visible</span>
+                    <input type="checkbox" id="widget-chips-visible" checked onchange="toggleChipsVisibility(); actualizarPreviewBeneficio()" style="display:none;">
+                    <span id="chips-toggle-track" style="position:relative;width:34px;height:18px;background:var(--accent);border-radius:999px;transition:background .2s;flex-shrink:0;">
+                      <span id="chips-toggle-thumb" style="position:absolute;top:2px;left:18px;width:14px;height:14px;background:#fff;border-radius:50%;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);"></span>
+                    </span>
                   </label>
                 </div>
                 <p style="font-size:11px;color:var(--muted2);margin:0 0 10px;">Los 4 puntos que aparecen debajo del precio. Podés incluir emojis.</p>
@@ -3680,6 +3682,12 @@ function toggleChipsVisibility() {
   const inputs = document.getElementById('widget-chips-inputs');
   if (inputs) inputs.style.opacity = visible ? '1' : '0.35';
   if (inputs) inputs.style.pointerEvents = visible ? '' : 'none';
+  const track = document.getElementById('chips-toggle-track');
+  const thumb = document.getElementById('chips-toggle-thumb');
+  const label = document.getElementById('chips-visible-label');
+  if (track) track.style.background = visible ? 'var(--accent)' : 'rgba(255,255,255,.15)';
+  if (thumb) thumb.style.left = visible ? '18px' : '2px';
+  if (label) label.textContent = visible ? 'Visible' : 'Oculto';
 }
 
 // ── Color picker helpers ────────────────────────────────────────────────
