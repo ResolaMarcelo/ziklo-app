@@ -295,8 +295,8 @@ router.post('/:id/cancelar', clienteAuth, async (req, res) => {
 
     // Email de confirmación de cancelación al cliente
     try {
-      const shopDomain = req.shop?.domain || process.env.SHOPIFY_SHOP_DOMAIN;
-      const shopToken  = req.shop?.accessToken || process.env.SHOPIFY_ACCESS_TOKEN;
+      const shopDomain = req.shop?.domain;
+      const shopToken  = req.shop?.accessToken;
       const shopInfo   = await shopify.getShopInfo(shopDomain, shopToken).catch(() => null);
       const storeName  = shopInfo?.name || process.env.STORE_NAME || shopDomain;
       const nombre     = subWithPlan?.datosEnvio ? JSON.parse(subWithPlan.datosEnvio).nombre : null;

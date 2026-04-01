@@ -218,7 +218,7 @@ app.use((err, req, res, _next) => {
 
 // ── Validar variables de entorno requeridas en producción ─────────────────
 if (process.env.NODE_ENV === 'production') {
-  const required = ['DATABASE_URL', 'SESSION_SECRET', 'APP_URL', 'SHOPIFY_CLIENT_ID', 'SHOPIFY_CLIENT_SECRET', 'MP_WEBHOOK_SECRET'];
+  const required = ['DATABASE_URL', 'SESSION_SECRET', 'APP_URL', 'SHOPIFY_CLIENT_ID', 'SHOPIFY_CLIENT_SECRET', 'MP_CLIENT_ID', 'MP_CLIENT_SECRET', 'MP_WEBHOOK_SECRET'];
   const warnings = ['ENCRYPTION_KEY', 'TOKEN_ENCRYPTION_KEY'];
   for (const key of required) {
     if (!process.env[key]) { console.error(`FATAL: ${key} no configurada`); process.exit(1); }

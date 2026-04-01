@@ -114,10 +114,26 @@ router.post('/mp', async (req, res) => {
 
     // Notificación de pago
     if (type === 'payment' && data?.id) {
-      // NOTA: Esta primera llamada usa MP_ACCESS_TOKEN del env (fallback global)
-      // porque aún no sabemos de qué shop es el pago. En multi-tenant puro sin
-      // env var, esto fallaría. Se necesitaría un índice mpPaymentId→shop o iterar shops.
-      const pago = await mp.getPago(data.id);
+      // Necesitamos un mpAccessToken para consultar el pago. Buscamos entre los
+      // shops que tienen MP conectado hasta encontrar uno cuyo token funcione.
+      const shops = await prisma.shop.findMany({
+        where: { mpAccessToken: { not: null } },
+        select: { mpAccessToken: true },
+      });
+
+      let pago = null;
+      for (const s of shops) {
+        try {
+          pago = await mp.getPago(data.id, s.mpAccessToken);
+          break;
+        } catch {
+          // Token de otro shop — no tiene acceso a este pago
+        }
+      }
+      if (!pago) {
+        console.error('[webhook/mp] No se pudo consultar pago', data.id, '— ningún shop tiene acceso');
+        return;
+      }
       console.log('Pago ID:', pago.id, '| Status:', pago.status, '| Preapproval:', pago.preapproval_id);
 
       if (pago.preapproval_id) {

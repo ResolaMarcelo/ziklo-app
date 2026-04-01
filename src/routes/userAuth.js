@@ -371,7 +371,7 @@ router.post('/user/create', async (req, res) => {
       await prisma.shop.upsert({
         where:  { domain: shopDomain },
         update: {},
-        create: { domain: shopDomain, accessToken: process.env.SHOPIFY_ACCESS_TOKEN || '', shopName: shopDomain },
+        create: { domain: shopDomain, accessToken: '', shopName: shopDomain },
       });
       await prisma.userShop.create({ data: { userId: user.id, shopDomain } });
     }

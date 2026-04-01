@@ -168,13 +168,11 @@ router.post('/api/mp-token', async (req, res) => {
 router.get('/api/mp-token', async (req, res) => {
   const shop = req.shop;
   res.json({
-    configured: !!(shop?.mpAccessToken || process.env.MP_ACCESS_TOKEN),
+    configured: !!shop?.mpAccessToken,
     // Nunca exponemos el token completo, solo los últimos 4 chars como hint
     hint: shop?.mpAccessToken
       ? `****${shop.mpAccessToken.slice(-4)}`
-      : process.env.MP_ACCESS_TOKEN
-        ? `****${process.env.MP_ACCESS_TOKEN.slice(-4)}`
-        : null,
+      : null,
   });
 });
 

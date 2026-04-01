@@ -2,12 +2,10 @@ const { MercadoPagoConfig, PreApproval, Payment } = require('mercadopago');
 
 /**
  * Devuelve clientes de MP inicializados con el token del shop.
- * Si no se pasa mpToken, usa MP_ACCESS_TOKEN del env (fallback single-store / legacy).
  */
 function getClients(mpToken) {
-  const token = mpToken || process.env.MP_ACCESS_TOKEN;
-  if (!token) throw new Error('No hay token de Mercado Pago configurado para esta tienda.');
-  const config = new MercadoPagoConfig({ accessToken: token });
+  if (!mpToken) throw new Error('No hay token de Mercado Pago configurado para esta tienda.');
+  const config = new MercadoPagoConfig({ accessToken: mpToken });
   return {
     preApproval: new PreApproval(config),
     payment:     new Payment(config),
