@@ -90,6 +90,7 @@ app.set('trust proxy', 1);
 app.use(helmet({
   contentSecurityPolicy: false, // desactivado: el admin usa inline scripts/styles y CDN externo (Chart.js)
   crossOriginEmbedderPolicy: false, // desactivado: el widget se carga en tiendas externas
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // permite que tiendas Shopify carguen widget.js
 }));
 
 // Forzar HTTPS en producción (solo si viene del proxy externo de Railway)
