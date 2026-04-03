@@ -42,6 +42,10 @@
       "dest": "/terms.html"
     },
     {
+      "src": "/(.+\\.(png|jpg|jpeg|gif|svg|ico|webp|css|js|woff2?|ttf|eot))",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
