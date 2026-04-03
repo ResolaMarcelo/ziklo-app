@@ -137,6 +137,22 @@
       background: var(--green); color: #000;
     }
 
+    /* ─── Hero entrance animations — blur to focus ─── */
+    @keyframes heroBlurIn {
+      from { opacity: 0; filter: blur(16px); transform: scale(1.04); }
+      to   { opacity: 1; filter: blur(0);    transform: scale(1); }
+    }
+    .hero-anim {
+      opacity: 0;
+      animation: heroBlurIn .9s cubic-bezier(.22,.61,.36,1) forwards;
+    }
+    .hero-anim-1 { animation-delay: .05s; }
+    .hero-anim-2 { animation-delay: .2s; }
+    .hero-anim-3 { animation-delay: .4s; }
+    .hero-anim-4 { animation-delay: .6s; }
+    .hero-anim-5 { animation-delay: .75s; }
+    .hero-anim-6 { animation-delay: .9s; }
+
     /* ─── HERO ─── */
     .hero {
       position: relative; overflow: hidden;
@@ -840,21 +856,21 @@
 <!-- ─────────────────────── HERO ─────────────────────── -->
 <section class="hero">
   <div class="container">
-    <div class="hero-tag tag">
+    <div class="hero-tag tag hero-anim hero-anim-1">
       <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Nuevo en Argentina — Early Access
     </div>
 
-    <h1 class="hero-title">
+    <h1 class="hero-title hero-anim hero-anim-2">
       Tus clientes compraron<br>
       <span class="accent">¿y si siguieran pagando solos?</span>
     </h1>
 
-    <p class="hero-sub">
+    <p class="hero-sub hero-anim hero-anim-3">
       Ziklo agrega suscripciones recurrentes a tu tienda Shopify y las cobra automáticamente con Mercado Pago. Sin código, sin comisiones extra por transacción, sin complicaciones.
     </p>
 
-    <div class="hero-actions">
+    <div class="hero-actions hero-anim hero-anim-4">
       <a href="#" onclick="openWaitlist(); return false;" class="btn-hero-primary">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Probá nuestra beta
@@ -863,10 +879,10 @@
         Ver cómo funciona →
       </a>
     </div>
-    <p class="hero-note">Plan gratuito disponible · Planes desde USD 25/mes · Configuración en menos de 24 hs</p>
+    <p class="hero-note hero-anim hero-anim-5">Plan gratuito disponible · Planes desde USD 25/mes · Configuración en menos de 24 hs</p>
 
     <!-- Metrics bar -->
-    <div class="hero-metrics">
+    <div class="hero-metrics hero-anim hero-anim-6">
       <div class="hero-metric">
         <div class="hero-metric-val">&lt; 24 hs</div>
         <div class="hero-metric-lbl">Primer cobro recurrente</div>
