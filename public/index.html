@@ -795,17 +795,20 @@
     /* ─── Scroll Reveal ─── */
     .sr {
       opacity: 0;
-      transform: translateY(36px);
-      transition: opacity .65s cubic-bezier(.22,1,.36,1),
-                  transform .65s cubic-bezier(.22,1,.36,1);
+      filter: blur(10px);
+      transform: translateY(24px) scale(1.02);
+      transition: opacity .7s cubic-bezier(.22,1,.36,1),
+                  filter .7s cubic-bezier(.22,1,.36,1),
+                  transform .7s cubic-bezier(.22,1,.36,1);
       transition-delay: var(--sr-delay, 0ms);
     }
     .sr.sr--in {
       opacity: 1;
+      filter: blur(0);
       transform: none;
     }
     @media (prefers-reduced-motion: reduce) {
-      .sr { opacity: 1; transform: none; }
+      .sr { opacity: 1; filter: none; transform: none; }
     }
   </style>
 </head>
