@@ -26,7 +26,15 @@ async function crearPreapproval({ plan, email, backUrl, mpToken }) {
     status:   'pending',
   };
   if (email) body.payer_email = email;
-  return preApproval.create({ body });
+  console.log('[DEBUG MP] crearPreapproval body:', JSON.stringify(body));
+  try {
+    const result = await preApproval.create({ body });
+    console.log('[DEBUG MP] Preapproval creado OK, id:', result.id);
+    return result;
+  } catch (err) {
+    console.error('[DEBUG MP] Error completo:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
+    throw err;
+  }
 }
 
 async function getPreapproval(preapprovalId, mpToken) {
