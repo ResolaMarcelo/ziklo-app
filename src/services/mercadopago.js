@@ -25,16 +25,17 @@ async function crearPreapproval({ plan, email, backUrl, mpToken }) {
     back_url: backUrl || `${process.env.APP_URL}/cliente/gracias`,
     status:   'pending',
   };
-  // payer_email omitido: MP rechaza si el email pertenece a cuenta de otro país
-  // El email se guarda en nuestra DB, no necesitamos mandarlo a MP
-  // if (email) body.payer_email = email;
-  console.log('[DEBUG MP] crearPreapproval body:', JSON.stringify(body));
+  if (email) body.payer_email = email;
   try {
-    const result = await preApproval.create({ body });
-    console.log('[DEBUG MP] Preapproval creado OK, id:', result.id);
-    return result;
+    return await preApproval.create({ body });
   } catch (err) {
-    console.error('[DEBUG MP] Error completo:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
+    // Si MP rechaza por país del payer, reintentar sin payer_email
+    const msg = err.message || '';
+    if (msg.includes('different countries') && body.payer_email) {
+      console.log('[MP] Reintentando sin payer_email (country mismatch)');
+      delete body.payer_email;
+      return await preApproval.create({ body });
+    }
     throw err;
   }
 }
