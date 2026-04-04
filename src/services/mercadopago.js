@@ -25,7 +25,9 @@ async function crearPreapproval({ plan, email, backUrl, mpToken }) {
     back_url: backUrl || `${process.env.APP_URL}/cliente/gracias`,
     status:   'pending',
   };
-  if (email) body.payer_email = email;
+  // payer_email omitido: MP rechaza si el email pertenece a cuenta de otro país
+  // El email se guarda en nuestra DB, no necesitamos mandarlo a MP
+  // if (email) body.payer_email = email;
   console.log('[DEBUG MP] crearPreapproval body:', JSON.stringify(body));
   try {
     const result = await preApproval.create({ body });
