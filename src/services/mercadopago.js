@@ -29,10 +29,24 @@ async function crearPreapproval({ plan, email, backUrl, mpToken }) {
   try {
     return await preApproval.create({ body });
   } catch (err) {
-    // Si MP rechaza por país del payer, reintentar sin payer_email
-    const msg = err.message || '';
-    if (msg.includes('different countries') && body.payer_email) {
-      console.log('[MP] Reintentando sin payer_email (country mismatch)');
+    // Si MP rechaza por problema con el payer_email (cuenta suspendida,
+    // otro país, cuenta inexistente, etc.), reintentar sin payer_email.
+    // El email se guarda en nuestra DB; MP no lo necesita para el preapproval.
+    const msg = (err.message || '').toLowerCase();
+    const status = err.status || 0;
+    const isPayerIssue = body.payer_email && (
+      msg.includes('different countries') ||
+      msg.includes('payer') ||
+      msg.includes('user') ||
+      msg.includes('account') ||
+      msg.includes('suspended') ||
+      msg.includes('blocked') ||
+      msg.includes('disabled') ||
+      status === 400 ||
+      status === 500
+    );
+    if (isPayerIssue) {
+      console.log(`[MP] Reintentando sin payer_email (${status}: ${err.message})`);
       delete body.payer_email;
       return await preApproval.create({ body });
     }
