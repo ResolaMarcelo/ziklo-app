@@ -163,6 +163,9 @@ router.post('/crear-con-envio', async (req, res) => {
     const shopDomain = getShopDomain(req);
     const mpToken    = getMpToken(req);
 
+    // DEBUG TEMPORAL — verificar tipo de token
+    console.log('[DEBUG MP TOKEN]', shopDomain, mpToken ? mpToken.substring(0, 20) + '...' : 'NULL');
+
     const plan = await prisma.plan.create({
       data: {
         nombre: descripcion || 'Suscripción mensual', descripcion: descripcion || null,
