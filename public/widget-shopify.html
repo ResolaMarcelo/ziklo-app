@@ -1,156 +1,209 @@
-<!-- Widget Suscripciones MP — Shrine Theme Pro -->
-<div id="subs-widget" style="margin:16px 0">
-  <style>
-    #subs-widget * { box-sizing: border-box; }
+<!-- Ziklo Widget — Banner v2.0.0 -->
+<!-- Pegar como Custom Liquid DEBAJO del bloque de producto / bundle -->
 
-    /* ── Tabs ── */
-    #subs-widget .subs-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border: 1px solid rgba(var(--color-foreground), .15);
-      border-radius: var(--buttons-radius, 4px);
+<div id="zk-banner" style="margin:0;display:none">
+  <style>
+    #zk-banner * { box-sizing: border-box; margin: 0; padding: 0; }
+    #zk-banner .zk-card {
+      background: var(--zk-bg, #fafafa);
+      border-radius: 10px;
+      border: 1.5px solid var(--zk-border, rgba(0,0,0,.15));
+      padding: 0;
+      position: relative;
       overflow: hidden;
-      margin-bottom: 12px;
-    }
-    #subs-widget .subs-tab {
-      padding: 11px 8px;
-      font-size: 13px;
-      font-weight: 600;
       font-family: inherit;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      color: inherit;
-      opacity: .45;
-      transition: background .2s, opacity .2s;
-      text-align: center;
-      line-height: 1.3;
+      color: var(--zk-text, #111111);
     }
-    #subs-widget .subs-tab:first-child {
-      border-right: 1px solid rgba(var(--color-foreground), .15);
+    #zk-banner .zk-accent-bar {
+      height: 3px;
+      background: var(--zk-accent, #222222);
     }
-    #subs-widget .subs-tab.active {
-      background: rgba(var(--color-foreground), .06);
-      opacity: 1;
+    #zk-banner .zk-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 0;
     }
-    #subs-widget .subs-tab-badge {
+    #zk-banner .zk-badge {
       display: inline-block;
       font-size: 10px;
       font-weight: 700;
-      background: rgb(var(--color-foreground));
-      color: rgb(var(--color-background));
-      padding: 1px 6px;
-      border-radius: 20px;
-      margin-left: 5px;
-      vertical-align: middle;
-      letter-spacing: .02em;
-    }
-
-    /* ── Panel suscripción ── */
-    #subs-widget .subs-panel {
-      display: none;
-    }
-    #subs-widget .subs-panel.visible {
-      display: block;
-    }
-
-    #subs-widget .subs-precio-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    #subs-widget .subs-precio-original {
-      font-size: 13px;
-      text-decoration: line-through;
-      opacity: .4;
-    }
-    #subs-widget .subs-precio-final {
-      font-size: 17px;
-      font-weight: 700;
-    }
-    #subs-widget .subs-ahorro-badge {
-      font-size: 11px;
-      font-weight: 700;
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--zk-accent, #222222);
+      color: var(--zk-bg, #fafafa);
       padding: 2px 8px;
       border-radius: 20px;
+      letter-spacing: .02em;
+      flex-shrink: 0;
     }
-    #subs-widget .subs-freq-title {
+    #zk-banner .zk-title {
+      font-weight: 700;
+      font-size: 13.5px;
+      line-height: 1.35;
+      flex: 1;
+    }
+
+    /* Precio */
+    #zk-banner .zk-price-section { padding: 10px 16px 0; }
+    #zk-banner .zk-prices {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    #zk-banner .zk-price-final {
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    #zk-banner .zk-price-period {
+      font-weight: 500;
+      font-size: 13px;
+      opacity: .5;
+    }
+    #zk-banner .zk-price-original {
+      font-size: 13px;
+      text-decoration: line-through;
+      opacity: .35;
+    }
+    #zk-banner .zk-ahorro-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    #zk-banner .zk-benefit-text {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 16px 0;
+    }
+
+    /* Frecuencia */
+    #zk-banner .zk-freq {
       font-size: 12px;
       font-weight: 600;
-      opacity: .7;
-      margin-bottom: 8px;
+      opacity: .6;
+      padding: 8px 16px 0;
     }
-    #subs-widget .subs-chips {
+
+    /* Chips */
+    #zk-banner .zk-chips {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 10px;
+      padding: 10px 16px 0;
     }
-    #subs-widget .subs-chip {
+    #zk-banner .zk-chip {
       display: inline-flex;
       align-items: center;
       gap: 4px;
       font-size: 11px;
       font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 20px;
-      border: 1px solid rgba(var(--color-foreground), .15);
-      opacity: .75;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--zk-border, rgba(0,0,0,.1));
+      opacity: .65;
+      line-height: 1;
     }
 
-    #subs-widget .subs-no-price {
-      font-size: 12px;
-      opacity: .45;
-      font-style: italic;
-      margin-bottom: 10px;
+    /* CTA */
+    #zk-banner .zk-cta-wrap { padding: 14px 16px 14px; }
+    #zk-banner .zk-cta {
+      display: block;
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--zk-accent, #222222);
+      color: var(--zk-bg, #fafafa);
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: opacity .15s, transform .1s;
+      font-family: inherit;
+      letter-spacing: .01em;
+      line-height: 1;
+      -webkit-appearance: none;
+    }
+    #zk-banner .zk-cta:hover { opacity: .9; }
+    #zk-banner .zk-cta:active { transform: scale(.985); }
+    #zk-banner .zk-cta:disabled { opacity: .45; cursor: wait; }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      #zk-banner .zk-header { padding: 12px 14px 0; }
+      #zk-banner .zk-title { font-size: 13px; }
+      #zk-banner .zk-price-section { padding: 8px 14px 0; }
+      #zk-banner .zk-price-final { font-size: 20px; }
+      #zk-banner .zk-chips { padding: 8px 14px 0; gap: 5px; }
+      #zk-banner .zk-chip { font-size: 10.5px; padding: 4px 8px; }
+      #zk-banner .zk-cta-wrap { padding: 12px 14px 12px; }
+      #zk-banner .zk-cta { padding: 14px 16px; border-radius: 10px; }
+      #zk-banner .zk-freq { padding: 6px 14px 0; }
+      #zk-banner .zk-benefit-text { padding: 8px 14px 0; }
     }
   </style>
 
-  <!-- Tabs -->
-  <div class="subs-tabs">
-    <button class="subs-tab active" id="subs-tab-unica" onclick="subsTab('unica')">
-      Compra única
-    </button>
-    <button class="subs-tab" id="subs-tab-sub" onclick="subsTab('sub')">
-      Suscribirse y ahorrar
-      <span class="subs-tab-badge" id="subs-badge-pct">10% OFF</span>
-    </button>
-  </div>
+  <div class="zk-card">
+    <div class="zk-accent-bar"></div>
 
-  <!-- Panel suscripción -->
-  <div class="subs-panel" id="subs-panel">
-    <div class="subs-precio-row">
-      <span class="subs-precio-original" id="subs-p-original"></span>
-      <span class="subs-precio-final" id="subs-p-final"></span>
-      <span class="subs-ahorro-badge" id="subs-ahorro-badge"></span>
+    <!-- Header: titulo (widgetTitle) + badge (benefitType) -->
+    <div class="zk-header">
+      <span class="zk-title" id="zk-title">Suscribirse y ahorrar</span>
+      <span class="zk-badge" id="zk-badge">10% OFF</span>
     </div>
-    <div class="subs-freq-title">Tu pedido llega solo, cada mes.</div>
-    <div class="subs-chips">
-      <span class="subs-chip">📦 Entrega mensual</span>
-      <span class="subs-chip">🔒 Precio fijo</span>
-      <span class="subs-chip">🚚 Envío incluido</span>
-      <span class="subs-chip">✕ Cancelá cuando quieras</span>
+
+    <!-- Precio (modo descuento) -->
+    <div class="zk-price-section" id="zk-price-section">
+      <div class="zk-prices">
+        <span class="zk-price-final" id="zk-price-final"></span>
+        <span class="zk-price-original" id="zk-price-original"></span>
+        <span class="zk-ahorro-badge" id="zk-ahorro-badge"></span>
+      </div>
+    </div>
+
+    <!-- Beneficio (modo regalo/envio gratis) -->
+    <div class="zk-benefit-text" id="zk-benefit-text" style="display:none"></div>
+
+    <!-- Frecuencia -->
+    <div class="zk-freq" id="zk-freq">Tu pedido llega solo, cada mes.</div>
+
+    <!-- Chips (widgetChips) -->
+    <div class="zk-chips" id="zk-chips"></div>
+
+    <!-- CTA (widgetBtnText) -->
+    <div class="zk-cta-wrap">
+      <button class="zk-cta" id="zk-cta">Confirmar suscripci&oacute;n mensual</button>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-  var APP = 'https://app.zikloapp.com';
+  'use strict';
 
-  // benefitType y benefitValue se cargan dinámicamente desde la API
+  var APP = 'https://app.zikloapp.com';
+  var VERSION = '2.0.0';
+
   var BENEFIT_TYPE  = 'discount';
   var BENEFIT_VALUE = '10';
   var DESCUENTO     = 0.10;
+  var precioActual  = 0;
 
-  var precioActual = 0;
-  var modoSub = false;
+  var CHIP_DEFAULTS = ['\u{1F4E6} Entrega mensual', '\u{1F4B2} Precio fijo', '\u{1F69A} Envio incluido', '× Cancelá cuando quieras'];
+  var BTN_DEFAULT   = 'Confirmar suscripción mensual';
+  var TITLE_DEFAULT = 'Suscribirse y ahorrar';
 
-  // ── Detectar precio del bundle ────────────────────────────────────────────
+  function hexToRgba(hex, opacity) {
+    var r = parseInt(hex.slice(1,3), 16);
+    var g = parseInt(hex.slice(3,5), 16);
+    var b = parseInt(hex.slice(5,7), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+  }
+
   var PRICE_SELECTORS = [
     '.price__sale .price-item--sale',
     '.price--main .price-item--sale',
@@ -165,12 +218,13 @@
     if (!limpio) return 0;
     var lastComma = limpio.lastIndexOf(',');
     var lastDot   = limpio.lastIndexOf('.');
-    if (lastComma > lastDot) {
-      limpio = limpio.replace(/\./g, '').replace(',', '.');
-    } else {
-      limpio = limpio.replace(/,/g, '');
-    }
+    if (lastComma > lastDot) { limpio = limpio.replace(/\./g, '').replace(',', '.'); }
+    else                     { limpio = limpio.replace(/,/g, ''); }
     return parseFloat(limpio) || 0;
+  }
+
+  function formatPrecio(num) {
+    return '$' + Math.round(num).toLocaleString('es-AR');
   }
 
   function leerPrecioDelCardSeleccionado() {
@@ -180,10 +234,7 @@
       for (var i = 0; i < 4; i++) {
         if (!node) break;
         var priceEl = node.querySelector('[class*="price"]:not([class*="compare"]):not([class*="was"]):not(s):not(del)');
-        if (priceEl) {
-          var p = parsePrecio(priceEl.textContent);
-          if (p > 100) return p;
-        }
+        if (priceEl) { var p = parsePrecio(priceEl.textContent); if (p > 100) return p; }
         node = node.parentElement;
       }
     }
@@ -195,123 +246,43 @@
     if (p > 0) return p;
     for (var i = 0; i < PRICE_SELECTORS.length; i++) {
       var el = document.querySelector(PRICE_SELECTORS[i]);
-      if (el && el.textContent.trim()) {
-        p = parsePrecio(el.textContent);
-        if (p > 100) return p;
-      }
+      if (el && el.textContent.trim()) { p = parsePrecio(el.textContent); if (p > 100) return p; }
     }
     return 0;
   }
 
-  function formatPrecio(num) {
-    return '$' + Math.round(num).toLocaleString('es-AR');
-  }
-
-  function actualizarPrecioSub(precio) {
-    if (!precio) return;
+  function actualizarBanner(precio) {
+    if (!precio || precio === precioActual) return;
+    precioActual = precio;
     if (BENEFIT_TYPE === 'discount') {
       var precioSub = Math.round(precio * (1 - DESCUENTO));
       var ahorro    = Math.round(precio * DESCUENTO);
       var pct       = Math.round(DESCUENTO * 100);
-      document.getElementById('subs-p-original').textContent  = formatPrecio(precio);
-      document.getElementById('subs-p-final').textContent     = formatPrecio(precioSub) + '/mes';
-      document.getElementById('subs-ahorro-badge').textContent = 'Ahorrás ' + formatPrecio(ahorro);
-      document.getElementById('subs-badge-pct').textContent   = pct + '% OFF';
+      document.getElementById('zk-price-final').innerHTML      = formatPrecio(precioSub) + '<span class="zk-price-period">/mes</span>';
+      document.getElementById('zk-price-original').textContent  = formatPrecio(precio);
+      document.getElementById('zk-ahorro-badge').textContent    = 'Ahorrás ' + formatPrecio(ahorro);
+      document.getElementById('zk-badge').textContent           = pct + '% OFF';
+      document.getElementById('zk-price-section').style.display = '';
+      document.getElementById('zk-benefit-text').style.display  = 'none';
     }
-    // Para otros tipos el precio no cambia — la UI ya muestra el beneficio
   }
 
-  function actualizarWidget(precio) {
-    if (precio === precioActual) return;
-    precioActual = precio;
-    if (modoSub) actualizarPrecioSub(precio);
-  }
-
-  function intentarActualizar() {
-    actualizarWidget(leerPrecio());
-  }
-
-  // ── Tabs ─────────────────────────────────────────────────────────────────
-  window.subsTab = function(tab) {
-    modoSub = (tab === 'sub');
-    document.getElementById('subs-tab-unica').classList.toggle('active', !modoSub);
-    document.getElementById('subs-tab-sub').classList.toggle('active', modoSub);
-    document.getElementById('subs-panel').classList.toggle('visible', modoSub);
-
-    if (modoSub) {
-      actualizarPrecioSub(precioActual);
-      setAtcModeSuscripcion();
-    } else {
-      setAtcModeNormal();
-    }
-  };
-
-  // ── ATC hijack ────────────────────────────────────────────────────────────
-  var ATC_SELECTORS = [
-    '.product-form__submit',
-    'button[name="add"]',
-    'form[action="/cart/add"] button[type="submit"]',
-    'form[action*="/cart/add"] button[type="submit"]',
-  ];
-
-  function getAtcBtn() {
-    for (var i = 0; i < ATC_SELECTORS.length; i++) {
-      var el = document.querySelector(ATC_SELECTORS[i]);
-      if (el) return el;
-    }
-    return null;
-  }
-
-  var atcOriginalHTML = null;
-
-  function setAtcModeSuscripcion() {
-    var btn = getAtcBtn();
-    if (!btn) return;
-    if (!atcOriginalHTML) atcOriginalHTML = btn.innerHTML;
-    btn.innerHTML = _widgetBtnText;
-  }
-
-  function setAtcModeNormal() {
-    var btn = getAtcBtn();
-    if (!btn || !atcOriginalHTML) return;
-    btn.innerHTML = atcOriginalHTML;
-  }
-
-  function hookProductForm() {
-    var form = document.querySelector('form[action*="/cart/add"], form[action="/cart/add"]');
-    if (!form) return;
-    form.addEventListener('submit', function(e) {
-      if (!modoSub) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      iniciarSub();
-    }, true);
-  }
+  function intentarActualizar() { actualizarBanner(leerPrecio()); }
 
   function iniciarSub() {
     if (!precioActual) { alert('Seleccioná una cantidad de productos primero'); return; }
-
-    var precioSub = BENEFIT_TYPE === 'discount'
-      ? Math.round(precioActual * (1 - DESCUENTO))
-      : precioActual;
-
-    var form = document.querySelector('form[action*="/cart/add"]');
+    var precioSub = BENEFIT_TYPE === 'discount' ? Math.round(precioActual * (1 - DESCUENTO)) : precioActual;
+    var form      = document.querySelector('form[action*="/cart/add"]');
     var variantId = form ? (form.querySelector('[name="id"]') || {}).value || '' : '';
     var qty       = form ? (form.querySelector('[name="quantity"]') || {}).value || '1' : '1';
-
     var checkedCard = document.querySelector('input[type="radio"]:checked');
     var desc = 'Suscripción mensual';
     if (checkedCard) {
       var card = checkedCard.closest('li, [class*="bundle"], [class*="option"]');
-      if (card) {
-        var nameEl = card.querySelector('[class*="title"], [class*="name"], strong, b');
-        if (nameEl && nameEl.textContent.trim()) desc = nameEl.textContent.trim();
-      }
+      if (card) { var nameEl = card.querySelector('[class*="title"], [class*="name"], strong, b'); if (nameEl && nameEl.textContent.trim()) desc = nameEl.textContent.trim(); }
     }
-
-    var btn = getAtcBtn();
-    if (btn) { btn.disabled = true; btn.innerHTML = 'Redirigiendo...'; }
-
+    var btn = document.getElementById('zk-cta');
+    if (btn) { btn.disabled = true; btn.textContent = 'Redirigiendo...'; }
     var url = APP + '/subs-checkout/?'
       + 'monto='     + encodeURIComponent(precioSub)
       + '&desc='     + encodeURIComponent(desc)
@@ -319,166 +290,134 @@
       + '&qty='      + encodeURIComponent(qty)
       + '&store='    + encodeURIComponent(document.title.replace(/ [-–|].*/, '').trim())
       + '&shop='     + encodeURIComponent(window.location.hostname);
-    if (window._planBeneficios) {
-      url += '&beneficios=' + encodeURIComponent(window._planBeneficios);
-    }
-
+    if (window._planBeneficios) url += '&beneficios=' + encodeURIComponent(window._planBeneficios);
     window.location.href = url;
   }
 
-  // ── Observar cambios de bundle ────────────────────────────────────────────
+  document.getElementById('zk-cta').addEventListener('click', iniciarSub);
+
   document.addEventListener('change', function(e) {
-    if (e.target.closest && e.target.closest('#subs-widget')) return;
+    if (e.target.closest && e.target.closest('#zk-banner')) return;
     if (e.target.type === 'radio' || e.target.tagName === 'SELECT') {
       setTimeout(intentarActualizar, 50);
       setTimeout(intentarActualizar, 250);
     }
   });
-
   document.addEventListener('click', function(e) {
-    if (e.target.closest && e.target.closest('#subs-widget')) return;
+    if (e.target.closest && e.target.closest('#zk-banner')) return;
     setTimeout(intentarActualizar, 100);
     setTimeout(intentarActualizar, 350);
   });
 
   function observarPrecio() {
-    var container = document.querySelector('.product, .product-info, #product-info, [class*="product__info"], main, #MainContent');
-    if (!container) return;
-    new MutationObserver(intentarActualizar).observe(container, {
+    var c = document.querySelector('.product, .product-info, #product-info, [class*="product__info"], main, #MainContent');
+    if (!c) return;
+    new MutationObserver(intentarActualizar).observe(c, {
       childList: true, subtree: true, characterData: true,
       attributes: true, attributeFilter: ['class', 'data-price', 'value'],
     });
   }
 
-  // ── Init ─────────────────────────────────────────────────────────────────
-  function init() {
-    var p = leerPrecio();
-    if (p > 0) actualizarWidget(p);
-    observarPrecio();
-    hookProductForm();
-  }
-
-  // ── Verificar si este producto tiene suscripciones activadas ─────────────
-  // Detecta shop (hostname) y productId (ShopifyAnalytics o meta global)
-  function getProductId() {
-    try {
-      // Shopify expone el product ID en ShopifyAnalytics en todos los temas
-      if (window.ShopifyAnalytics && window.ShopifyAnalytics.meta && window.ShopifyAnalytics.meta.product) {
-        return String(window.ShopifyAnalytics.meta.product.id);
-      }
-      // Fallback: meta global de algunos temas
-      if (window.meta && window.meta.product && window.meta.product.id) {
-        return String(window.meta.product.id);
-      }
-    } catch(e) {}
-    return null;
-  }
-
-  var shopDomain = window.location.hostname; // ej: mi-tienda.myshopify.com
-  var productId  = getProductId();
-
   function aplicarWidgetTitle(title) {
-    if (!title) return;
-    var tabBtn = document.getElementById('subs-tab-sub');
-    if (!tabBtn) return;
-    var badge = tabBtn.querySelector('.subs-tab-badge');
-    tabBtn.textContent = title + ' ';
-    if (badge) tabBtn.appendChild(badge);
+    document.getElementById('zk-title').textContent = title || TITLE_DEFAULT;
   }
 
-  var CHIP_DEFAULTS = ['📦 Entrega mensual', '🔒 Precio fijo', '🚚 Envío incluido', '✕ Cancelá cuando quieras'];
-
-  function aplicarWidgetChips(chipsJson) {
-    var chips;
-    try { chips = JSON.parse(chipsJson); } catch(e) { return; }
-    if (!Array.isArray(chips) || chips.length === 0) return;
-    var container = document.querySelector('#subs-widget .subs-chips');
-    if (!container) return;
-    container.innerHTML = '';
+  function aplicarWidgetChips(chipsJson, visible) {
+    var c = document.getElementById('zk-chips');
+    if (!c) return;
+    if (visible === false) { c.style.display = 'none'; return; }
+    c.style.display = '';
+    var chips = CHIP_DEFAULTS;
+    if (chipsJson) {
+      try { var parsed = JSON.parse(chipsJson); if (Array.isArray(parsed) && parsed.length > 0) chips = parsed; } catch(e) {}
+    }
+    c.innerHTML = '';
     for (var i = 0; i < 4; i++) {
       var text = (chips[i] && chips[i].trim()) ? chips[i].trim() : CHIP_DEFAULTS[i];
       var span = document.createElement('span');
-      span.className = 'subs-chip';
+      span.className = 'zk-chip';
       span.textContent = text;
-      container.appendChild(span);
+      c.appendChild(span);
     }
   }
 
-  var _widgetBtnText = 'Confirmar suscripción mensual';
-
   function aplicarWidgetBtnText(text) {
-    if (text && text.trim()) _widgetBtnText = text.trim();
+    document.getElementById('zk-cta').textContent = (text && text.trim()) ? text.trim() : BTN_DEFAULT;
   }
 
   function aplicarBeneficio(benefitType, benefitValue) {
     BENEFIT_TYPE  = benefitType  || 'discount';
     BENEFIT_VALUE = benefitValue || '10';
     DESCUENTO     = BENEFIT_TYPE === 'discount' ? (parseFloat(BENEFIT_VALUE) || 10) / 100 : 0;
-
-    var badgeEl = document.getElementById('subs-badge-pct');
-    var precioRow = document.getElementById('subs-panel') ? document.getElementById('subs-panel').querySelector('.subs-precio-row') : null;
-
+    var badgeEl = document.getElementById('zk-badge');
     if (BENEFIT_TYPE === 'discount') {
+      document.getElementById('zk-price-section').style.display = '';
+      document.getElementById('zk-benefit-text').style.display  = 'none';
       if (badgeEl) badgeEl.textContent = Math.round(DESCUENTO * 100) + '% OFF';
-      if (precioRow) precioRow.style.display = '';
     } else {
-      // Ocultar fila de precio y mostrar badge de beneficio
-      if (precioRow) precioRow.style.display = 'none';
-      var badgeLabels = { gift: 'REGALO', free_shipping: 'ENV\u00cdO GRATIS' };
+      document.getElementById('zk-price-section').style.display = 'none';
+      document.getElementById('zk-benefit-text').style.display  = '';
+      var labels = { gift: '\u{1F381} Con cada entrega recibís: ' + (BENEFIT_VALUE || ''), free_shipping: '\u{1F69A} Cada entrega incluye envío gratis' };
+      document.getElementById('zk-benefit-text').textContent = labels[BENEFIT_TYPE] || BENEFIT_VALUE;
+      var badgeLabels = { gift: 'REGALO', free_shipping: 'ENVÍO GRATIS' };
       if (badgeEl) badgeEl.textContent = badgeLabels[BENEFIT_TYPE] || BENEFIT_TYPE.toUpperCase();
-      // Mostrar chip de beneficio en el panel
-      var benefitChipId = 'subs-benefit-chip';
-      var existing = document.getElementById(benefitChipId);
-      if (!existing) {
-        var chip = document.createElement('div');
-        chip.id = benefitChipId;
-        chip.className = 'subs-precio-row';
-        chip.style.cssText = 'font-size:14px;font-weight:600;margin-bottom:10px';
-        var panel = document.getElementById('subs-panel');
-        if (panel && precioRow) panel.insertBefore(chip, precioRow.nextSibling);
-        existing = chip;
-      }
-      var chipTexts = {
-        gift:         '🎁 Con cada entrega recib\u00eds: ' + (BENEFIT_VALUE || ''),
-        free_shipping: '🚚 Cada entrega incluye env\u00edo gratis',
-      };
-      existing.textContent = chipTexts[BENEFIT_TYPE] || BENEFIT_VALUE;
     }
   }
 
+  function aplicarWidgetColors(accent, bg, text) {
+    var el = document.getElementById('zk-banner');
+    if (!el) return;
+    if (accent) {
+      el.style.setProperty('--zk-accent', accent);
+      el.style.setProperty('--zk-border', hexToRgba(accent, 0.3));
+      document.getElementById('zk-ahorro-badge').style.background = hexToRgba(accent, 0.12);
+      document.getElementById('zk-ahorro-badge').style.color = accent;
+    }
+    if (bg)   el.style.setProperty('--zk-bg', bg);
+    if (text) el.style.setProperty('--zk-text', text);
+  }
+
+  function init() {
+    document.getElementById('zk-banner').style.display = '';
+    var p = leerPrecio();
+    if (p > 0) actualizarBanner(p);
+    observarPrecio();
+  }
+
+  function hideBanner() {
+    var w = document.getElementById('zk-banner');
+    if (w) w.style.display = 'none';
+  }
+
+  function getProductId() {
+    try {
+      if (window.ShopifyAnalytics && window.ShopifyAnalytics.meta && window.ShopifyAnalytics.meta.product)
+        return String(window.ShopifyAnalytics.meta.product.id);
+      if (window.meta && window.meta.product && window.meta.product.id)
+        return String(window.meta.product.id);
+    } catch(e) {}
+    return null;
+  }
+
+  var shopDomain = window.location.hostname;
+  var productId  = getProductId();
+
   if (productId) {
-    // Consultar si el producto tiene suscripciones activadas + beneficio configurado
     fetch(APP + '/api/products/check?shop=' + encodeURIComponent(shopDomain) + '&productId=' + encodeURIComponent(productId))
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (!data.enabled) {
-          // Producto no habilitado: ocultar widget completamente
-          var w = document.getElementById('subs-widget');
-          if (w) w.style.display = 'none';
-        } else {
-          // Habilitado: configurar beneficio, titular, chips y botón
-          aplicarBeneficio(data.benefitType, data.benefitValue);
-          if (data.widgetTitle)   aplicarWidgetTitle(data.widgetTitle);
-          if (data.widgetChips)   aplicarWidgetChips(data.widgetChips);
-          if (data.widgetBtnText) aplicarWidgetBtnText(data.widgetBtnText);
-          if (data.beneficios)    window._planBeneficios = data.beneficios;
-          if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-          } else {
-            init();
-          }
-        }
+        if (!data.enabled) return;
+        aplicarBeneficio(data.benefitType, data.benefitValue);
+        aplicarWidgetTitle(data.widgetTitle);
+        aplicarWidgetChips(data.widgetChips, data.widgetChipsVisible);
+        aplicarWidgetBtnText(data.widgetBtnText);
+        if (data.widgetAccentColor || data.widgetBgColor || data.widgetTextColor)
+          aplicarWidgetColors(data.widgetAccentColor, data.widgetBgColor, data.widgetTextColor);
+        if (data.beneficios) window._planBeneficios = data.beneficios;
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
       })
-      .catch(function() {
-        // API caída o inalcanzable: ocultar widget silenciosamente
-        // No romper la página, no mostrar nada al cliente
-        var w = document.getElementById('subs-widget');
-        if (w) w.style.display = 'none';
-      });
-  } else {
-    // Sin productId detectable: ocultar — no podemos verificar si está habilitado
-    var w = document.getElementById('subs-widget');
-    if (w) w.style.display = 'none';
+      .catch(hideBanner);
   }
 })();
 </script>
