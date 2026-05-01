@@ -212,14 +212,15 @@
     if (!checked) return 0;
 
     // Subir desde el radio hasta encontrar el card de ESTA opción
-    // Clave: el card debe tener exactamente 1 radio (no ser wrapper de todas las opciones)
     var card = null;
     var node = checked.parentElement;
-    for (var i = 0; i < 6 && node; i++) {
+    for (var i = 0; i < 8 && node; i++) {
       if (node.tagName === 'FORM' || node.tagName === 'BODY') break;
-      // El card debe tener texto de precio Y solo 1 radio button
-      if (node.textContent && node.textContent.match(/\$[\d.,]/) &&
-          node.querySelectorAll('input[type="radio"]').length === 1) {
+      var nodeRadios = node.querySelectorAll('input[type="radio"]').length;
+      // Si encontramos un nodo con múltiples radios, ya pasamos el card → parar
+      if (nodeRadios > 1) break;
+      // El card tiene texto de precio Y solo 1 radio
+      if (nodeRadios === 1 && node.textContent && node.textContent.match(/\$[\d.,]/)) {
         card = node;
         break;
       }
@@ -227,12 +228,11 @@
     }
     if (!card) return 0;
 
-    // Método 1: buscar elementos con clase "price" (Shopify themes)
+    // Método 1: buscar elementos con clase "price" excluyendo compare/was
     var priceEl = card.querySelector('[class*="price"]:not([class*="compare"]):not([class*="was"]):not(s):not(del)');
     if (priceEl) { var p1 = parsePrecio(priceEl.textContent); if (p1 > 100) return p1; }
 
-    // Método 2: clonar card, quitar precios tachados, buscar el precio actual
-    // Funciona con bundles (Wigy, etc.) que no usan clases "price"
+    // Método 2: clonar card, quitar precios tachados, buscar precio MENOR
     var clone = card.cloneNode(true);
     var strikes = clone.querySelectorAll('s, del, strike, [class*="compare"], [class*="was"], [class*="original"]');
     for (var j = 0; j < strikes.length; j++) {
@@ -241,11 +241,13 @@
     var text = clone.textContent || '';
     var matches = text.match(/\$\s*[\d.,]+/g);
     if (matches) {
-      // Tomar el último precio (el precio actual suele estar después del label)
-      for (var k = matches.length - 1; k >= 0; k--) {
+      // Tomar el precio MÁS BAJO (el de venta, no el compare-at/tachado que quedó)
+      var best = 0;
+      for (var k = 0; k < matches.length; k++) {
         var p2 = parsePrecio(matches[k]);
-        if (p2 > 100) return p2;
+        if (p2 > 100 && (best === 0 || p2 < best)) best = p2;
       }
+      if (best > 0) return best;
     }
 
     return 0;
@@ -259,6 +261,8 @@
 
   function leerPrecio() {
     var p = leerPrecioDelCardSeleccionado();
+    var fromCard = p > 0;
+
     if (p <= 0) {
       for (var i = 0; i < PRICE_SELECTORS.length; i++) {
         var el = document.querySelector(PRICE_SELECTORS[i]);
@@ -266,7 +270,14 @@
       }
     }
     if (p <= 0) return 0;
-    return p * leerCantidad();
+
+    // Si el precio viene de un card (bundle), ya incluye la cantidad → no multiplicar.
+    // Si viene de selectores generales, multiplicar solo si NO hay bundle en la página.
+    if (!fromCard) {
+      var hasBundleCards = document.querySelectorAll('input[type="radio"]').length > 1;
+      if (!hasBundleCards) p = p * leerCantidad();
+    }
+    return p;
   }
 
   function actualizarBanner(precio) {
