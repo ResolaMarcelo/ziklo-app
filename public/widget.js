@@ -5,7 +5,29 @@
   var VERSION = '2.0.0';
 
   // ── Buscar el contenedor ────────────────────────────────────────────────────
-  var container = document.getElementById('ziklo-widget') || document.currentScript && document.currentScript.parentElement;
+  // 1. Div explícito colocado por el merchant (Shopify custom liquid / manual)
+  // 2. Script inline dentro del theme (Shopify)
+  // 3. Fallback: buscar el form de agregar al carrito (Tiendanube scripts API)
+  var container = document.getElementById('ziklo-widget');
+  if (!container && document.currentScript && document.currentScript.parentElement
+      && document.currentScript.parentElement.tagName !== 'HEAD'
+      && document.currentScript.parentElement.tagName !== 'BODY') {
+    container = document.currentScript.parentElement;
+  }
+  if (!container) {
+    // Tiendanube / scripts inyectados: buscar el form del producto
+    var _selectors = [
+      'form[action*="/cart"]',
+      'form[action*="/carrito"]',
+      '.js-product-detail',
+      '.product-detail',
+      'form.product-form',
+    ];
+    for (var _i = 0; _i < _selectors.length; _i++) {
+      var _el = document.querySelector(_selectors[_i]);
+      if (_el) { container = _el; break; }
+    }
+  }
   if (!container) return;
 
   // ── Defaults ────────────────────────────────────────────────────────────────
@@ -94,12 +116,20 @@
 
   // ── Detectar precio ─────────────────────────────────────────────────────────
   var PRICE_SELECTORS = [
+    // Shopify
     '.price__sale .price-item--sale',
     '.price--main .price-item--sale',
     '.price-item--sale',
     '.price__regular .price-item--regular',
     '[data-product-price]',
     '.price-item--regular',
+    // Tiendanube
+    '#price_display',
+    '.js-price-display',
+    '.product-price',
+    '[data-price]',
+    '.price-container .price',
+    '.js-product-price',
   ];
 
   function parsePrecio(text) {
@@ -160,8 +190,10 @@
   function iniciarSub() {
     if (!precioActual) { alert('Seleccioná una cantidad de productos primero'); return; }
     var precioSub = BENEFIT_TYPE === 'discount' ? Math.round(precioActual * (1 - DESCUENTO)) : precioActual;
-    var form      = document.querySelector('form[action*="/cart/add"]');
-    var variantId = form ? (form.querySelector('[name="id"]') || {}).value || '' : '';
+    var form      = document.querySelector('form[action*="/cart/add"]')
+                 || document.querySelector('form[action*="/cart"]')
+                 || document.querySelector('form[action*="/carrito"]');
+    var variantId = form ? (form.querySelector('[name="id"]') || form.querySelector('[name="variation"]') || {}).value || '' : '';
     var qty       = form ? (form.querySelector('[name="quantity"]') || {}).value || '1' : '1';
     var checkedCard = document.querySelector('input[type="radio"]:checked');
     var desc = 'Suscripción mensual';
