@@ -42,6 +42,7 @@
   }
 
   var container = buscarContainer();
+  console.log('[ziklo] container:', container ? container.tagName + '.' + container.className : 'NULL');
   if (!container) return;
 
   // ── Defaults ────────────────────────────────────────────────────────────────
@@ -133,6 +134,7 @@
   function insertarBanner() {
     // Si ya está en el DOM, no hacer nada
     if (banner.parentNode && document.body.contains(banner)) return true;
+    console.log('[ziklo] insertarBanner: removido=' + _bannerRemovido);
 
     // Si fue removido por otra app, buscar un punto SEGURO (más alto en el DOM)
     if (_bannerRemovido >= 1) {
@@ -147,6 +149,7 @@
         var _target = document.querySelector(_safeSelectors[s]);
         // CLAVE: verificar que el target esté VIVO en el DOM real
         if (_target && document.body.contains(_target) && _target.parentNode) {
+          console.log('[ziklo] re-insert SAFE después de:', _safeSelectors[s]);
           _target.parentNode.insertBefore(banner, _target.nextSibling);
           return true;
         }
@@ -383,6 +386,7 @@
 
   // ── Init ────────────────────────────────────────────────────────────────────
   function init() {
+    console.log('[ziklo] init() — mostrando banner');
     banner.style.display = '';
     insertarBanner(); // asegurar que esté en el DOM (otra app pudo removerlo)
     var p = leerPrecio();
@@ -408,6 +412,7 @@
       if (banner.style.display === 'none') return; // widget no activo aún
       if (!document.body.contains(banner)) {
         _bannerRemovido++;
+        console.log('[ziklo] heartbeat: banner removido! (#' + _bannerRemovido + ')');
         insertarBanner();
       }
     }, 1500);
@@ -453,8 +458,10 @@
     if (!storeId && window.LS && window.LS.store && window.LS.store.id) storeId = String(window.LS.store.id);
   }
 
+  console.log('[ziklo] platform:', platform, 'storeId:', storeId, 'productId:', productId, 'shop:', shopDomain);
+
   // Si no hay productId en página que no es de producto, salir silenciosamente
-  if (!productId) { hideBanner(); return; }
+  if (!productId) { console.log('[ziklo] EXIT: no productId'); hideBanner(); return; }
 
   // Construir URL de check según plataforma
   var checkUrl = APP + '/api/products/check?productId=' + encodeURIComponent(productId);
@@ -464,10 +471,12 @@
     checkUrl += '&shop=' + encodeURIComponent(shopDomain);
   }
 
+  console.log('[ziklo] checkUrl:', checkUrl);
   fetch(checkUrl)
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if (!data.enabled) { hideBanner(); return; }
+      console.log('[ziklo] check response:', JSON.stringify(data));
+      if (!data.enabled) { console.log('[ziklo] EXIT: product not enabled'); hideBanner(); return; }
       aplicarBeneficio(data.benefitType, data.benefitValue);
       aplicarWidgetTitle(data.widgetTitle);
       aplicarWidgetChips(data.widgetChips, data.widgetChipsVisible);
