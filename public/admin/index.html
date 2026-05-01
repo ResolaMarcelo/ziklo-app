@@ -4410,14 +4410,16 @@ async function confirmarDesconectarShopify() {
 // ===================== TIENDANUBE WIDGET =====================
 async function verificarWidgetTN() {
   try {
-    showToast('Verificando...');
+    showToast('Verificando e instalando widget...');
     const r = await fetch('/admin/api/check-widget', { method: 'POST' });
     const d = await r.json();
     if (!r.ok) { showToast(d.error || 'Error al verificar', 'error'); return; }
-    if (d.installed) {
+    if (d.installed && d.alreadyExisted) {
+      showToast('Widget ya está instalado en tu tienda.', 'success');
+    } else if (d.installed) {
       showToast('Widget instalado correctamente en tu tienda.', 'success');
     } else {
-      showToast('Widget no detectado. Verificá la configuración del script en el Partners Portal de Tiendanube.', 'error');
+      showToast('No se pudo instalar el widget. Contactá a soporte.', 'error');
     }
   } catch (_) {
     showToast('Error al verificar', 'error');

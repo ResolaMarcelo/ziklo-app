@@ -139,8 +139,14 @@ router.get('/callback', async (req, res) => {
 
     console.log(`✅ Tiendanube autenticado: ${domain} (store ${storeId})`);
 
-    // 7. Widget script: se instala automáticamente via Partners Portal (auto-installed)
-    // No se inyecta via API — Tiendanube lo carga con ?store={storeId}
+    // 7. Instalar widget script via API (no depender del Partners Portal)
+    try {
+      const widgetResult = await tiendanube.installWidgetScript(storeId, accessToken);
+      console.log(`✅ Widget script: ${widgetResult.alreadyExisted ? 'ya existía' : 'instalado'} (ID: ${widgetResult.scriptId})`);
+    } catch (widgetErr) {
+      console.warn('⚠️ No se pudo instalar widget script:', widgetErr.message);
+      // No bloquear el flujo — el merchant puede instalarlo después
+    }
 
     // 8. Redirigir al panel admin
     res.redirect('/admin/');

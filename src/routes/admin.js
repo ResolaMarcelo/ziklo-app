@@ -138,7 +138,7 @@ router.post('/api/disconnect-shop', async (req, res) => {
   }
 });
 
-// POST /admin/api/check-widget — verificar si el widget está instalado en Tiendanube
+// POST /admin/api/check-widget — verificar e instalar widget en Tiendanube
 router.post('/api/check-widget', async (req, res) => {
   try {
     const shop = req.shop;
@@ -150,7 +150,8 @@ router.post('/api/check-widget', async (req, res) => {
     if (!storeId || !token) {
       return res.status(400).json({ error: 'Falta storeId o token. Reconectá tu tienda.' });
     }
-    const result = await tiendanube.checkWidgetScript(storeId, token);
+    // Verificar y si no existe, instalar automáticamente
+    const result = await tiendanube.installWidgetScript(storeId, token);
     return res.json({ ok: true, ...result });
   } catch (err) {
     console.error('check-widget error:', err.message);

@@ -136,10 +136,10 @@ async function findOrCreateCustomer(storeId, token, email, name) {
 }
 
 // ── Scripts ────────────────────────────────────────────────────────────────
-// El widget script se configura como "auto-installed" en el Partners Portal
-// de Tiendanube (partners.tiendanube.com). No se inyecta via API.
-// Tiendanube lo carga automáticamente al instalar la app y pasa
-// el parámetro ?store={storeId} en la URL del script.
+
+const WIDGET_URL = process.env.APP_URL
+  ? `${process.env.APP_URL}/widget.js`
+  : 'https://app.zikloapp.com/widget.js';
 
 async function checkWidgetScript(storeId, token) {
   try {
@@ -152,6 +152,23 @@ async function checkWidgetScript(storeId, token) {
   }
 }
 
+async function installWidgetScript(storeId, token) {
+  // Primero verificar si ya existe
+  const check = await checkWidgetScript(storeId, token);
+  if (check.installed) return { installed: true, scriptId: check.scriptId, alreadyExisted: true };
+
+  // Instalar via API
+  const scriptSrc = `${WIDGET_URL}?store=${storeId}&platform=tiendanube`;
+  const script = await apiRequest(storeId, token, 'POST', '/scripts', {
+    src: scriptSrc,
+    event: 'onload',
+    where: 'store',
+  });
+
+  console.log(`✅ Widget script instalado en Tiendanube store ${storeId}: script ID ${script.id}`);
+  return { installed: true, scriptId: String(script.id), alreadyExisted: false };
+}
+
 module.exports = {
   apiRequest,
   getStoreInfo,
@@ -159,4 +176,5 @@ module.exports = {
   createOrder,
   findOrCreateCustomer,
   checkWidgetScript,
+  installWidgetScript,
 };
