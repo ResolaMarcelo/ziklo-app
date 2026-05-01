@@ -211,17 +211,19 @@
     var checked = document.querySelector('input[type="radio"]:checked');
     if (!checked) return 0;
 
-    // Encontrar el contenedor de la opción seleccionada (label, li, div)
-    var card = checked.closest
-      ? (checked.closest('label, li, [class*="option"], [class*="bundle"], [class*="wigy"]') || checked.parentElement)
-      : checked.parentElement;
-    // Si el card es muy chico, subir hasta encontrar uno que tenga texto de precio
-    if (card === checked || card === checked.parentElement) {
-      var _n = checked.parentElement;
-      for (var i = 0; i < 5 && _n; i++) {
-        if (_n.textContent && _n.textContent.match(/\$[\d.,]/)) { card = _n; break; }
-        _n = _n.parentElement;
+    // Subir desde el radio hasta encontrar el card de ESTA opción
+    // Clave: el card debe tener exactamente 1 radio (no ser wrapper de todas las opciones)
+    var card = null;
+    var node = checked.parentElement;
+    for (var i = 0; i < 6 && node; i++) {
+      if (node.tagName === 'FORM' || node.tagName === 'BODY') break;
+      // El card debe tener texto de precio Y solo 1 radio button
+      if (node.textContent && node.textContent.match(/\$[\d.,]/) &&
+          node.querySelectorAll('input[type="radio"]').length === 1) {
+        card = node;
+        break;
       }
+      node = node.parentElement;
     }
     if (!card) return 0;
 
@@ -232,7 +234,7 @@
     // Método 2: clonar card, quitar precios tachados, buscar el precio actual
     // Funciona con bundles (Wigy, etc.) que no usan clases "price"
     var clone = card.cloneNode(true);
-    var strikes = clone.querySelectorAll('s, del, strike');
+    var strikes = clone.querySelectorAll('s, del, strike, [class*="compare"], [class*="was"], [class*="original"]');
     for (var j = 0; j < strikes.length; j++) {
       if (strikes[j].parentNode) strikes[j].parentNode.removeChild(strikes[j]);
     }
