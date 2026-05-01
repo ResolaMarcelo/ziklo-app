@@ -308,13 +308,48 @@
                  || document.querySelector('form[action*="/cart"]')
                  || document.querySelector('form[action*="/carrito"]');
     var variantId = form ? (form.querySelector('[name="id"]') || form.querySelector('[name="variation"]') || {}).value || '' : '';
-    var qty       = form ? (form.querySelector('[name="quantity"]') || {}).value || '1' : '1';
-    var checkedCard = document.querySelector('input[type="radio"]:checked');
+
+    // ── Extraer qty y desc del bundle seleccionado ──
+    var qty = '1';
     var desc = 'Suscripción mensual';
+    var checkedCard = document.querySelector('input[type="radio"]:checked');
+
     if (checkedCard) {
-      var card = checkedCard.closest('li, [class*="bundle"], [class*="option"]');
-      if (card) { var nameEl = card.querySelector('[class*="title"], [class*="name"], strong, b'); if (nameEl && nameEl.textContent.trim()) desc = nameEl.textContent.trim(); }
+      // Buscar el card de esta opción (subir hasta encontrar 1 solo radio)
+      var card = null;
+      var _node = checkedCard.parentElement;
+      for (var _i = 0; _i < 8 && _node; _i++) {
+        if (_node.tagName === 'FORM' || _node.tagName === 'BODY') break;
+        if (_node.querySelectorAll('input[type="radio"]').length > 1) break;
+        card = _node; // guardar el más alto con 1 radio
+        _node = _node.parentElement;
+      }
+
+      if (card) {
+        var fullText = card.textContent || '';
+
+        // Descripción: texto del card limpio (sin precios)
+        var cleanDesc = fullText.replace(/\$\s*[\d.,]+/g, '').replace(/\s+/g, ' ').trim();
+        if (cleanDesc.length > 3) desc = cleanDesc;
+
+        // Cantidad: parsear "Lleva 3", "Comprá 2 y llevá 1 GRATIS", etc.
+        var qtyMatch = fullText.match(/(?:lleva|compr[aá])\s*(\d+)/i);
+        if (qtyMatch) {
+          var baseQty = parseInt(qtyMatch[1], 10);
+          // Items gratis: "llevá 2 GRATIS", "2 GRATIS", "get 1 free"
+          var freeMatch = fullText.match(/(\d+)\s*(?:gratis|free|regalo)/i);
+          var freeQty = freeMatch ? parseInt(freeMatch[1], 10) : 0;
+          qty = String(baseQty + freeQty);
+        }
+      }
     }
+
+    // Fallback qty: leer del form
+    if (qty === '1' && form) {
+      var formQty = (form.querySelector('[name="quantity"]') || {}).value;
+      if (formQty && parseInt(formQty, 10) > 0) qty = formQty;
+    }
+
     var btn = document.getElementById('zk-cta');
     if (btn) { btn.disabled = true; btn.textContent = 'Redirigiendo...'; }
     var url = APP + '/subs-checkout/?'
