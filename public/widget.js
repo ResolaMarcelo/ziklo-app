@@ -360,8 +360,230 @@
       + '&store='    + encodeURIComponent(document.title.replace(/ [-–|].*/, '').trim())
       + '&shop='     + encodeURIComponent(window.location.hostname);
     if (window._planBeneficios) url += '&beneficios=' + encodeURIComponent(window._planBeneficios);
-    window.location.href = url;
+
+    // ── Conversion tracking: fire events BEFORE redirect ──────────────────────
+    var _productName = document.title.replace(/ [-–|].*/, '').trim();
+    var _trackValue  = precioSub; // ya está en la unidad de moneda (pesos, etc.)
+    var _currency    = 'ARS';
+    var _tracked     = false;
+
+    // Detectar moneda por meta tags del producto
+    try {
+      var _currMeta = document.querySelector('meta[property="product:price:currency"], meta[itemprop="priceCurrency"]');
+      if (_currMeta && _currMeta.content) _currency = _currMeta.content.toUpperCase();
+    } catch(e) {}
+
+    // GA4 (gtag.js)
+    if (typeof window.gtag === 'function') {
+      try {
+        window.gtag('event', 'begin_checkout', {
+          currency: _currency,
+          value: _trackValue,
+          items: [{
+            item_name: _productName,
+            item_variant: desc,
+            quantity: parseInt(qty, 10) || 1,
+            price: _trackValue
+          }],
+          event_category: 'ziklo_subscription',
+          subscription_type: 'recurring'
+        });
+        _tracked = true;
+        console.log('[ziklo] GA4 begin_checkout fired:', _trackValue, _currency);
+      } catch(e) { console.warn('[ziklo] GA4 error:', e); }
+    }
+
+    // Meta Pixel (fbq)
+    if (typeof window.fbq === 'function') {
+      try {
+        window.fbq('track', 'InitiateCheckout', {
+          value: _trackValue,
+          currency: _currency,
+          content_name: _productName,
+          content_type: 'product',
+          contents: [{ id: variantId || 'subscription', quantity: parseInt(qty, 10) || 1 }],
+          num_items: parseInt(qty, 10) || 1
+        });
+        _tracked = true;
+        console.log('[ziklo] Meta Pixel InitiateCheckout fired:', _trackValue, _currency);
+      } catch(e) { console.warn('[ziklo] Meta Pixel error:', e); }
+    }
+
+    // GTM dataLayer (para merchants que usan Google Tag Manager)
+    if (window.dataLayer && Array.isArray(window.dataLayer)) {
+      try {
+        window.dataLayer.push({
+          event: 'ziklo_begin_checkout',
+          ecommerce: {
+            currency: _currency,
+            value: _trackValue,
+            items: [{
+              item_name: _productName,
+              item_variant: desc,
+              quantity: parseInt(qty, 10) || 1,
+              price: _trackValue,
+              item_category: 'subscription'
+            }]
+          }
+        });
+        _tracked = true;
+        console.log('[ziklo] dataLayer ziklo_begin_checkout pushed');
+      } catch(e) { console.warn('[ziklo] dataLayer error:', e); }
+    }
+
+    // TikTok Pixel (ttq)
+    if (typeof window.ttq !== 'undefined' && window.ttq && typeof window.ttq.track === 'function') {
+      try {
+        window.ttq.track('InitiateCheckout', {
+          value: _trackValue,
+          currency: _currency,
+          contents: [{ content_id: variantId || 'subscription', content_type: 'product', quantity: parseInt(qty, 10) || 1 }]
+        });
+        _tracked = true;
+        console.log('[ziklo] TikTok Pixel InitiateCheckout fired');
+      } catch(e) { console.warn('[ziklo] TikTok Pixel error:', e); }
+    }
+
+    // Dar tiempo a los pixels para enviar y luego abrir checkout embebido
+    var _checkoutUrl = url + '&embedded=1';
+    if (_tracked) {
+      setTimeout(function() { abrirCheckoutModal(_checkoutUrl, precioSub, _productName, variantId, qty, _currency); }, 300);
+    } else {
+      abrirCheckoutModal(_checkoutUrl, precioSub, _productName, variantId, qty, _currency);
+    }
   }
+
+  // ── Checkout embebido (modal + iframe) ──────────────────────────────────────
+  var _modalOverlay = null;
+  var _modalData    = {};
+
+  function abrirCheckoutModal(checkoutUrl, monto, productName, vid, cantidad, moneda) {
+    if (_modalOverlay) return; // ya hay uno abierto
+
+    _modalData = { monto: monto, productName: productName, variantId: vid, qty: cantidad, currency: moneda };
+
+    // Overlay oscuro
+    _modalOverlay = document.createElement('div');
+    _modalOverlay.id = 'zk-checkout-overlay';
+    _modalOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:999999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease';
+
+    // Contenedor del modal
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:relative;width:94%;max-width:520px;height:90vh;max-height:700px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);display:flex;flex-direction:column';
+
+    // Barra superior con botón cerrar
+    var topBar = document.createElement('div');
+    topBar.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee;flex-shrink:0;background:#fff';
+    topBar.innerHTML = '<span style="font-size:13px;font-weight:600;color:#666">Checkout de suscripción</span>';
+
+    var closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = 'background:none;border:none;font-size:24px;cursor:pointer;color:#999;padding:0 4px;line-height:1';
+    closeBtn.onclick = cerrarCheckoutModal;
+    topBar.appendChild(closeBtn);
+    modal.appendChild(topBar);
+
+    // Iframe con el checkout
+    var iframe = document.createElement('iframe');
+    iframe.id = 'zk-checkout-iframe';
+    iframe.src = checkoutUrl;
+    iframe.style.cssText = 'flex:1;width:100%;border:none;background:#f5f5f5';
+    iframe.setAttribute('allow', 'payment');
+    modal.appendChild(iframe);
+
+    _modalOverlay.appendChild(modal);
+    document.body.appendChild(_modalOverlay);
+
+    // Fade in
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { _modalOverlay.style.opacity = '1'; });
+    });
+
+    // Cerrar con click en overlay (fuera del modal)
+    _modalOverlay.addEventListener('click', function(e) {
+      if (e.target === _modalOverlay) cerrarCheckoutModal();
+    });
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', _onEscapeModal);
+
+    // Bloquear scroll del body
+    document.body.style.overflow = 'hidden';
+
+    console.log('[ziklo] Checkout modal abierto');
+  }
+
+  function _onEscapeModal(e) {
+    if (e.key === 'Escape') cerrarCheckoutModal();
+  }
+
+  function cerrarCheckoutModal() {
+    if (!_modalOverlay) return;
+    _modalOverlay.style.opacity = '0';
+    setTimeout(function() {
+      if (_modalOverlay && _modalOverlay.parentNode) _modalOverlay.parentNode.removeChild(_modalOverlay);
+      _modalOverlay = null;
+    }, 250);
+    document.removeEventListener('keydown', _onEscapeModal);
+    document.body.style.overflow = '';
+
+    // Restaurar botón CTA
+    var btn = document.getElementById('zk-cta');
+    if (btn) { btn.disabled = false; btn.textContent = BTN_DEFAULT; }
+
+    console.log('[ziklo] Checkout modal cerrado');
+  }
+
+  // Escuchar mensajes del iframe (checkout embebido)
+  window.addEventListener('message', function(e) {
+    // Solo aceptar mensajes de nuestro dominio
+    if (!e.data || !e.data.type || e.data.type.indexOf('ziklo_') !== 0) return;
+
+    if (e.data.type === 'ziklo_mp_redirect') {
+      // El checkout devolvió la URL de Mercado Pago
+      // Disparar evento de "payment info submitted" antes de redirigir a MP
+      if (typeof window.gtag === 'function') {
+        try {
+          window.gtag('event', 'add_payment_info', {
+            currency: _modalData.currency || 'ARS',
+            value: _modalData.monto || 0,
+            payment_type: 'mercadopago_subscription',
+            items: [{ item_name: _modalData.productName || '', quantity: parseInt(_modalData.qty, 10) || 1 }]
+          });
+        } catch(ex) {}
+      }
+      if (typeof window.fbq === 'function') {
+        try { window.fbq('track', 'AddPaymentInfo', { value: _modalData.monto || 0, currency: _modalData.currency || 'ARS' }); } catch(ex) {}
+      }
+      if (window.dataLayer && Array.isArray(window.dataLayer)) {
+        try {
+          window.dataLayer.push({
+            event: 'ziklo_payment_redirect',
+            ecommerce: { currency: _modalData.currency || 'ARS', value: _modalData.monto || 0 }
+          });
+        } catch(ex) {}
+      }
+
+      console.log('[ziklo] Redirigiendo a Mercado Pago desde modal');
+      // Cerrar modal y redirigir la página principal a MP
+      if (_modalOverlay && _modalOverlay.parentNode) _modalOverlay.parentNode.removeChild(_modalOverlay);
+      _modalOverlay = null;
+      document.body.style.overflow = '';
+      window.location.href = e.data.url;
+    }
+
+    if (e.data.type === 'ziklo_checkout_close') {
+      cerrarCheckoutModal();
+    }
+
+    if (e.data.type === 'ziklo_checkout_resize') {
+      // El iframe pide ajustar altura
+      var iframe = document.getElementById('zk-checkout-iframe');
+      if (iframe && e.data.height) {
+        iframe.style.height = Math.min(e.data.height, window.innerHeight * 0.85) + 'px';
+      }
+    }
+  });
 
   document.getElementById('zk-cta').addEventListener('click', iniciarSub);
 
