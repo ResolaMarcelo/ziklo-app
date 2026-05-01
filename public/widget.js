@@ -195,15 +195,43 @@
 
   function leerPrecioDelCardSeleccionado() {
     var checked = document.querySelector('input[type="radio"]:checked');
-    if (checked) {
-      var node = checked.parentElement;
-      for (var i = 0; i < 4; i++) {
-        if (!node) break;
-        var priceEl = node.querySelector('[class*="price"]:not([class*="compare"]):not([class*="was"]):not(s):not(del)');
-        if (priceEl) { var p = parsePrecio(priceEl.textContent); if (p > 100) return p; }
-        node = node.parentElement;
+    if (!checked) return 0;
+
+    // Encontrar el contenedor de la opción seleccionada (label, li, div)
+    var card = checked.closest
+      ? (checked.closest('label, li, [class*="option"], [class*="bundle"], [class*="wigy"]') || checked.parentElement)
+      : checked.parentElement;
+    // Si el card es muy chico, subir hasta encontrar uno que tenga texto de precio
+    if (card === checked || card === checked.parentElement) {
+      var _n = checked.parentElement;
+      for (var i = 0; i < 5 && _n; i++) {
+        if (_n.textContent && _n.textContent.match(/\$[\d.,]/)) { card = _n; break; }
+        _n = _n.parentElement;
       }
     }
+    if (!card) return 0;
+
+    // Método 1: buscar elementos con clase "price" (Shopify themes)
+    var priceEl = card.querySelector('[class*="price"]:not([class*="compare"]):not([class*="was"]):not(s):not(del)');
+    if (priceEl) { var p1 = parsePrecio(priceEl.textContent); if (p1 > 100) return p1; }
+
+    // Método 2: clonar card, quitar precios tachados, buscar el precio actual
+    // Funciona con bundles (Wigy, etc.) que no usan clases "price"
+    var clone = card.cloneNode(true);
+    var strikes = clone.querySelectorAll('s, del, strike');
+    for (var j = 0; j < strikes.length; j++) {
+      if (strikes[j].parentNode) strikes[j].parentNode.removeChild(strikes[j]);
+    }
+    var text = clone.textContent || '';
+    var matches = text.match(/\$\s*[\d.,]+/g);
+    if (matches) {
+      // Tomar el último precio (el precio actual suele estar después del label)
+      for (var k = matches.length - 1; k >= 0; k--) {
+        var p2 = parsePrecio(matches[k]);
+        if (p2 > 100) return p2;
+      }
+    }
+
     return 0;
   }
 
