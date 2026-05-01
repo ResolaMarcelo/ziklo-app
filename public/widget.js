@@ -360,6 +360,8 @@
       + '&store='    + encodeURIComponent(document.title.replace(/ [-–|].*/, '').trim())
       + '&shop='     + encodeURIComponent(window.location.hostname);
     if (window._planBeneficios) url += '&beneficios=' + encodeURIComponent(window._planBeneficios);
+    if (_merchantGA4) url += '&ga4id=' + encodeURIComponent(_merchantGA4);
+    if (_merchantFBP) url += '&fbpid=' + encodeURIComponent(_merchantFBP);
 
     // ── Conversion tracking: fire events BEFORE redirect ──────────────────────
     var _productName = document.title.replace(/ [-–|].*/, '').trim();
@@ -454,6 +456,78 @@
 
   document.getElementById('zk-cta').addEventListener('click', iniciarSub);
 
+  // ── Detectar pixel IDs del merchant (para pasar al checkout) ────────────────
+  var _merchantGA4  = '';
+  var _merchantFBP  = '';
+
+  // GA4: buscar script de gtag.js con measurement ID
+  try {
+    var _ga4Script = document.querySelector('script[src*="gtag/js?id="]');
+    if (_ga4Script) {
+      var _ga4Match = _ga4Script.src.match(/id=(G-[A-Z0-9]+|UA-[0-9]+-[0-9]+|AW-[0-9]+)/);
+      if (_ga4Match) _merchantGA4 = _ga4Match[1];
+    }
+  } catch(e) {}
+
+  // Meta Pixel: buscar pixel ID en fbq calls o en el SDK state
+  try {
+    if (window.fbq) {
+      // Método 1: fbq.getState() (versiones modernas)
+      if (window.fbq.getState) {
+        var _fbState = window.fbq.getState();
+        if (_fbState && _fbState.pixels && _fbState.pixels.length) _merchantFBP = String(_fbState.pixels[0].id);
+      }
+      // Método 2: buscar en scripts inline
+      if (!_merchantFBP) {
+        var _scripts = document.querySelectorAll('script:not([src])');
+        for (var _si = 0; _si < _scripts.length; _si++) {
+          var _fbMatch = _scripts[_si].textContent.match(/fbq\s*\(\s*['"]init['"]\s*,\s*['"](\d+)['"]/);
+          if (_fbMatch) { _merchantFBP = _fbMatch[1]; break; }
+        }
+      }
+    }
+  } catch(e) {}
+
+  // ── Tracking: add_to_cart (cuando selecciona opción de bundle/cantidad) ──────
+  var _addToCartFired = false;
+
+  function fireAddToCart(precio) {
+    if (_addToCartFired) return; // solo una vez por sesión de página
+    if (!precio || precio <= 0) return;
+    _addToCartFired = true;
+
+    var _productName = document.title.replace(/ [-–|].*/, '').trim();
+    var _currency = 'ARS';
+    try {
+      var _cm = document.querySelector('meta[property="product:price:currency"], meta[itemprop="priceCurrency"]');
+      if (_cm && _cm.content) _currency = _cm.content.toUpperCase();
+    } catch(e) {}
+
+    if (typeof window.gtag === 'function') {
+      try {
+        window.gtag('event', 'add_to_cart', {
+          currency: _currency, value: precio,
+          items: [{ item_name: _productName, price: precio, quantity: 1, item_category: 'subscription' }]
+        });
+        console.log('[ziklo] GA4 add_to_cart fired:', precio, _currency);
+      } catch(e) {}
+    }
+    if (typeof window.fbq === 'function') {
+      try {
+        window.fbq('track', 'AddToCart', { value: precio, currency: _currency, content_name: _productName, content_type: 'product' });
+        console.log('[ziklo] Meta Pixel AddToCart fired:', precio, _currency);
+      } catch(e) {}
+    }
+    if (window.dataLayer && Array.isArray(window.dataLayer)) {
+      try {
+        window.dataLayer.push({ event: 'ziklo_add_to_cart', ecommerce: { currency: _currency, value: precio, items: [{ item_name: _productName, price: precio, item_category: 'subscription' }] } });
+      } catch(e) {}
+    }
+    if (typeof window.ttq !== 'undefined' && window.ttq && typeof window.ttq.track === 'function') {
+      try { window.ttq.track('AddToCart', { value: precio, currency: _currency }); } catch(e) {}
+    }
+  }
+
   // ── Observar cambios de bundle y cantidad ────────────────────────────────────
   document.addEventListener('change', function(e) {
     if (e.target.closest && e.target.closest('#zk-banner')) return;
@@ -462,6 +536,10 @@
       precioActual = 0; // forzar recálculo
       setTimeout(intentarActualizar, 50);
       setTimeout(intentarActualizar, 250);
+      // Disparar add_to_cart al seleccionar opción
+      if (e.target.type === 'radio') {
+        setTimeout(function() { if (precioActual > 0) fireAddToCart(precioActual); }, 300);
+      }
     }
   });
 

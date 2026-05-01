@@ -447,6 +447,70 @@
   var shopParam = params.get('shop') || '';
   var store     = params.get('store') || '';
   var beneficiosParam = params.get('beneficios') || '';
+  var ga4Id     = params.get('ga4id') || '';
+  var fbPixelId = params.get('fbpid') || '';
+
+  // ── Cargar pixels del merchant para add_payment_info ──
+  var _pixelsReady = false;
+
+  function cargarPixelsMerchant() {
+    if (_pixelsReady) return;
+    _pixelsReady = true;
+
+    // GA4
+    if (ga4Id) {
+      try {
+        var gs = document.createElement('script');
+        gs.async = true;
+        gs.src = 'https://www.googletagmanager.com/gtag/js?id=' + ga4Id;
+        document.head.appendChild(gs);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function(){ window.dataLayer.push(arguments); };
+        window.gtag('js', new Date());
+        window.gtag('config', ga4Id, { send_page_view: false });
+      } catch(e) {}
+    }
+
+    // Meta Pixel
+    if (fbPixelId) {
+      try {
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        window.fbq('init', fbPixelId);
+      } catch(e) {}
+    }
+  }
+
+  function fireAddPaymentInfo() {
+    var valor = parseFloat(monto) || 0;
+    var moneda = 'ARS';
+
+    if (ga4Id && window.gtag) {
+      try {
+        window.gtag('event', 'add_payment_info', {
+          currency: moneda, value: valor, payment_type: 'mercadopago_subscription',
+          items: [{ item_name: desc, price: valor, quantity: parseInt(qty, 10) || 1 }]
+        });
+        console.log('[ziklo-checkout] GA4 add_payment_info fired:', valor);
+      } catch(e) {}
+    }
+
+    if (fbPixelId && window.fbq) {
+      try {
+        window.fbq('track', 'AddPaymentInfo', { value: valor, currency: moneda, content_name: desc });
+        console.log('[ziklo-checkout] Meta Pixel AddPaymentInfo fired:', valor);
+      } catch(e) {}
+    }
+  }
+
+  // Pre-cargar pixels cuando el usuario empieza a llenar el form
+  var _formInteracted = false;
+  document.addEventListener('focus', function(e) {
+    if (!_formInteracted && (ga4Id || fbPixelId) && e.target.tagName === 'INPUT') {
+      _formInteracted = true;
+      cargarPixelsMerchant();
+    }
+  }, true);
+
   // Mostrar resumen
   if (store) document.getElementById('hdr-store').textContent = store;
   document.getElementById('sum-desc').textContent = desc;
@@ -601,7 +665,11 @@
       if (d.initPoint) {
         btn.disabled = true;
         btn.innerHTML = 'Redirigiendo a Mercado Pago...';
-        window.location.href = d.initPoint;
+        // Disparar add_payment_info en los pixels del merchant
+        cargarPixelsMerchant();
+        fireAddPaymentInfo();
+        // Dar tiempo al beacon y redirigir
+        setTimeout(function() { window.location.href = d.initPoint; }, (ga4Id || fbPixelId) ? 400 : 0);
       } else {
         mostrarError(d.error || 'Ocurrió un error. Intentá de nuevo.', d.mpDown);
       }
