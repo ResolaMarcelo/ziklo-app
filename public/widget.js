@@ -128,28 +128,37 @@
   ].join('');
 
   // ── Insertar / re-insertar banner (resiliente a otras apps que modifiquen el DOM)
-  var _bannerRemovido = 0; // cuántas veces fue removido por otra app
+  var _bannerRemovido = 0;
 
   function insertarBanner() {
     // Si ya está en el DOM, no hacer nada
     if (banner.parentNode && document.body.contains(banner)) return true;
-    // Re-buscar el mejor punto de inserción (el DOM pudo haber cambiado)
+
+    // Si fue removido por otra app, buscar un punto SEGURO (más alto en el DOM)
+    if (_bannerRemovido >= 1) {
+      // Buscar contenedores que estén VIVOS en el DOM, de más específico a más general
+      var _safeSelectors = [
+        'form.js-product-form', 'form[action*="/comprar"]', 'form[action*="/cart/add"]',
+        '.js-product-detail', '.product-detail', '.js-product-container',
+        '.product-description', '.product-info',
+        'main', '#content', '.page-content',
+      ];
+      for (var s = 0; s < _safeSelectors.length; s++) {
+        var _target = document.querySelector(_safeSelectors[s]);
+        // CLAVE: verificar que el target esté VIVO en el DOM real
+        if (_target && document.body.contains(_target) && _target.parentNode) {
+          _target.parentNode.insertBefore(banner, _target.nextSibling);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Primera inserción normal: dentro/después del form
     var c = buscarContainer();
     if (c) container = c;
     if (!container) return false;
 
-    // Si fue removido 1+ veces, insertar AFUERA del form para que otras apps
-    // (bundles, etc.) no lo borren al modificar el contenido del form
-    if (_bannerRemovido >= 1) {
-      var _safeForm = document.querySelector('form.js-product-form, form[action*="/comprar"], form[action*="/cart/add"]');
-      if (!_safeForm && container.tagName === 'FORM') _safeForm = container;
-      if (_safeForm && _safeForm.parentNode) {
-        _safeForm.parentNode.insertBefore(banner, _safeForm.nextSibling);
-        return true;
-      }
-    }
-
-    // Inserción normal: después del botón de compra (dentro del form)
     var _buyContainer = document.querySelector('.js-buy-button-container');
     if (_buyContainer && _buyContainer.parentElement) {
       _buyContainer.parentElement.insertBefore(banner, _buyContainer.nextSibling);
@@ -387,33 +396,21 @@
   // ── Vigilar que el banner no sea removido por otras apps (bundles, etc.) ────
   var _vigilandoActivo = false;
   function vigilarBanner() {
-    if (_vigilandoActivo || typeof MutationObserver === 'undefined') return;
+    if (_vigilandoActivo) return;
     _vigilandoActivo = true;
-    var _reintentos = 0;
-    var _maxReintentos = 30;
 
-    new MutationObserver(function() {
-      // Si el banner fue removido del DOM por otra app
-      if (banner && banner.style.display !== 'none' && !document.body.contains(banner)) {
-        if (_reintentos >= _maxReintentos) return;
-        _reintentos++;
-        _bannerRemovido++; // la próxima inserción irá AFUERA del form
-        // Esperar a que la otra app termine de modificar el DOM
-        setTimeout(function() {
-          if (!document.body.contains(banner)) {
-            if (insertarBanner()) {
-              _reintentos = Math.max(0, _reintentos - 2);
-            }
-          }
-        }, 800);
-        // Segundo intento con más delay por si la app tarda
-        setTimeout(function() {
-          if (!document.body.contains(banner)) {
-            insertarBanner();
-          }
-        }, 2500);
+    // Heartbeat: cada 1.5s verificar que el banner siga en el DOM
+    // Más confiable que MutationObserver (no tiene timing issues con otras apps)
+    var _checks = 0;
+    setInterval(function() {
+      _checks++;
+      if (_checks > 200) return; // parar después de 5 minutos
+      if (banner.style.display === 'none') return; // widget no activo aún
+      if (!document.body.contains(banner)) {
+        _bannerRemovido++;
+        insertarBanner();
       }
-    }).observe(document.body, { childList: true, subtree: true });
+    }, 1500);
   }
 
   // ── Detectar plataforma y producto ──────────────────────────────────────────
