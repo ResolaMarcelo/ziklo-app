@@ -67,7 +67,7 @@
     var border = hexToRgba(text, 0.15);
     var borderChip = hexToRgba(text, 0.1);
     return [
-      '#zk-banner{max-width:100%;margin:16px 0}',
+      '#zk-banner{width:100%;max-width:100%;margin:16px 0;box-sizing:border-box}',
       '#zk-banner *{box-sizing:border-box;margin:0;padding:0}',
       '#zk-banner .zk-card{background:' + bg + ';border-radius:10px;border:1.5px solid ' + hexToRgba(accent, 0.3) + ';padding:0;position:relative;overflow:hidden;font-family:inherit;color:' + text + '}',
       '#zk-banner .zk-accent-bar{height:3px;background:' + accent + '}',
