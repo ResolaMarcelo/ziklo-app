@@ -333,35 +333,41 @@
   }
 
   var platform   = getScriptParam('platform') || 'shopify';
-  var storeId    = getScriptParam('storeId') || null;
+  // storeId: nuestro param manual O el "store" que Tiendanube inyecta automáticamente
+  var storeId    = getScriptParam('storeId') || getScriptParam('store') || null;
   var shopDomain = window.location.hostname;
   var productId  = getProductId();
 
+  // Auto-detectar plataforma Tiendanube por dominio o LS global
+  if (platform === 'shopify' && (shopDomain.match(/mitiendanube\.com|nuvemshop\.com/) || (window.LS && window.LS.store))) {
+    platform = 'tiendanube';
+    if (!storeId && window.LS && window.LS.store && window.LS.store.id) storeId = String(window.LS.store.id);
+  }
+
+  // Si no hay productId en página que no es de producto, salir silenciosamente
+  if (!productId) { hideBanner(); return; }
+
   // Construir URL de check según plataforma
-  var checkUrl = APP + '/api/products/check?productId=' + encodeURIComponent(productId || '');
+  var checkUrl = APP + '/api/products/check?productId=' + encodeURIComponent(productId);
   if (platform === 'tiendanube' && storeId) {
     checkUrl += '&storeId=' + encodeURIComponent(storeId);
   } else {
     checkUrl += '&shop=' + encodeURIComponent(shopDomain);
   }
 
-  if (productId) {
-    fetch(checkUrl)
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (!data.enabled) { hideBanner(); return; }
-        aplicarBeneficio(data.benefitType, data.benefitValue);
-        aplicarWidgetTitle(data.widgetTitle);
-        aplicarWidgetChips(data.widgetChips, data.widgetChipsVisible);
-        aplicarWidgetBtnText(data.widgetBtnText);
-        if (data.widgetAccentColor || data.widgetBgColor || data.widgetTextColor)
-          aplicarWidgetColors(data.widgetAccentColor, data.widgetBgColor, data.widgetTextColor);
-        if (data.beneficios) window._planBeneficios = data.beneficios;
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-        else init();
-      })
-      .catch(hideBanner);
-  } else {
-    hideBanner();
-  }
+  fetch(checkUrl)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.enabled) { hideBanner(); return; }
+      aplicarBeneficio(data.benefitType, data.benefitValue);
+      aplicarWidgetTitle(data.widgetTitle);
+      aplicarWidgetChips(data.widgetChips, data.widgetChipsVisible);
+      aplicarWidgetBtnText(data.widgetBtnText);
+      if (data.widgetAccentColor || data.widgetBgColor || data.widgetTextColor)
+        aplicarWidgetColors(data.widgetAccentColor, data.widgetBgColor, data.widgetTextColor);
+      if (data.beneficios) window._planBeneficios = data.beneficios;
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else init();
+    })
+    .catch(hideBanner);
 })();

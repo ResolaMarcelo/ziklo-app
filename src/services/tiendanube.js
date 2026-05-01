@@ -135,47 +135,20 @@ async function findOrCreateCustomer(storeId, token, email, name) {
   }
 }
 
-// ── Scripts (inyectar widget) ───────────────────────────────────────────────
+// ── Scripts ────────────────────────────────────────────────────────────────
+// El widget script se configura como "auto-installed" en el Partners Portal
+// de Tiendanube (partners.tiendanube.com). No se inyecta via API.
+// Tiendanube lo carga automáticamente al instalar la app y pasa
+// el parámetro ?store={storeId} en la URL del script.
 
-async function injectWidgetScript(storeId, token) {
-  const APP_URL = process.env.APP_URL || 'https://app.zikloapp.com';
-  const scriptSrc = `${APP_URL}/widget.js?platform=tiendanube&storeId=${storeId}`;
-
-  // Listar scripts existentes para evitar duplicados
+async function checkWidgetScript(storeId, token) {
   try {
     const scripts = await apiRequest(storeId, token, 'GET', '/scripts');
-    const existing = scripts.find(s => s.src && s.src.includes('widget.js'));
-    if (existing) {
-      console.log(`Widget script ya existe en Tiendanube store ${storeId} (script ID: ${existing.id})`);
-      return { ok: true, alreadyExists: true, scriptId: String(existing.id) };
-    }
+    const existing = scripts.find(s => s.src && s.src.includes('widget'));
+    return { installed: !!existing, scriptId: existing ? String(existing.id) : null };
   } catch (e) {
-    console.error('Error listando scripts:', e.message);
-  }
-
-  // Crear script nuevo
-  const script = await apiRequest(storeId, token, 'POST', '/scripts', {
-    src: scriptSrc,
-    event: 'onload',
-    where: 'product',
-  });
-
-  console.log(`Widget script inyectado en Tiendanube store ${storeId} (script ID: ${script.id})`);
-  return { ok: true, scriptId: String(script.id) };
-}
-
-// ── Remove script ───────────────────────────────────────────────────────────
-
-async function removeWidgetScript(storeId, token) {
-  try {
-    const scripts = await apiRequest(storeId, token, 'GET', '/scripts');
-    const existing = scripts.find(s => s.src && s.src.includes('widget.js'));
-    if (existing) {
-      await apiRequest(storeId, token, 'DELETE', `/scripts/${existing.id}`);
-      console.log(`Widget script eliminado de Tiendanube store ${storeId}`);
-    }
-  } catch (e) {
-    console.error('Error eliminando script:', e.message);
+    console.error('Error verificando scripts:', e.message);
+    return { installed: false, error: e.message };
   }
 }
 
@@ -185,6 +158,5 @@ module.exports = {
   getProducts,
   createOrder,
   findOrCreateCustomer,
-  injectWidgetScript,
-  removeWidgetScript,
+  checkWidgetScript,
 };

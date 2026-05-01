@@ -139,12 +139,8 @@ router.get('/callback', async (req, res) => {
 
     console.log(`✅ Tiendanube autenticado: ${domain} (store ${storeId})`);
 
-    // 7. Inyectar widget script en la tienda
-    try {
-      await tiendanube.injectWidgetScript(storeId, accessToken);
-    } catch (e) {
-      console.error(`❌ Error inyectando widget script: ${e.message}`);
-    }
+    // 7. Widget script: se instala automáticamente via Partners Portal (auto-installed)
+    // No se inyecta via API — Tiendanube lo carga con ?store={storeId}
 
     // 8. Redirigir al panel admin
     res.redirect('/admin/');

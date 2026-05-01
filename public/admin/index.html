@@ -4231,9 +4231,9 @@ async function cargarIntegraciones() {
       </div>
       ${tiendanubeConnected ? `
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-          <button class="integ-action" onclick="reinstalarWidgetTN()" style="color:#6db3f2;border-color:rgba(109,179,242,.3);">
+          <button class="integ-action" onclick="verificarWidgetTN()" style="color:#6db3f2;border-color:rgba(109,179,242,.3);">
             <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            Reinstalar widget
+            Verificar widget
           </button>
           <button class="integ-action" onclick="desconectarShopify()" style="color:#f87171;border-color:rgba(248,113,113,.3);">
             <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -4404,19 +4404,19 @@ async function confirmarDesconectarShopify() {
 }
 
 // ===================== TIENDANUBE WIDGET =====================
-async function reinstalarWidgetTN() {
+async function verificarWidgetTN() {
   try {
-    showToast('Instalando widget...');
-    const r = await fetch('/admin/api/reinstall-widget', { method: 'POST' });
+    showToast('Verificando...');
+    const r = await fetch('/admin/api/check-widget', { method: 'POST' });
     const d = await r.json();
-    if (!r.ok) { showToast(d.error || 'Error al instalar', 'error'); return; }
-    if (d.alreadyExists) {
-      showToast('El widget ya estaba instalado en tu tienda.');
+    if (!r.ok) { showToast(d.error || 'Error al verificar', 'error'); return; }
+    if (d.installed) {
+      showToast('Widget instalado correctamente en tu tienda.', 'success');
     } else {
-      showToast('Widget instalado correctamente. Recargá tu tienda para verlo.', 'success');
+      showToast('Widget no detectado. Verificá la configuración del script en el Partners Portal de Tiendanube.', 'error');
     }
   } catch (_) {
-    showToast('Error al instalar el widget', 'error');
+    showToast('Error al verificar', 'error');
   }
 }
 
