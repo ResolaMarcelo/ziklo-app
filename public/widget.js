@@ -128,6 +128,8 @@
   ].join('');
 
   // ── Insertar / re-insertar banner (resiliente a otras apps que modifiquen el DOM)
+  var _bannerRemovido = 0; // cuántas veces fue removido por otra app
+
   function insertarBanner() {
     // Si ya está en el DOM, no hacer nada
     if (banner.parentNode && document.body.contains(banner)) return true;
@@ -136,6 +138,18 @@
     if (c) container = c;
     if (!container) return false;
 
+    // Si fue removido 1+ veces, insertar AFUERA del form para que otras apps
+    // (bundles, etc.) no lo borren al modificar el contenido del form
+    if (_bannerRemovido >= 1) {
+      var _safeForm = document.querySelector('form.js-product-form, form[action*="/comprar"], form[action*="/cart/add"]');
+      if (!_safeForm && container.tagName === 'FORM') _safeForm = container;
+      if (_safeForm && _safeForm.parentNode) {
+        _safeForm.parentNode.insertBefore(banner, _safeForm.nextSibling);
+        return true;
+      }
+    }
+
+    // Inserción normal: después del botón de compra (dentro del form)
     var _buyContainer = document.querySelector('.js-buy-button-container');
     if (_buyContainer && _buyContainer.parentElement) {
       _buyContainer.parentElement.insertBefore(banner, _buyContainer.nextSibling);
@@ -383,6 +397,7 @@
       if (banner && banner.style.display !== 'none' && !document.body.contains(banner)) {
         if (_reintentos >= _maxReintentos) return;
         _reintentos++;
+        _bannerRemovido++; // la próxima inserción irá AFUERA del form
         // Esperar a que la otra app termine de modificar el DOM
         setTimeout(function() {
           if (!document.body.contains(banner)) {
@@ -390,13 +405,13 @@
               _reintentos = Math.max(0, _reintentos - 2);
             }
           }
-        }, 500);
+        }, 800);
         // Segundo intento con más delay por si la app tarda
         setTimeout(function() {
           if (!document.body.contains(banner)) {
             insertarBanner();
           }
-        }, 1500);
+        }, 2500);
       }
     }).observe(document.body, { childList: true, subtree: true });
   }
