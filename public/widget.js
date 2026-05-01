@@ -15,17 +15,29 @@
     container = document.currentScript.parentElement;
   }
   if (!container) {
-    // Tiendanube / scripts inyectados: buscar el form del producto
-    var _selectors = [
-      'form[action*="/cart"]',
-      'form[action*="/carrito"]',
-      '.js-product-detail',
-      '.product-detail',
-      'form.product-form',
-    ];
-    for (var _i = 0; _i < _selectors.length; _i++) {
-      var _el = document.querySelector(_selectors[_i]);
-      if (_el) { container = _el; break; }
+    // Tiendanube / scripts inyectados: buscar el form o zona del producto
+    // 1. Buscar el botón de "Agregar al carrito" y subir a su form
+    var _atcBtn = document.querySelector('input[type="submit"][value*="arrito"], button[type="submit"][class*="addtocart"], .js-addtocart, .btn-add-to-cart, button[class*="add-to-cart"]');
+    if (_atcBtn) {
+      var _form = _atcBtn.closest ? _atcBtn.closest('form') : null;
+      container = _form || _atcBtn.parentElement;
+    }
+    // 2. Selectores comunes de forms de producto
+    if (!container) {
+      var _selectors = [
+        'form[action*="/comprar"]',
+        'form[action*="/cart"]',
+        'form[action*="/carrito"]',
+        '#product_form',
+        '.js-product-form',
+        'form.product-form',
+        '.js-product-detail',
+        '.product-detail',
+      ];
+      for (var _i = 0; _i < _selectors.length; _i++) {
+        var _el = document.querySelector(_selectors[_i]);
+        if (_el) { container = _el; break; }
+      }
     }
   }
   if (!container) return;
