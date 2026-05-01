@@ -186,8 +186,22 @@
     if (!limpio) return 0;
     var lastComma = limpio.lastIndexOf(',');
     var lastDot   = limpio.lastIndexOf('.');
-    if (lastComma > lastDot) { limpio = limpio.replace(/\./g, '').replace(',', '.'); }
-    else                     { limpio = limpio.replace(/,/g, ''); }
+
+    if (lastComma > lastDot) {
+      // Formato: 1.234,56 o 79.980,00 — coma es decimal, punto es miles
+      limpio = limpio.replace(/\./g, '').replace(',', '.');
+    } else if (lastDot >= 0) {
+      // Verificar si el punto es separador de miles (3 dígitos después)
+      // $79.980 → 79980 (AR), $79.98 → 79.98 (US)
+      var afterDot = limpio.substring(lastDot + 1);
+      if (afterDot.length === 3) {
+        // Punto es separador de miles: 79.980 → 79980, 160.000 → 160000
+        limpio = limpio.replace(/\./g, '');
+      } else {
+        // Punto es decimal: 79.98 → 79.98
+        limpio = limpio.replace(/,/g, '');
+      }
+    }
     return parseFloat(limpio) || 0;
   }
 
