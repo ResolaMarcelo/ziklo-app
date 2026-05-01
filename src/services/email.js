@@ -206,7 +206,7 @@ async function enviarVerificacionEmail({ email, code, name }) {
         <tr>
           <td style="padding:20px 48px;border-top:1px solid rgba(255,255,255,.06);text-align:center;">
             <p style="margin:0;font-size:11px;color:#374151;">
-              Ziklo · Suscripciones para Shopify &nbsp;·&nbsp;
+              Ziklo · Suscripciones para tu tienda &nbsp;·&nbsp;
               <a href="mailto:contacto@zikloapp.com" style="color:#6B7280;text-decoration:none;">contacto@zikloapp.com</a>
             </p>
           </td>
