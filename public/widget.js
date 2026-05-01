@@ -272,22 +272,49 @@
 
   function hideBanner() { banner.style.display = 'none'; }
 
-  // ── Verificar producto ──────────────────────────────────────────────────────
-  function getProductId() {
+  // ── Detectar plataforma y producto ──────────────────────────────────────────
+
+  function getScriptParam(name) {
     try {
-      if (window.ShopifyAnalytics && window.ShopifyAnalytics.meta && window.ShopifyAnalytics.meta.product)
-        return String(window.ShopifyAnalytics.meta.product.id);
-      if (window.meta && window.meta.product && window.meta.product.id)
-        return String(window.meta.product.id);
+      var scripts = document.querySelectorAll('script[src*="widget.js"]');
+      for (var i = 0; i < scripts.length; i++) {
+        var src = scripts[i].src || '';
+        var match = src.match(new RegExp('[?&]' + name + '=([^&]*)'));
+        if (match) return decodeURIComponent(match[1]);
+      }
     } catch(e) {}
     return null;
   }
 
+  function getProductId() {
+    try {
+      // Shopify
+      if (window.ShopifyAnalytics && window.ShopifyAnalytics.meta && window.ShopifyAnalytics.meta.product)
+        return String(window.ShopifyAnalytics.meta.product.id);
+      if (window.meta && window.meta.product && window.meta.product.id)
+        return String(window.meta.product.id);
+      // Tiendanube — LS.store expone product ID en la página de producto
+      if (window.LS && window.LS.product && window.LS.product.id)
+        return String(window.LS.product.id);
+    } catch(e) {}
+    return null;
+  }
+
+  var platform   = getScriptParam('platform') || 'shopify';
+  var storeId    = getScriptParam('storeId') || null;
   var shopDomain = window.location.hostname;
   var productId  = getProductId();
 
+  // Construir URL de check según plataforma
+  var checkUrl = APP + '/api/products/check?productId=' + encodeURIComponent(productId || '');
+  if (platform === 'tiendanube' && storeId) {
+    checkUrl += '&storeId=' + encodeURIComponent(storeId);
+  } else {
+    checkUrl += '&shop=' + encodeURIComponent(shopDomain);
+  }
+
   if (productId) {
-    fetch(APP + '/api/products/check?shop=' + encodeURIComponent(shopDomain) + '&productId=' + encodeURIComponent(productId))
+    fetch(checkUrl)
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (!data.enabled) { hideBanner(); return; }

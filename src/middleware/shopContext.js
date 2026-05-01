@@ -20,11 +20,14 @@ const prisma = require('../lib/prisma');
  */
 
 const MYSHOPIFY_RE = /^[a-z0-9][a-z0-9\-]*\.myshopify\.com$/;
+const TIENDANUBE_RE = /^[a-z0-9][a-z0-9\-]*\.(mitiendanube\.com|nuvemshop\.com\.br)$/;
 
 function sanitizeDomain(raw) {
   if (!raw || typeof raw !== 'string') return null;
   const d = raw.trim().toLowerCase();
-  return MYSHOPIFY_RE.test(d) ? d : null;
+  if (MYSHOPIFY_RE.test(d)) return d;
+  if (TIENDANUBE_RE.test(d)) return d;
+  return null;
 }
 
 /** Elimina tokens sensibles de un shop record para uso en rutas públicas */
@@ -77,10 +80,18 @@ module.exports = async function shopContext(req, res, next) {
       null;
   }
 
-  if (!domain) return next();
+  // Fallback para Tiendanube: resolver por storeId si no hay domain
+  const tiendanubeStoreId = !domain && !isAdmin ? (req.query?.storeId || req.body?.storeId || null) : null;
+
+  if (!domain && !tiendanubeStoreId) return next();
 
   try {
-    const shop = await prisma.shop.findUnique({ where: { domain } });
+    let shop;
+    if (domain) {
+      shop = await prisma.shop.findUnique({ where: { domain } });
+    } else if (tiendanubeStoreId) {
+      shop = await prisma.shop.findFirst({ where: { tiendanubeStoreId: String(tiendanubeStoreId) } });
+    }
     // En rutas públicas, eliminar tokens sensibles del objeto shop
     req.shop = isAdmin ? shop : stripSensitiveFields(shop);
   } catch (err) {

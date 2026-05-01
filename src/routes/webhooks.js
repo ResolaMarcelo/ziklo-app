@@ -3,8 +3,9 @@ const router  = express.Router();
 const crypto  = require('crypto');
 const prisma  = require('../lib/prisma');
 const mp      = require('../services/mercadopago');
-const shopify = require('../services/shopify');
-const email   = require('../services/email');
+const shopify    = require('../services/shopify');
+const tiendanube = require('../services/tiendanube');
+const email      = require('../services/email');
 const klaviyo = require('../services/klaviyo');
 const { registrarCobro } = require('../lib/billing');
 
@@ -201,7 +202,7 @@ router.post('/mp', async (req, res) => {
             mpPaymentId: String(pago.id),
           }).catch(() => {});
 
-          // Crear orden en Shopify usando GraphQL (producto principal + upsells)
+          // Crear orden en la plataforma (Shopify o Tiendanube)
           if (sub.variantId) {
             try {
               const envio = sub.datosEnvio ? JSON.parse(sub.datosEnvio) : null;
@@ -221,21 +222,38 @@ router.post('/mp', async (req, res) => {
                 }
               }
 
-              const orden = await shopify.createOrder(shopDomain, shopifyToken, {
-                customerId: sub.shopifyCustomerId,
-                email:      sub.shopifyCustomerEmail,
-                lineItems,
-                note: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
-                tags: 'suscripcion,mp-auto',
-                shippingAddress: envio ? {
-                  first_name: envio.nombre, last_name: envio.apellido,
-                  address1: envio.direccion, city: envio.ciudad,
-                  province: envio.provincia, zip: envio.cp, country: 'AR',
-                  phone: envio.telefono,
-                } : null,
-              });
+              let orden;
+              const shippingAddr = envio ? {
+                first_name: envio.nombre, last_name: envio.apellido,
+                address1: envio.direccion, city: envio.ciudad,
+                province: envio.provincia, zip: envio.cp, country: 'AR',
+                phone: envio.telefono,
+              } : null;
+
+              if (shop.platform === 'tiendanube' && shop.tiendanubeStoreId) {
+                // ── Crear orden en Tiendanube ──
+                orden = await tiendanube.createOrder(shop.tiendanubeStoreId, shopifyToken, {
+                  customerId: sub.shopifyCustomerId,
+                  email:      sub.shopifyCustomerEmail,
+                  lineItems,
+                  note: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
+                  shippingAddress: shippingAddr,
+                });
+                if (orden?.id) console.log('Orden Tiendanube creada:', orden.id, '- #' + orden.orderNumber);
+              } else {
+                // ── Crear orden en Shopify ──
+                orden = await shopify.createOrder(shopDomain, shopifyToken, {
+                  customerId: sub.shopifyCustomerId,
+                  email:      sub.shopifyCustomerEmail,
+                  lineItems,
+                  note: `Pago automático suscripción ${sub.plan.nombre} - MP ID: ${pago.id}`,
+                  tags: 'suscripcion,mp-auto',
+                  shippingAddress: shippingAddr,
+                });
+                if (orden?.id) console.log('Orden Shopify creada:', orden.id, '- #' + orden.orderNumber);
+              }
+
               if (orden?.id) {
-                console.log('Orden Shopify creada:', orden.id, '- #' + orden.orderNumber);
                 await prisma.pago.update({
                   where: { mpPaymentId: String(pago.id) },
                   data: {
@@ -251,11 +269,9 @@ router.post('/mp', async (req, res) => {
                     data:  { pendingUpsells: null },
                   });
                 }
-              } else {
-                console.log('Orden Shopify creada sin ID en respuesta');
               }
             } catch (err) {
-              console.error('Error al crear orden Shopify:', err.message);
+              console.error(`Error al crear orden ${shop.platform || 'shopify'}:`, err.message);
             }
           }
         }

@@ -71,9 +71,11 @@ const clienteRoutes = require('./routes/cliente');
 const authRoutes = require('./routes/auth');
 const userAuthRoutes = require('./routes/userAuth');
 const klaviyoAuthRoutes = require('./routes/klaviyoAuth');
-const mpAuthRoutes      = require('./routes/mpAuth');
-const clienteAuthRoutes = require('./routes/clienteAuth');
-const waitlistRoutes    = require('./routes/waitlist');
+const mpAuthRoutes              = require('./routes/mpAuth');
+const clienteAuthRoutes         = require('./routes/clienteAuth');
+const waitlistRoutes            = require('./routes/waitlist');
+const tiendanubeAuthRoutes      = require('./routes/tiendanubeAuth');
+const tiendanubeWebhooksRoutes  = require('./routes/tiendanubeWebhooks');
 const adminAuth        = require('./middleware/adminAuth');
 const csrfProtection   = require('./middleware/csrfProtection');
 const shopContext       = require('./middleware/shopContext');
@@ -111,8 +113,10 @@ app.use(cors({
     // Dominios Ziklo explícitos
     const ziklo = ['https://zikloapp.com', 'https://app.zikloapp.com', ...ALLOWED_ORIGINS];
     if (ziklo.includes(origin)) return callback(null, true);
-    // Cualquier tienda .myshopify.com (widget embebido)
+    // Cualquier tienda Shopify o Tiendanube (widget embebido)
     if (origin.endsWith('.myshopify.com')) return callback(null, true);
+    if (origin.endsWith('.mitiendanube.com')) return callback(null, true);
+    if (origin.endsWith('.nuvemshop.com.br')) return callback(null, true);
     // Desarrollo local
     if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost')) {
       return callback(null, true);
@@ -187,6 +191,12 @@ app.use('/auth/klaviyo', adminAuth, klaviyoAuthRoutes);
 
 // Mercado Pago OAuth — protegido por adminAuth
 app.use('/auth/mp', adminAuth, mpAuthRoutes);
+
+// Tiendanube OAuth
+app.use('/auth/tiendanube', limiterOAuth, tiendanubeAuthRoutes);
+
+// Tiendanube privacy webhooks
+app.use('/api/tiendanube/webhooks', tiendanubeWebhooksRoutes);
 
 // Auth del portal cliente (magic link) — pública, con rate limiting
 app.post('/api/cliente/solicitar', limiterMagicLink);

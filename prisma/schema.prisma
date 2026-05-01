@@ -37,11 +37,13 @@ model UserShop {
   @@id([userId, shopDomain])
 }
 
-// Tiendas Shopify autenticadas via OAuth
+// Tiendas autenticadas via OAuth (Shopify o Tiendanube)
 model Shop {
   id            String         @id @default(cuid())
-  domain        String         @unique  // ej: mi-tienda.myshopify.com
-  accessToken   String?                 // token de Shopify Admin API (null si desinstalaron)
+  domain        String         @unique  // ej: mi-tienda.myshopify.com o mi-tienda.mitiendanube.com
+  platform      String         @default("shopify") // "shopify" | "tiendanube"
+  accessToken   String?                 // token de la plataforma (Shopify o Tiendanube, encriptado)
+  tiendanubeStoreId String?    @unique  // ID numérico de la tienda en Tiendanube
   mpAccessToken   String?                 // token de Mercado Pago de esta tienda
   shopName        String?                 // nombre de la tienda (cacheado)
   email           String?                 // email del owner

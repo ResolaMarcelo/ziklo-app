@@ -10,19 +10,26 @@ router.get('/check', async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
 
   try {
-    const { shop, productId } = req.query;
+    const { shop, storeId, productId } = req.query;
 
-    if (!shop || !productId) {
+    // Soportar shop (Shopify) o storeId (Tiendanube)
+    let shopDomain = shop || null;
+    if (!shopDomain && storeId) {
+      const tnShop = await prisma.shop.findFirst({ where: { tiendanubeStoreId: String(storeId) } });
+      shopDomain = tnShop?.domain || null;
+    }
+
+    if (!shopDomain || !productId) {
       return res.json({ enabled: false, benefitType: 'discount', benefitValue: '10' });
     }
 
     const [record, shopRecord, primerPlan] = await Promise.all([
       prisma.productSubscription.findUnique({
-        where: { shopDomain_productId: { shopDomain: shop, productId: String(productId) } },
+        where: { shopDomain_productId: { shopDomain, productId: String(productId) } },
       }),
-      prisma.shop.findUnique({ where: { domain: shop } }),
+      prisma.shop.findUnique({ where: { domain: shopDomain } }),
       prisma.plan.findFirst({
-        where: { shopDomain: shop, activo: true },
+        where: { shopDomain, activo: true },
         orderBy: { createdAt: 'asc' },
         select: { beneficios: true },
       }),
