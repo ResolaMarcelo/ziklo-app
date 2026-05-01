@@ -106,6 +106,7 @@ router.get('/api/status', async (req, res) => {
     email:       !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
     klaviyo:     !!(shop?.klaviyoAccessToken),
     shopDomain:  shop?.domain || null,
+    platform:    shop?.platform || 'shopify',
   });
 });
 
