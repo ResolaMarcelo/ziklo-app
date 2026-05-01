@@ -180,18 +180,27 @@
     return 0;
   }
 
+  function leerCantidad() {
+    var qtyInput = document.querySelector('input[name="quantity"], .js-quantity input, .quantity input');
+    if (qtyInput) { var v = parseInt(qtyInput.value, 10); if (v > 0) return v; }
+    return 1;
+  }
+
   function leerPrecio() {
     var p = leerPrecioDelCardSeleccionado();
-    if (p > 0) return p;
-    for (var i = 0; i < PRICE_SELECTORS.length; i++) {
-      var el = document.querySelector(PRICE_SELECTORS[i]);
-      if (el && el.textContent.trim()) { p = parsePrecio(el.textContent); if (p > 100) return p; }
+    if (p <= 0) {
+      for (var i = 0; i < PRICE_SELECTORS.length; i++) {
+        var el = document.querySelector(PRICE_SELECTORS[i]);
+        if (el && el.textContent.trim()) { p = parsePrecio(el.textContent); if (p > 100) break; }
+      }
     }
-    return 0;
+    if (p <= 0) return 0;
+    return p * leerCantidad();
   }
 
   function actualizarBanner(precio) {
-    if (!precio || precio === precioActual) return;
+    if (!precio) return;
+    if (precio === precioActual) return;
     precioActual = precio;
     if (BENEFIT_TYPE === 'discount') {
       var precioSub = Math.round(precio * (1 - DESCUENTO));
@@ -238,19 +247,37 @@
 
   document.getElementById('zk-cta').addEventListener('click', iniciarSub);
 
-  // ── Observar cambios de bundle ──────────────────────────────────────────────
+  // ── Observar cambios de bundle y cantidad ────────────────────────────────────
   document.addEventListener('change', function(e) {
     if (e.target.closest && e.target.closest('#zk-banner')) return;
-    if (e.target.type === 'radio' || e.target.tagName === 'SELECT') {
+    // Reaccionar a radios, selects Y cambios de cantidad
+    if (e.target.type === 'radio' || e.target.tagName === 'SELECT' || e.target.name === 'quantity') {
+      precioActual = 0; // forzar recálculo
       setTimeout(intentarActualizar, 50);
       setTimeout(intentarActualizar, 250);
     }
   });
 
+  document.addEventListener('input', function(e) {
+    if (e.target.closest && e.target.closest('#zk-banner')) return;
+    if (e.target.name === 'quantity' || (e.target.type === 'number')) {
+      precioActual = 0;
+      setTimeout(intentarActualizar, 50);
+    }
+  });
+
   document.addEventListener('click', function(e) {
     if (e.target.closest && e.target.closest('#zk-banner')) return;
-    setTimeout(intentarActualizar, 100);
-    setTimeout(intentarActualizar, 350);
+    // Detectar clicks en botones +/- de cantidad
+    var isQtyBtn = e.target.closest && e.target.closest('.js-quantity, .quantity, [class*="quantity"]');
+    if (isQtyBtn) {
+      precioActual = 0;
+      setTimeout(intentarActualizar, 100);
+      setTimeout(intentarActualizar, 300);
+    } else {
+      setTimeout(intentarActualizar, 100);
+      setTimeout(intentarActualizar, 350);
+    }
   });
 
   function observarPrecio() {
