@@ -192,8 +192,8 @@ app.use('/auth/klaviyo', adminAuth, klaviyoAuthRoutes);
 // Mercado Pago OAuth — protegido por adminAuth
 app.use('/auth/mp', adminAuth, mpAuthRoutes);
 
-// Tiendanube OAuth
-app.use('/auth/tiendanube', limiterOAuth, tiendanubeAuthRoutes);
+// Tiendanube OAuth — montado en /api/tiendanube/auth para coincidir con la redirect URL configurada
+app.use('/api/tiendanube/auth', limiterOAuth, tiendanubeAuthRoutes);
 
 // Tiendanube privacy webhooks
 app.use('/api/tiendanube/webhooks', tiendanubeWebhooksRoutes);
