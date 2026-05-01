@@ -5,41 +5,43 @@
   var VERSION = '2.0.0';
 
   // ── Buscar el contenedor ────────────────────────────────────────────────────
-  // 1. Div explícito colocado por el merchant (Shopify custom liquid / manual)
-  // 2. Script inline dentro del theme (Shopify)
-  // 3. Fallback: buscar el form de agregar al carrito (Tiendanube scripts API)
-  var container = document.getElementById('ziklo-widget');
-  if (!container && document.currentScript && document.currentScript.parentElement
+  // Capturar referencia al parent del script inline (se pierde después del IIFE)
+  var _scriptParent = null;
+  if (document.currentScript && document.currentScript.parentElement
       && document.currentScript.parentElement.tagName !== 'HEAD'
       && document.currentScript.parentElement.tagName !== 'BODY') {
-    container = document.currentScript.parentElement;
+    _scriptParent = document.currentScript.parentElement;
   }
-  if (!container) {
-    // Tiendanube / scripts inyectados: buscar el form o zona del producto
-    // 1. Buscar el botón de "Agregar al carrito" y subir a su form
-    var _atcBtn = document.querySelector('input[type="submit"][value*="arrito"], button[type="submit"][class*="addtocart"], .js-addtocart, .btn-add-to-cart, button[class*="add-to-cart"]');
-    if (_atcBtn) {
-      var _form = _atcBtn.closest ? _atcBtn.closest('form') : null;
-      container = _form || _atcBtn.parentElement;
-    }
-    // 2. Selectores comunes de forms de producto
-    if (!container) {
-      var _selectors = [
-        'form[action*="/comprar"]',
-        'form[action*="/cart"]',
-        'form[action*="/carrito"]',
-        '#product_form',
-        '.js-product-form',
-        'form.product-form',
-        '.js-product-detail',
-        '.product-detail',
-      ];
-      for (var _i = 0; _i < _selectors.length; _i++) {
-        var _el = document.querySelector(_selectors[_i]);
-        if (_el) { container = _el; break; }
+
+  function buscarContainer() {
+    // 1. Div explícito colocado por el merchant (Shopify custom liquid / manual)
+    var c = document.getElementById('ziklo-widget');
+    // 2. Script inline dentro del theme (Shopify)
+    if (!c) c = _scriptParent;
+    // 3. Fallback: buscar el botón de agregar al carrito y subir a su form
+    if (!c) {
+      var _atcBtn = document.querySelector('input[type="submit"][value*="arrito"], button[type="submit"][class*="addtocart"], .js-addtocart, .btn-add-to-cart, button[class*="add-to-cart"]');
+      if (_atcBtn) {
+        var _form = _atcBtn.closest ? _atcBtn.closest('form') : null;
+        c = _form || _atcBtn.parentElement;
       }
     }
+    // 4. Selectores comunes de forms de producto
+    if (!c) {
+      var _selectors = [
+        'form[action*="/comprar"]', 'form[action*="/cart"]', 'form[action*="/carrito"]',
+        '#product_form', '.js-product-form', 'form.product-form',
+        '.js-product-detail', '.product-detail',
+      ];
+      for (var i = 0; i < _selectors.length; i++) {
+        var el = document.querySelector(_selectors[i]);
+        if (el) { c = el; break; }
+      }
+    }
+    return c;
   }
+
+  var container = buscarContainer();
   if (!container) return;
 
   // ── Defaults ────────────────────────────────────────────────────────────────
@@ -125,16 +127,28 @@
     '</div>',
   ].join('');
 
-  // Insertar el banner en la posición correcta según la plataforma
-  var _buyContainer = document.querySelector('.js-buy-button-container');
-  if (_buyContainer && _buyContainer.parentElement) {
-    // Tiendanube: insertar después del botón de compra, dentro del form
-    _buyContainer.parentElement.insertBefore(banner, _buyContainer.nextSibling);
-  } else if (container.tagName === 'FORM') {
-    container.appendChild(banner);
-  } else {
-    container.parentNode.insertBefore(banner, container.nextSibling);
+  // ── Insertar / re-insertar banner (resiliente a otras apps que modifiquen el DOM)
+  function insertarBanner() {
+    // Si ya está en el DOM, no hacer nada
+    if (banner.parentNode && document.body.contains(banner)) return true;
+    // Re-buscar el mejor punto de inserción (el DOM pudo haber cambiado)
+    var c = buscarContainer();
+    if (c) container = c;
+    if (!container) return false;
+
+    var _buyContainer = document.querySelector('.js-buy-button-container');
+    if (_buyContainer && _buyContainer.parentElement) {
+      _buyContainer.parentElement.insertBefore(banner, _buyContainer.nextSibling);
+    } else if (container.tagName === 'FORM') {
+      container.appendChild(banner);
+    } else if (container.parentNode) {
+      container.parentNode.insertBefore(banner, container.nextSibling);
+    } else {
+      return false;
+    }
+    return true;
   }
+  insertarBanner();
 
   // ── Detectar precio ─────────────────────────────────────────────────────────
   var PRICE_SELECTORS = [
@@ -222,6 +236,7 @@
     if (!precioActual) { alert('Seleccioná una cantidad de productos primero'); return; }
     var precioSub = BENEFIT_TYPE === 'discount' ? Math.round(precioActual * (1 - DESCUENTO)) : precioActual;
     var form      = document.querySelector('form[action*="/cart/add"]')
+                 || document.querySelector('form[action*="/comprar"]')
                  || document.querySelector('form[action*="/cart"]')
                  || document.querySelector('form[action*="/carrito"]');
     var variantId = form ? (form.querySelector('[name="id"]') || form.querySelector('[name="variation"]') || {}).value || '' : '';
@@ -346,12 +361,45 @@
   // ── Init ────────────────────────────────────────────────────────────────────
   function init() {
     banner.style.display = '';
+    insertarBanner(); // asegurar que esté en el DOM (otra app pudo removerlo)
     var p = leerPrecio();
     if (p > 0) actualizarBanner(p);
     observarPrecio();
+    vigilarBanner();
   }
 
   function hideBanner() { banner.style.display = 'none'; }
+
+  // ── Vigilar que el banner no sea removido por otras apps (bundles, etc.) ────
+  var _vigilandoActivo = false;
+  function vigilarBanner() {
+    if (_vigilandoActivo || typeof MutationObserver === 'undefined') return;
+    _vigilandoActivo = true;
+    var _reintentos = 0;
+    var _maxReintentos = 30;
+
+    new MutationObserver(function() {
+      // Si el banner fue removido del DOM por otra app
+      if (banner && banner.style.display !== 'none' && !document.body.contains(banner)) {
+        if (_reintentos >= _maxReintentos) return;
+        _reintentos++;
+        // Esperar a que la otra app termine de modificar el DOM
+        setTimeout(function() {
+          if (!document.body.contains(banner)) {
+            if (insertarBanner()) {
+              _reintentos = Math.max(0, _reintentos - 2);
+            }
+          }
+        }, 500);
+        // Segundo intento con más delay por si la app tarda
+        setTimeout(function() {
+          if (!document.body.contains(banner)) {
+            insertarBanner();
+          }
+        }, 1500);
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  }
 
   // ── Detectar plataforma y producto ──────────────────────────────────────────
 
