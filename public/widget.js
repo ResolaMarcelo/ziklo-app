@@ -126,9 +126,11 @@
   ].join('');
 
   // Insertar el banner en la posición correcta según la plataforma
-  // Tiendanube: el container es el form — insertar DENTRO, al final del form
-  // Shopify: el container es un div explícito — insertar DESPUÉS
-  if (container.tagName === 'FORM') {
+  var _buyContainer = document.querySelector('.js-buy-button-container');
+  if (_buyContainer && _buyContainer.parentElement) {
+    // Tiendanube: insertar después del botón de compra, dentro del form
+    _buyContainer.parentElement.insertBefore(banner, _buyContainer.nextSibling);
+  } else if (container.tagName === 'FORM') {
     container.appendChild(banner);
   } else {
     container.parentNode.insertBefore(banner, container.nextSibling);
