@@ -42,7 +42,6 @@
   }
 
   var container = buscarContainer();
-  console.log('[ziklo] container:', container ? container.tagName + '.' + container.className : 'NULL');
   if (!container) return;
 
   // ── Defaults ────────────────────────────────────────────────────────────────
@@ -132,47 +131,35 @@
   var _bannerRemovido = 0;
 
   function insertarBanner() {
-    // Si ya está en el DOM, no hacer nada
-    if (banner.parentNode && document.body.contains(banner)) return true;
-    console.log('[ziklo] insertarBanner: removido=' + _bannerRemovido);
-
-    // Si fue removido por otra app, buscar un punto SEGURO (más alto en el DOM)
-    if (_bannerRemovido >= 1) {
-      // Buscar contenedores que estén VIVOS en el DOM, de más específico a más general
-      var _safeSelectors = [
-        'form.js-product-form', 'form[action*="/comprar"]', 'form[action*="/cart/add"]',
-        '.js-product-detail', '.product-detail', '.js-product-container',
-        '.product-description', '.product-info',
-        'main', '#content', '.page-content',
-      ];
-      for (var s = 0; s < _safeSelectors.length; s++) {
-        var _target = document.querySelector(_safeSelectors[s]);
-        // CLAVE: verificar que el target esté VIVO en el DOM real
-        if (_target && document.body.contains(_target) && _target.parentNode) {
-          console.log('[ziklo] re-insert SAFE después de:', _safeSelectors[s]);
-          _target.parentNode.insertBefore(banner, _target.nextSibling);
-          return true;
-        }
-      }
-      return false;
+    // Si ya está en el DOM Y es visible, no hacer nada
+    if (banner.parentNode && document.body.contains(banner)) {
+      // Verificar que no esté oculto por CSS de otra app (overflow:hidden, etc)
+      var rect = banner.getBoundingClientRect();
+      if (rect.height > 0) return true;
+      // Está en el DOM pero invisible — removerlo y re-insertar afuera
+      banner.parentNode.removeChild(banner);
     }
 
-    // Primera inserción normal: dentro/después del form
     var c = buscarContainer();
     if (c) container = c;
     if (!container) return false;
 
-    var _buyContainer = document.querySelector('.js-buy-button-container');
-    if (_buyContainer && _buyContainer.parentElement) {
-      _buyContainer.parentElement.insertBefore(banner, _buyContainer.nextSibling);
-    } else if (container.tagName === 'FORM') {
-      container.appendChild(banner);
-    } else if (container.parentNode) {
-      container.parentNode.insertBefore(banner, container.nextSibling);
-    } else {
-      return false;
+    // SIEMPRE insertar DESPUÉS del form (como sibling), nunca adentro.
+    // Otras apps (bundles, etc.) aplican CSS al form que oculta nuestro banner.
+    var _form = container.tagName === 'FORM' ? container
+              : document.querySelector('form.js-product-form, form[action*="/comprar"], form[action*="/cart/add"]');
+
+    if (_form && _form.parentNode && document.body.contains(_form)) {
+      _form.parentNode.insertBefore(banner, _form.nextSibling);
+      return true;
     }
-    return true;
+
+    // Fallback: después del container (Shopify u otros)
+    if (container.parentNode) {
+      container.parentNode.insertBefore(banner, container.nextSibling);
+      return true;
+    }
+    return false;
   }
   insertarBanner();
 
@@ -386,7 +373,6 @@
 
   // ── Init ────────────────────────────────────────────────────────────────────
   function init() {
-    console.log('[ziklo] init() — mostrando banner');
     banner.style.display = '';
     insertarBanner(); // asegurar que esté en el DOM (otra app pudo removerlo)
     var p = leerPrecio();
@@ -412,7 +398,6 @@
       if (banner.style.display === 'none') return; // widget no activo aún
       if (!document.body.contains(banner)) {
         _bannerRemovido++;
-        console.log('[ziklo] heartbeat: banner removido! (#' + _bannerRemovido + ')');
         insertarBanner();
       }
     }, 1500);
@@ -458,10 +443,8 @@
     if (!storeId && window.LS && window.LS.store && window.LS.store.id) storeId = String(window.LS.store.id);
   }
 
-  console.log('[ziklo] platform:', platform, 'storeId:', storeId, 'productId:', productId, 'shop:', shopDomain);
-
   // Si no hay productId en página que no es de producto, salir silenciosamente
-  if (!productId) { console.log('[ziklo] EXIT: no productId'); hideBanner(); return; }
+  if (!productId) { hideBanner(); return; }
 
   // Construir URL de check según plataforma
   var checkUrl = APP + '/api/products/check?productId=' + encodeURIComponent(productId);
@@ -471,12 +454,10 @@
     checkUrl += '&shop=' + encodeURIComponent(shopDomain);
   }
 
-  console.log('[ziklo] checkUrl:', checkUrl);
   fetch(checkUrl)
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      console.log('[ziklo] check response:', JSON.stringify(data));
-      if (!data.enabled) { console.log('[ziklo] EXIT: product not enabled'); hideBanner(); return; }
+      if (!data.enabled) { hideBanner(); return; }
       aplicarBeneficio(data.benefitType, data.benefitValue);
       aplicarWidgetTitle(data.widgetTitle);
       aplicarWidgetChips(data.widgetChips, data.widgetChipsVisible);
