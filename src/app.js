@@ -148,16 +148,6 @@ app.get('/widget.js', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/widget.js'));
 });
 
-// Checkout embebido — permitir iframe desde tiendas de merchants
-// app.use con path prefix matchea tanto /subs-checkout/ como /subs-checkout/index.html
-app.use('/subs-checkout', (req, res, next) => {
-  // Quitar X-Frame-Options de helmet para que funcione en iframe
-  res.removeHeader('X-Frame-Options');
-  // Permitir iframe desde cualquier tienda Shopify/Tiendanube + dominios custom
-  res.set('Content-Security-Policy', "frame-ancestors 'self' https://*.myshopify.com https://*.mitiendanube.com https://*.nuvemshop.com.br https://*.lojavirtualnuvem.com.br *");
-  next();
-});
-
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Webhooks de MP necesitan el body raw
