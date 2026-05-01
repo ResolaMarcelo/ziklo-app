@@ -2,7 +2,8 @@ const express = require('express');
 const router  = express.Router();
 const path    = require('path');
 const fs      = require('fs');
-const shopify = require('../services/shopify');
+const shopify     = require('../services/shopify');
+const tiendanube  = require('../services/tiendanube');
 const prisma  = require('../lib/prisma');
 const { logAction } = require('../lib/auditLog');
 
@@ -309,25 +310,33 @@ router.get('/api/widget-code', (req, res) => {
 // PRODUCTOS — gestión de productos con suscripciones activadas
 // ══════════════════════════════════════════════════════════════════════════════
 
-// GET /admin/api/products — lista de productos Shopify + estado de suscripción
+// GET /admin/api/products — lista de productos (Shopify o Tiendanube) + estado de suscripción
 router.get('/api/products', async (req, res) => {
   try {
     const shopDomain   = req.session?.shopDomain;
     const accessToken  = req.shop?.accessToken || null;
+    const platform     = req.shop?.platform || 'shopify';
 
     if (!shopDomain || !accessToken) {
       return res.status(400).json({ error: 'No hay tienda en sesión' });
     }
 
-    // Traer productos desde Shopify (GraphQL)
-    let shopifyProducts;
+    // Traer productos desde la plataforma correspondiente
+    let platformProducts;
     try {
-      shopifyProducts = await shopify.getProducts(shopDomain, accessToken);
-    } catch (shopifyErr) {
-      if (shopifyErr.message && (shopifyErr.message.includes('403') || shopifyErr.message.includes('access'))) {
-        return res.status(400).json({ error: 'El token de Shopify no tiene permiso para leer productos. Reconectá tu tienda via OAuth.' });
+      if (platform === 'tiendanube') {
+        const storeId = req.shop?.tiendanubeStoreId;
+        if (!storeId) return res.status(400).json({ error: 'Store ID de Tiendanube no encontrado.' });
+        platformProducts = await tiendanube.getProducts(storeId, accessToken);
+      } else {
+        platformProducts = await shopify.getProducts(shopDomain, accessToken);
       }
-      throw shopifyErr;
+    } catch (apiErr) {
+      if (apiErr.message && (apiErr.message.includes('403') || apiErr.message.includes('access'))) {
+        const name = platform === 'tiendanube' ? 'Tiendanube' : 'Shopify';
+        return res.status(400).json({ error: `El token de ${name} no tiene permiso para leer productos. Reconectá tu tienda via OAuth.` });
+      }
+      throw apiErr;
     }
 
     // Traer estados guardados en BD
@@ -337,7 +346,7 @@ router.get('/api/products', async (req, res) => {
     const dbMap = {};
     dbRecords.forEach(r => { dbMap[r.productId] = r; });
 
-    const products = shopifyProducts.map(p => ({
+    const products = platformProducts.map(p => ({
       id:          String(p.id),
       title:       p.title,
       image:       p.image || null,
